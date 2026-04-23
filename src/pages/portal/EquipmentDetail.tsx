@@ -52,27 +52,27 @@ export default function EquipmentDetail() {
       </div>
 
       {/* Equipment Identity */}
-      <div className="bg-white p-10 md:p-12 rounded-sm border border-brand-navy/5 shadow-sm mb-8">
-        <div className="flex flex-col md:flex-row justify-between items-start gap-8">
-          <div className="flex items-center gap-8">
-            <div className="w-20 h-20 bg-brand-navy text-white rounded-sm flex items-center justify-center text-4xl font-serif">
+      <div className="bg-white p-6 sm:p-10 md:p-12 rounded-sm border border-brand-navy/5 shadow-sm mb-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-8">
+            <div className="w-20 h-20 bg-brand-navy text-white rounded-sm flex items-center justify-center text-4xl font-serif grayscale-0 shrink-0">
               {equipment.brand[0]}
             </div>
-            <div>
-              <div className="flex items-center gap-4 mb-3">
+            <div className="text-center sm:text-left">
+              <div className="flex items-center justify-center sm:justify-start gap-4 mb-3">
                 <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand-gold">{equipment.id}</span>
                 <span className="bg-brand-navy/5 text-brand-navy/40 px-3 py-1 rounded-full text-[8px] uppercase tracking-widest font-bold">{equipment.type}</span>
               </div>
-              <h1 className="text-4xl font-serif text-brand-navy mb-1">{equipment.brand} {equipment.model}</h1>
+              <h1 className="text-3xl sm:text-4xl font-serif text-brand-navy mb-1">{equipment.brand} {equipment.model}</h1>
               <p className="text-sm text-brand-navy/40">{equipment.location} • Installed {equipment.installYear}</p>
             </div>
           </div>
-          <Link to="/book" className="bg-brand-gold text-brand-navy px-10 py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-navy hover:text-white transition-all shadow-xl">
-            Book Service for This Unit
+          <Link to="/book" className="w-full md:w-auto text-center bg-brand-gold text-brand-navy px-10 py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-navy hover:text-white transition-all shadow-xl">
+            Book Service
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-12 pt-12 border-t border-brand-navy/5">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 mt-12 pt-12 border-t border-brand-navy/5">
           <div>
             <p className="text-[9px] uppercase tracking-widest font-bold text-brand-navy/40 mb-1">Capacity</p>
             <p className="text-sm font-bold text-brand-navy">{equipment.capacity}</p>
@@ -95,23 +95,23 @@ export default function EquipmentDetail() {
       <div className="grid lg:grid-cols-3 gap-8">
         {/* History Column */}
         <div className="lg:col-span-2 space-y-8">
-          <div className="bg-white p-8 rounded-sm border border-brand-navy/5 shadow-sm">
+          <div className="bg-white p-6 sm:p-8 rounded-sm border border-brand-navy/5 shadow-sm">
             <h3 className="text-xl font-serif text-brand-navy mb-8">Service History Timeline</h3>
             <div className="space-y-8 relative before:absolute before:left-6 before:top-2 before:bottom-2 before:w-px before:bg-brand-navy/5">
               {history.map((item, i) => (
-                <Link key={i} to={`/portal/bookings/${item.id}`} className="flex gap-8 group relative z-10">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center border-4 border-white shadow-sm transition-all group-hover:scale-110 ${
+                <Link key={i} to={`/portal/bookings/${item.id}`} className="flex flex-col sm:flex-row gap-4 sm:gap-8 group relative z-10">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center border-4 border-white shadow-sm transition-all group-hover:scale-110 shrink-0 ${
                     item.status === 'Completed' ? 'bg-green-500 text-white' : 'bg-brand-gold text-brand-navy'
                   }`}>
                     {item.status === 'Completed' ? <CheckCircle2 size={18} /> : <Clock size={18} />}
                   </div>
                   <div className="flex-grow bg-brand-navy/5 p-6 rounded-sm group-hover:bg-brand-navy group-hover:text-white transition-all">
-                    <div className="flex justify-between items-start mb-2">
+                    <div className="flex flex-col sm:flex-row justify-between items-start mb-2 gap-1 sm:gap-0">
                       <h4 className="text-sm font-bold">{item.type}</h4>
                       <span className="text-[8px] uppercase tracking-widest font-bold opacity-40">{item.date}</span>
                     </div>
                     <p className="text-xs opacity-60 mb-4">Technician: {item.technician} • {item.id}</p>
-                    <div className="flex items-center gap-2 text-[9px] uppercase tracking-widest font-bold text-brand-gold">
+                    <div className="flex items-center gap-2 text-[9px] uppercase tracking-widest font-bold text-brand-gold group-hover:text-white transition-colors">
                       View Full Report <ArrowRight size={12} />
                     </div>
                   </div>

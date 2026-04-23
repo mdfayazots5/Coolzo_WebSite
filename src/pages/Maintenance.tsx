@@ -23,7 +23,7 @@ export default function Maintenance() {
             />
           </div>
 
-          <h1 className="text-6xl md:text-8xl font-serif text-white mb-8">Enhancing Experience.</h1>
+          <h1 className="text-4xl sm:text-6xl md:text-8xl font-serif text-white mb-8">Enhancing Experience.</h1>
           <h2 className="text-2xl font-serif text-brand-gold mb-12 italic">Our digital platform is undergoing scheduled maintenance.</h2>
           
           <p className="text-white/40 text-lg mb-16 leading-relaxed max-w-xl mx-auto font-light">

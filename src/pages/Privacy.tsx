@@ -9,9 +9,9 @@ export default function Privacy() {
         <ChevronLeft size={14} /> Back to Home
       </Link>
       
-      <div className="mb-16">
+      <div className="mb-12 lg:mb-16">
         <Lock size={48} className="text-brand-gold mb-6" />
-        <h1 className="text-5xl font-serif text-brand-navy mb-4">Privacy Policy</h1>
+        <h1 className="text-3xl sm:text-5xl font-serif text-brand-navy mb-4">Privacy Policy</h1>
         <p className="text-brand-navy/40 text-[10px] uppercase tracking-[0.3em] font-bold">Last Updated: April 2026</p>
       </div>
 
@@ -52,7 +52,7 @@ export default function Privacy() {
         </section>
       </div>
 
-      <div className="mt-24 p-12 bg-brand-navy/5 rounded-sm border border-brand-navy/5 text-center">
+      <div className="mt-16 lg:mt-24 p-8 sm:p-12 bg-brand-navy/5 rounded-sm border border-brand-navy/5 text-center">
         <h3 className="text-2xl font-serif text-brand-navy mb-6">Data Protection Officer</h3>
         <p className="text-brand-navy/40 text-sm mb-10 max-w-md mx-auto">
           For any privacy-related inquiries, please contact our Data Protection Officer at privacy@coolzo.com.

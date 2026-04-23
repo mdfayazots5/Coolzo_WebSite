@@ -11,17 +11,17 @@ export default function NotFound() {
           animate={{ opacity: 1, scale: 1 }}
           className="mb-12"
         >
-          <div className="w-32 h-32 bg-brand-navy/5 rounded-full flex items-center justify-center mx-auto mb-12 relative">
-            <Search size={48} className="text-brand-navy/20" />
+          <div className="w-24 h-24 sm:w-32 sm:h-32 bg-brand-navy/5 rounded-full flex items-center justify-center mx-auto mb-8 sm:mb-12 relative">
+            <Search size={40} className="text-brand-navy/20 sm:size-48" />
             <motion.div 
               animate={{ rotate: 360 }}
               transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
               className="absolute inset-0 border-2 border-dashed border-brand-gold/30 rounded-full"
             />
           </div>
-          <h1 className="text-8xl font-serif text-brand-navy mb-6">404</h1>
-          <h2 className="text-3xl font-serif text-brand-navy mb-6 italic">Lost in the Breeze.</h2>
-          <p className="text-brand-navy/40 text-lg mb-12 leading-relaxed max-w-md mx-auto">
+          <h1 className="text-6xl sm:text-8xl font-serif text-brand-navy mb-4 sm:mb-6">404</h1>
+          <h2 className="text-2xl sm:text-3xl font-serif text-brand-navy mb-4 sm:mb-6 italic">Lost in the Breeze.</h2>
+          <p className="text-brand-navy/40 text-base sm:text-lg mb-8 sm:mb-12 leading-relaxed max-w-md mx-auto">
             The page you are looking for has drifted away. Let's get you back to the professional care you deserve.
           </p>
         </motion.div>

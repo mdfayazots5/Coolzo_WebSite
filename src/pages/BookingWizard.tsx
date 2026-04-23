@@ -231,7 +231,7 @@ export default function BookingWizard() {
         </div>
 
         {/* Wizard Content */}
-        <div className="bg-white p-8 md:p-12 rounded-sm border border-brand-navy/5 shadow-xl min-h-[500px] flex flex-col">
+        <div className="bg-white p-6 sm:p-8 md:p-12 rounded-sm border border-brand-navy/5 shadow-xl min-h-[500px] flex flex-col">
           <div className="flex-grow">
             <AnimatePresence mode="wait">
               {step === 1 && (
@@ -331,13 +331,13 @@ function Step1({ selectedCategory, selectedSubType, onSelect }: {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
     >
-      <h2 className="text-3xl font-serif text-brand-navy mb-8">What can we help you with?</h2>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <h2 className="text-2xl sm:text-3xl font-serif text-brand-navy mb-8">What can we help you with?</h2>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {categories.map((cat) => (
           <div key={cat.id} className="relative">
             <button
               onClick={() => onSelect(cat.id as ServiceCategory, cat.subTypes[0])}
-              className={`w-full p-8 rounded-sm border transition-all duration-500 text-left group ${
+              className={`w-full p-6 sm:p-8 rounded-sm border transition-all duration-500 text-left group ${
                 selectedCategory === cat.id 
                   ? "border-brand-gold bg-brand-navy text-white shadow-xl" 
                   : "border-brand-navy/5 bg-white hover:border-brand-gold/50"
@@ -403,9 +403,9 @@ function Step2({ data, onChange }: { data: BookingData, onChange: (u: Partial<Bo
       exit={{ opacity: 0, y: -20 }}
       className="space-y-12"
     >
-      <h2 className="text-3xl font-serif text-brand-navy mb-8">Tell us about your equipment.</h2>
+      <h2 className="text-2xl sm:text-3xl font-serif text-brand-navy mb-8">Tell us about your equipment.</h2>
       
-      <div className="grid md:grid-cols-2 gap-12">
+      <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
         {/* Brand Selection */}
         <div className="space-y-4 relative">
           <label className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">AC Brand</label>
@@ -545,9 +545,9 @@ function Step3({ address, onChange }: { address: BookingData['address'], onChang
       exit={{ opacity: 0, y: -20 }}
       className="space-y-12"
     >
-      <h2 className="text-3xl font-serif text-brand-navy mb-8">Where should we arrive?</h2>
+      <h2 className="text-2xl sm:text-3xl font-serif text-brand-navy mb-8">Where should we arrive?</h2>
       
-      <div className="grid md:grid-cols-2 gap-12">
+      <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
         <div className="space-y-6">
           <div className="space-y-2">
             <label className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">PIN / Postal Code</label>
@@ -634,7 +634,7 @@ function Step3({ address, onChange }: { address: BookingData['address'], onChang
         </div>
 
         {/* Map Placeholder */}
-        <div className="bg-brand-navy/5 rounded-sm overflow-hidden relative min-h-[300px] flex items-center justify-center border border-brand-navy/5">
+        <div className="bg-brand-navy/5 rounded-sm overflow-hidden relative min-h-[200px] sm:min-h-[300px] flex items-center justify-center border border-brand-navy/5">
           <div className="absolute inset-0 opacity-20 grayscale">
             <img 
               src="https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?q=80&w=2066&auto=format&fit=crop" 
@@ -674,8 +674,8 @@ function Step4({ appointment, onChange }: { appointment: BookingData['appointmen
       exit={{ opacity: 0, y: -20 }}
       className="space-y-12"
     >
-      <div className="flex justify-between items-end mb-8">
-        <h2 className="text-3xl font-serif text-brand-navy">Select your window.</h2>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 mb-8">
+        <h2 className="text-2xl sm:text-3xl font-serif text-brand-navy">Select your window.</h2>
         <div className="flex items-center gap-4 bg-brand-gold/10 px-6 py-3 rounded-sm border border-brand-gold/20">
           <label className="text-[10px] uppercase tracking-widest font-bold text-brand-navy cursor-pointer">Emergency Service?</label>
           <button 

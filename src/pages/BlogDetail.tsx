@@ -15,11 +15,11 @@ export default function BlogDetail() {
         </Link>
 
         {/* Header */}
-        <div className="max-w-4xl mx-auto mb-16">
+        <div className="max-w-4xl mx-auto mb-12 lg:mb-16">
           <span className="text-brand-gold text-[10px] uppercase tracking-[0.4em] font-bold mb-6 block">Maintenance Tips</span>
-          <h1 className="text-6xl md:text-7xl font-serif text-brand-navy mb-10 leading-tight">The Art of Seamless Maintenance.</h1>
-          <div className="flex flex-wrap items-center justify-between gap-8 border-y border-brand-navy/5 py-8">
-            <div className="flex items-center gap-12">
+          <h1 className="text-3xl sm:text-5xl lg:text-7xl font-serif text-brand-navy mb-10 leading-tight">The Art of Seamless Maintenance.</h1>
+          <div className="flex flex-wrap items-center justify-between gap-8 border-y border-brand-navy/5 py-4 lg:py-8">
+            <div className="flex flex-wrap items-center gap-6 lg:gap-12">
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 bg-brand-navy rounded-full flex items-center justify-center text-white font-serif italic">S</div>
                 <div>

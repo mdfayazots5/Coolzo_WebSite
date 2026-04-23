@@ -7,29 +7,29 @@ export default function WhyCoolzo() {
     <div className="pt-32 pb-24 bg-brand-cream min-h-screen">
       <div className="container mx-auto px-6">
         {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-24">
+        <div className="text-center max-w-3xl mx-auto mb-16 lg:mb-24">
           <span className="text-brand-gold text-[10px] uppercase tracking-[0.4em] font-bold mb-4 block">The Differentiation</span>
-          <h1 className="text-6xl font-serif text-brand-navy mb-8">Why Coolzo?</h1>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif text-brand-navy mb-8">Why Coolzo?</h1>
           <p className="text-brand-navy/50 text-xl font-light leading-relaxed">
             In a market of generic services, we offer professional climate care. Here is how we redefine the standard of reliability.
           </p>
         </div>
 
         {/* Comparison Table */}
-        <div className="mb-32 overflow-x-auto">
-          <table className="w-full border-collapse">
+        <div className="mb-32 overflow-x-auto no-scrollbar">
+          <table className="w-full border-collapse min-w-[600px] lg:min-w-0">
             <thead>
               <tr>
-                <th className="p-8 text-left bg-transparent border-b border-brand-navy/5 w-1/3"></th>
-                <th className="p-8 text-center bg-brand-navy/5 border-b border-brand-navy/5 rounded-t-sm">
-                  <span className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">Standard Market</span>
+                <th className="p-4 sm:p-8 text-left bg-transparent border-b border-brand-navy/5 w-1/3"></th>
+                <th className="p-4 sm:p-8 text-center bg-brand-navy/5 border-b border-brand-navy/5 rounded-t-sm">
+                  <span className="text-[8px] sm:text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">Standard Market</span>
                 </th>
-                <th className="p-8 text-center bg-brand-navy border-b border-white/10 rounded-t-sm">
-                  <span className="text-[10px] uppercase tracking-widest font-bold text-brand-gold">Coolzo Standard</span>
+                <th className="p-4 sm:p-8 text-center bg-brand-navy border-b border-white/10 rounded-t-sm">
+                  <span className="text-[8px] sm:text-[10px] uppercase tracking-widest font-bold text-brand-gold">Coolzo Standard</span>
                 </th>
               </tr>
             </thead>
-            <tbody className="text-sm">
+            <tbody className="text-[11px] sm:text-sm">
               {[
                 { feature: "Technician Training", market: "General Experience", coolzo: "Brand-Specific Certification" },
                 { feature: "Service Window", market: "4-6 Hour Window", coolzo: "Strict 90-Minute Window" },
@@ -39,9 +39,9 @@ export default function WhyCoolzo() {
                 { feature: "Warranty", market: "30 Days Limited", coolzo: "90 Days Comprehensive" },
               ].map((row, i) => (
                 <tr key={i}>
-                  <td className="p-8 border-b border-brand-navy/5 font-serif text-lg text-brand-navy">{row.feature}</td>
-                  <td className="p-8 border-b border-brand-navy/5 text-center text-brand-navy/40 bg-brand-navy/5">{row.market}</td>
-                  <td className="p-8 border-b border-white/5 text-center text-white bg-brand-navy font-bold">{row.coolzo}</td>
+                  <td className="p-4 sm:p-8 border-b border-brand-navy/5 font-serif text-sm sm:text-lg text-brand-navy">{row.feature}</td>
+                  <td className="p-4 sm:p-8 border-b border-brand-navy/5 text-center text-brand-navy/40 bg-brand-navy/5 italic sm:not-italic">{row.market}</td>
+                  <td className="p-4 sm:p-8 border-b border-white/5 text-center text-white bg-brand-navy font-bold sm:font-black sm:uppercase sm:tracking-widest">{row.coolzo}</td>
                 </tr>
               ))}
             </tbody>

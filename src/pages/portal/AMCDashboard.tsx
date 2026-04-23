@@ -72,13 +72,13 @@ export default function AMCDashboard() {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-8 mb-12">
         <div>
-          <h1 className="text-4xl font-serif text-brand-navy mb-2">AMC Dashboard</h1>
+          <h1 className="text-3xl sm:text-4xl font-serif text-brand-navy mb-2">AMC Dashboard</h1>
           <p className="text-brand-navy/40 text-[10px] uppercase tracking-[0.3em] font-bold">Professional protection active</p>
         </div>
         <div className="flex gap-4">
-          <button className="px-8 py-4 bg-brand-navy text-white rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all shadow-lg">Upgrade Plan</button>
+          <button className="flex-1 sm:flex-initial px-8 py-4 bg-brand-navy text-white rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all shadow-lg">Upgrade Plan</button>
         </div>
       </div>
 
@@ -87,22 +87,22 @@ export default function AMCDashboard() {
         <div className="lg:col-span-2 space-y-8">
           
           {/* Active Contract Card */}
-          <div className="bg-brand-navy p-10 rounded-sm text-white relative overflow-hidden shadow-2xl">
+          <div className="bg-brand-navy p-8 sm:p-10 rounded-sm text-white relative overflow-hidden shadow-2xl">
             <div className="absolute top-0 right-0 w-1/2 h-full bg-brand-gold/5 skew-x-12 translate-x-1/4" />
             <div className="relative z-10">
-              <div className="flex justify-between items-start mb-12">
+              <div className="flex flex-col sm:flex-row justify-between items-start gap-8 sm:gap-0 mb-12">
                 <div>
                   <span className="bg-brand-gold text-brand-navy px-4 py-1.5 rounded-full text-[9px] uppercase tracking-widest font-bold mb-4 inline-block">{activeContract.tier} Plan</span>
-                  <h2 className="text-4xl font-serif">{activeContract.plan}</h2>
+                  <h2 className="text-3xl sm:text-4xl font-serif">{activeContract.plan}</h2>
                 </div>
-                <div className="text-right">
+                <div className="sm:text-right">
                   <p className="text-[10px] uppercase tracking-widest font-bold text-white/40 mb-1">Contract Period</p>
-                  <p className="text-sm font-bold">{activeContract.startDate} — {activeContract.endDate}</p>
+                  <p className="text-sm font-bold whitespace-nowrap">{activeContract.startDate} — {activeContract.endDate}</p>
                 </div>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-12">
-                <div>
+              <div className="grid md:grid-cols-2 gap-10 lg:gap-12">
+                <div className="order-2 md:order-1">
                   <div className="flex justify-between items-end mb-4">
                     <p className="text-[10px] uppercase tracking-widest font-bold text-white/40">Visit Utilization</p>
                     <p className="text-sm font-bold text-brand-gold">{activeContract.visitsUsed} / {activeContract.visitsIncluded} Used</p>
@@ -115,8 +115,8 @@ export default function AMCDashboard() {
                     />
                   </div>
                 </div>
-                <div className="flex items-center gap-6">
-                  <div className="p-4 bg-white/5 rounded-sm border border-white/10">
+                <div className="flex items-center gap-6 order-1 md:order-2">
+                  <div className="p-4 bg-white/5 rounded-sm border border-white/10 shrink-0">
                     <p className="text-2xl font-serif text-brand-gold">{activeContract.daysToExpiry}</p>
                     <p className="text-[8px] uppercase tracking-widest font-bold text-white/40">Days to Expiry</p>
                   </div>
@@ -127,13 +127,13 @@ export default function AMCDashboard() {
           </div>
 
           {/* Visit History */}
-          <div className="bg-white p-8 rounded-sm border border-brand-navy/5 shadow-sm">
+          <div className="bg-white p-6 sm:p-8 rounded-sm border border-brand-navy/5 shadow-sm">
             <h3 className="text-xl font-serif text-brand-navy mb-8">Visit History</h3>
             <div className="space-y-4">
               {visitHistory.map((visit, i) => (
-                <div key={i} className="flex items-center justify-between p-6 rounded-sm border border-brand-navy/5 hover:bg-brand-navy/5 transition-colors group">
+                <div key={i} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-6 rounded-sm border border-brand-navy/5 hover:bg-brand-navy/5 transition-colors group gap-4 sm:gap-0">
                   <div className="flex items-center gap-6">
-                    <div className="w-12 h-12 rounded-full bg-brand-navy/5 flex items-center justify-center text-brand-navy/40">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-brand-navy/5 flex items-center justify-center text-brand-navy/40 shrink-0">
                       <CheckCircle2 size={20} />
                     </div>
                     <div>
@@ -141,8 +141,9 @@ export default function AMCDashboard() {
                       <p className="text-[9px] uppercase tracking-widest text-brand-navy/40">{visit.date} • {visit.technician}</p>
                     </div>
                   </div>
-                  <button className="p-3 border border-brand-navy/10 text-brand-navy/40 hover:text-brand-gold hover:border-brand-gold transition-all rounded-sm">
+                  <button className="w-full sm:w-auto p-3 border border-brand-navy/10 text-brand-navy/40 hover:text-brand-gold hover:border-brand-gold transition-all rounded-sm flex items-center justify-center gap-3 sm:gap-0">
                     <Download size={18} />
+                    <span className="sm:hidden text-[10px] uppercase font-bold tracking-widest">Download Report</span>
                   </button>
                 </div>
               ))}

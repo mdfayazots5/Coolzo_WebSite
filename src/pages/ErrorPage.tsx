@@ -11,11 +11,11 @@ export default function ErrorPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-12"
         >
-          <div className="w-32 h-32 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-12">
-            <AlertCircle size={48} className="text-red-500" />
+          <div className="w-24 h-24 sm:w-32 sm:h-32 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-8 sm:mb-12">
+            <AlertCircle size={40} className="text-red-500 sm:size-48" />
           </div>
-          <h1 className="text-5xl font-serif text-brand-navy mb-6">Something went wrong.</h1>
-          <p className="text-brand-navy/40 text-lg mb-12 leading-relaxed max-w-md mx-auto">
+          <h1 className="text-4xl sm:text-5xl font-serif text-brand-navy mb-6">Something went wrong.</h1>
+          <p className="text-brand-navy/40 text-base sm:text-lg mb-8 sm:mb-12 leading-relaxed max-w-md mx-auto">
             We've encountered a technical disturbance. Our technicians are already looking into it.
           </p>
         </motion.div>

@@ -18,15 +18,15 @@ export default function Reviews() {
     <div className="pt-32 pb-24 bg-brand-cream min-h-screen">
       <div className="container mx-auto px-6">
         {/* Header & Stats */}
-        <div className="grid lg:grid-cols-2 gap-20 items-center mb-24">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center mb-16 lg:mb-24">
           <div>
             <span className="text-brand-gold text-[10px] uppercase tracking-[0.4em] font-bold mb-4 block">The Registry</span>
-            <h1 className="text-6xl font-serif text-brand-navy mb-8 leading-tight">Voices of <br />Trust.</h1>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif text-brand-navy mb-8 leading-tight">Voices of <br />Trust.</h1>
             <p className="text-brand-navy/50 text-xl font-light leading-relaxed mb-12">
               Our reputation is built on the satisfaction of Hyderabad's modern property owners.
             </p>
           </div>
-          <div className="bg-white p-12 rounded-sm border border-brand-navy/5 shadow-xl text-center">
+          <div className="bg-white p-8 sm:p-12 rounded-sm border border-brand-navy/5 shadow-xl text-center">
             <div className="mb-8">
               <p className="text-7xl font-serif text-brand-navy mb-2">4.8</p>
               <div className="flex justify-center gap-1 text-brand-gold mb-4">

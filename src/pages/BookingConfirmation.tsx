@@ -33,7 +33,7 @@ export default function BookingConfirmation() {
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-5xl font-serif text-brand-navy mb-4"
+            className="text-3xl sm:text-5xl font-serif text-brand-navy mb-4"
           >
             Booking Confirmed.
           </motion.h1>
@@ -48,12 +48,12 @@ export default function BookingConfirmation() {
         </div>
 
         {/* Reference Card */}
-        <div className="bg-brand-navy p-10 rounded-sm text-white mb-12 shadow-2xl relative overflow-hidden">
+        <div className="bg-brand-navy p-6 sm:p-10 rounded-sm text-white mb-12 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-1/2 h-full bg-brand-gold/5 skew-x-12 translate-x-1/4" />
           <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-8">
-            <div>
+            <div className="text-center md:text-left">
               <p className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand-gold mb-2">Reference Number</p>
-              <h2 className="text-4xl font-serif tracking-widest">{refNumber}</h2>
+              <h2 className="text-2xl sm:text-4xl font-serif tracking-widest">{refNumber}</h2>
             </div>
             <button 
               onClick={copyRef}
@@ -107,7 +107,7 @@ export default function BookingConfirmation() {
         </div>
 
         {/* Account CTA */}
-        <div className="bg-brand-gold/10 p-12 rounded-sm border border-brand-gold/20 text-center mb-16">
+        <div className="bg-brand-gold/10 p-6 sm:p-12 rounded-sm border border-brand-gold/20 text-center mb-16">
           <ShieldCheck size={40} className="text-brand-gold mx-auto mb-6" />
           <h3 className="text-2xl font-serif text-brand-navy mb-4">Track your curation.</h3>
           <p className="text-brand-navy/60 text-sm leading-relaxed mb-8 max-w-md mx-auto">

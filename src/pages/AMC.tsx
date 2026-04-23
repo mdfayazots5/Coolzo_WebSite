@@ -67,9 +67,9 @@ export default function AMC() {
     <div className="pt-32 pb-24 bg-brand-cream min-h-screen">
       <div className="container mx-auto px-6">
         {/* Hero */}
-        <div className="text-center max-w-3xl mx-auto mb-24">
+        <div className="text-center max-w-3xl mx-auto mb-16 lg:mb-24">
           <span className="text-brand-gold text-[10px] uppercase tracking-[0.4em] font-bold mb-4 block">Professional Protection</span>
-          <h1 className="text-6xl font-serif text-brand-navy mb-8">The Smart Care Advantage.</h1>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif text-brand-navy mb-8">The Smart Care Advantage.</h1>
           <p className="text-brand-navy/50 text-xl font-light leading-relaxed mb-12">
             Join a circle of smart property owners who demand zero downtime. 
             Proactive care, priority response, and comprehensive health monitoring for your home.
@@ -81,7 +81,7 @@ export default function AMC() {
         </div>
 
         {/* Comparison Grid */}
-        <div className="grid lg:grid-cols-4 gap-8 mb-32">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 mb-20 lg:mb-32">
           {plans.map((plan, i) => (
             <motion.div
               key={plan.name}
@@ -89,7 +89,7 @@ export default function AMC() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className={`relative bg-white p-10 rounded-sm border transition-all duration-500 flex flex-col h-full ${plan.popular ? "border-brand-gold shadow-2xl scale-105 z-10" : "border-brand-navy/5 shadow-sm hover:shadow-xl"}`}
+              className={`relative bg-white p-6 sm:p-10 rounded-sm border transition-all duration-500 flex flex-col h-full ${plan.popular ? "border-brand-gold shadow-2xl scale-100 lg:scale-105 z-10" : "border-brand-navy/5 shadow-sm hover:shadow-xl"}`}
             >
               {plan.popular && (
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-brand-gold text-brand-navy px-4 py-1 rounded-sm text-[9px] uppercase tracking-widest font-bold">

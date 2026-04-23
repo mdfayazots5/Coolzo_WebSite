@@ -14,9 +14,9 @@ export default function Contact() {
     <div className="pt-32 pb-24 bg-brand-cream min-h-screen">
       <div className="container mx-auto px-6">
         {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-24">
+        <div className="text-center max-w-3xl mx-auto mb-16 lg:mb-24">
           <span className="text-brand-gold text-[10px] uppercase tracking-[0.4em] font-bold mb-4 block">Professional Support</span>
-          <h1 className="text-6xl font-serif text-brand-navy mb-8">At Your Service.</h1>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif text-brand-navy mb-8">At Your Service.</h1>
           <p className="text-brand-navy/50 text-xl font-light leading-relaxed">
             Whether you require an emergency repair or a consultation for a new home, our professional team is ready to assist.
           </p>

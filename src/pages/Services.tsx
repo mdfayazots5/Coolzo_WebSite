@@ -49,7 +49,7 @@ export default function Services() {
         {/* Header */}
         <div className="max-w-2xl mb-16">
           <span className="text-brand-gold text-[10px] uppercase tracking-[0.4em] font-bold mb-4 block">Service Catalog</span>
-          <h1 className="text-6xl font-serif text-brand-navy mb-6">Expertise on Demand.</h1>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif text-brand-navy mb-6">Expertise on Demand.</h1>
           <p className="text-brand-navy/50 text-lg font-light leading-relaxed">
             From precision repairs to smart installations, our certified technicians ensure your home remains perfectly tempered.
           </p>
@@ -63,14 +63,14 @@ export default function Services() {
         ) : (
           <>
             {/* Search & Filter Bar */}
-            <div className="sticky top-24 z-30 bg-brand-cream/80 backdrop-blur-md py-6 border-y border-brand-navy/5 mb-12">
-              <div className="flex flex-col lg:flex-row gap-8 justify-between items-center">
-                <div className="flex flex-wrap gap-3 justify-center lg:justify-start">
+            <div className="sticky top-20 sm:top-24 z-30 bg-brand-cream/80 backdrop-blur-md py-4 sm:py-6 border-y border-brand-navy/5 mb-8 sm:mb-12">
+              <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 justify-between items-center">
+                <div className="flex overflow-x-auto no-scrollbar pb-4 -mx-6 px-6 lg:mx-0 lg:px-0 flex-nowrap lg:flex-wrap gap-2 sm:gap-3 justify-start lg:justify-start items-center">
                   {categories.map(cat => (
                     <button
                       key={cat.id}
                       onClick={() => setActiveCategory(cat.id)}
-                      className={`px-6 py-2 rounded-sm text-[10px] uppercase tracking-widest font-bold transition-all duration-300 ${activeCategory === cat.id ? "bg-brand-navy text-white shadow-lg" : "bg-white text-brand-navy/60 hover:text-brand-navy border border-brand-navy/5"}`}
+                      className={`px-6 py-2 rounded-sm text-[10px] uppercase tracking-widest font-bold transition-all duration-300 whitespace-nowrap ${activeCategory === cat.id ? "bg-brand-navy text-white shadow-lg" : "bg-white text-brand-navy/60 hover:text-brand-navy border border-brand-navy/5"}`}
                     >
                       {cat.name}
                     </button>

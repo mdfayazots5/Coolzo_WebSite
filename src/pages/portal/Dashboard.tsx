@@ -60,8 +60,8 @@ export default function Dashboard() {
   return (
     <div className="max-w-7xl mx-auto">
       {/* Personalized Greeting */}
-      <div className="mb-12">
-        <h1 className="text-4xl font-serif text-brand-navy mb-2">Good morning, {firstName}.</h1>
+      <div className="mb-8 lg:mb-12">
+        <h1 className="text-3xl sm:text-4xl font-serif text-brand-navy mb-2 grayscale-0">Good morning, {firstName}.</h1>
         <p className="text-brand-navy/40 text-[10px] uppercase tracking-[0.3em] font-bold">{today}</p>
       </div>
 
@@ -74,39 +74,41 @@ export default function Dashboard() {
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-brand-navy p-8 md:p-10 rounded-sm text-white relative overflow-hidden shadow-2xl"
+              className="bg-brand-navy p-6 sm:p-8 md:p-10 rounded-sm text-white relative overflow-hidden shadow-2xl"
             >
               <div className="absolute top-0 right-0 w-1/2 h-full bg-brand-gold/5 skew-x-12 translate-x-1/4" />
               <div className="relative z-10">
-                <div className="flex justify-between items-start mb-8">
+                <div className="flex flex-col sm:flex-row justify-between items-start gap-4 sm:gap-0 mb-8">
                   <div>
                     <span className="bg-brand-gold text-brand-navy px-3 py-1 rounded-full text-[8px] uppercase tracking-widest font-bold mb-3 inline-block">Active Job</span>
-                    <h3 className="text-2xl font-serif">{activeJob.serviceName}</h3>
+                    <h3 className="text-xl sm:text-2xl font-serif">{activeJob.serviceName}</h3>
                     <p className="text-white/40 text-[10px] uppercase tracking-widest font-bold mt-1">{activeJob.id}</p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-brand-gold text-2xl font-serif mb-1">14 mins</p>
+                  <div className="sm:text-right">
+                    <p className="text-brand-gold text-xl sm:text-2xl font-serif mb-1">14 mins</p>
                     <p className="text-white/40 text-[9px] uppercase tracking-widest font-bold">Estimated Arrival</p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-6 mb-10">
-                  <div className="w-16 h-16 rounded-full border-2 border-brand-gold p-1">
-                    <img src={activeJob.technician?.image || `https://picsum.photos/seed/${activeJob.id}/100/100`} alt={activeJob.technician?.name} className="w-full h-full rounded-full object-cover" referrerPolicy="no-referrer" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold mb-1">{activeJob.technician?.name || 'Assigned Technician'}</p>
-                    <div className="flex items-center gap-2">
-                      <div className="flex gap-0.5 text-brand-gold">
-                        {[1, 2, 3, 4, 5].map(i => <Star key={i} size={10} className="fill-brand-gold" />)}
+                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-10">
+                  <div className="flex items-center gap-6 w-full sm:w-auto">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 shrink-0 rounded-full border-2 border-brand-gold p-1">
+                      <img src={activeJob.technician?.image || `https://picsum.photos/seed/${activeJob.id}/100/100`} alt={activeJob.technician?.name} className="w-full h-full rounded-full object-cover" referrerPolicy="no-referrer" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold mb-1">{activeJob.technician?.name || 'Assigned Technician'}</p>
+                      <div className="flex items-center gap-2">
+                        <div className="flex gap-0.5 text-brand-gold">
+                          {[1, 2, 3, 4, 5].map(i => <Star key={i} size={10} className="fill-brand-gold" />)}
+                        </div>
+                        <span className="text-[9px] uppercase tracking-widest font-bold text-white/40">Professional Technician</span>
                       </div>
-                      <span className="text-[9px] uppercase tracking-widest font-bold text-white/40">Professional Technician</span>
                     </div>
                   </div>
-                  <div className="ml-auto hidden sm:block">
-                    <div className="flex items-center gap-3 text-brand-gold">
+                  <div className="sm:ml-auto w-full sm:w-auto flex justify-center sm:justify-end">
+                    <div className="flex items-center gap-3 text-brand-gold bg-white/5 py-2 px-4 rounded-full sm:bg-transparent sm:py-0 sm:px-0">
                       <div className="w-2 h-2 bg-brand-gold rounded-full animate-ping" />
-                      <span className="text-[10px] uppercase tracking-widest font-bold">{activeJob.status}</span>
+                      <span className="text-[10px] uppercase tracking-widest font-bold whitespace-nowrap">{activeJob.status}</span>
                     </div>
                   </div>
                 </div>
@@ -138,24 +140,24 @@ export default function Dashboard() {
           </div>
 
           {/* Recent Bookings Preview */}
-          <div className="bg-white p-8 rounded-sm border border-brand-navy/5 shadow-sm">
-            <div className="flex justify-between items-center mb-8">
+          <div className="bg-white p-6 sm:p-8 rounded-sm border border-brand-navy/5 shadow-sm">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-8">
               <h3 className="text-xl font-serif text-brand-navy">Recent Bookings</h3>
               <Link to="/portal/bookings" className="text-[9px] uppercase tracking-widest font-bold text-brand-gold hover:text-brand-navy transition-colors">View All History</Link>
             </div>
             <div className="space-y-4">
               {recentBookings.map((booking) => (
-                <div key={booking.id} className="flex items-center justify-between p-4 rounded-sm hover:bg-brand-navy/5 transition-colors group">
+                <div key={booking.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-sm hover:bg-brand-navy/5 transition-colors group gap-4 sm:gap-0">
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-brand-navy/5 flex items-center justify-center text-brand-navy/40">
+                    <div className="w-10 h-10 rounded-full bg-brand-navy/5 flex items-center justify-center text-brand-navy/40 shrink-0">
                       <Calendar size={18} />
                     </div>
                     <div>
                       <p className="text-sm font-bold text-brand-navy">{booking.serviceName}</p>
-                      <p className="text-[9px] uppercase tracking-widest text-brand-navy/40">{booking.id} • {booking.date}</p>
+                      <p className="text-[9px] uppercase tracking-widest text-brand-navy/40 whitespace-nowrap">{booking.id} • {booking.date}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-6">
+                  <div className="flex items-center justify-between w-full sm:w-auto gap-4 sm:gap-6">
                     {booking.status === 'completed' && (
                       <Link 
                         to={`/portal/feedback/${booking.id}`}
@@ -165,7 +167,7 @@ export default function Dashboard() {
                       </Link>
                     )}
                     <span className="text-[9px] uppercase tracking-widest font-bold text-green-600 bg-green-50 px-3 py-1 rounded-full">{booking.status}</span>
-                    <ChevronRight size={16} className="text-brand-navy/20 group-hover:text-brand-gold transition-colors" />
+                    <ChevronRight size={16} className="text-brand-navy/20 group-hover:text-brand-gold transition-colors hidden sm:block" />
                   </div>
                 </div>
               ))}

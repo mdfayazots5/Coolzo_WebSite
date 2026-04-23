@@ -6,20 +6,20 @@ export default function About() {
     <div className="pt-32 pb-24 bg-brand-cream min-h-screen">
       <div className="container mx-auto px-6">
         {/* Story */}
-        <div className="grid lg:grid-cols-2 gap-20 items-center mb-32">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center mb-16 lg:mb-32">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
           >
             <span className="text-brand-gold text-[10px] uppercase tracking-[0.4em] font-bold mb-4 block">Our Heritage</span>
-            <h1 className="text-6xl font-serif text-brand-navy mb-8 leading-tight">Crafting the <br />Perfect Atmosphere.</h1>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif text-brand-navy mb-8 leading-tight">Crafting the <br />Perfect Atmosphere.</h1>
             <p className="text-brand-navy/60 text-lg font-light leading-relaxed mb-8">
               Founded in 2018, Coolzo was born from a simple observation: while air conditioning is a necessity in modern living, the service industry surrounding it remained stuck in the past.
             </p>
             <p className="text-brand-navy/60 text-lg font-light leading-relaxed mb-12">
               We set out to bridge the gap between architectural excellence and technical maintenance. Today, Coolzo is the trusted climate partner for Hyderabad's most modern homes, offices, and private residences.
             </p>
-            <div className="grid grid-cols-3 gap-8 border-t border-brand-navy/5 pt-12">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 border-t border-brand-navy/5 pt-12">
               <div>
                 <p className="text-3xl font-serif text-brand-navy">8+</p>
                 <p className="text-[9px] uppercase tracking-widest font-bold text-brand-gold">Years in Service</p>

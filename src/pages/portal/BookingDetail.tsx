@@ -46,17 +46,17 @@ export default function BookingDetail() {
       </div>
 
       {/* SR Summary */}
-      <div className="bg-white p-8 md:p-12 rounded-sm border border-brand-navy/5 shadow-sm mb-8">
-        <div className="flex flex-col md:flex-row justify-between items-start gap-8">
+      <div className="bg-white p-6 sm:p-8 md:p-12 rounded-sm border border-brand-navy/5 shadow-sm mb-8">
+        <div className="flex flex-col md:flex-row justify-between items-start gap-6 sm:gap-8">
           <div>
             <div className="flex items-center gap-4 mb-4">
               <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand-gold">Service Request</span>
               <span className="bg-brand-navy text-white px-3 py-1 rounded-full text-[8px] uppercase tracking-widest font-bold">Priority</span>
             </div>
-            <h1 className="text-4xl font-serif text-brand-navy mb-2">{id || "SR-88291"}</h1>
-            <p className="text-xl font-serif text-brand-navy/60 italic">Precision Repair & System Diagnostic</p>
+            <h1 className="text-3xl sm:text-4xl font-serif text-brand-navy mb-2">{id || "SR-88291"}</h1>
+            <p className="text-lg sm:text-xl font-serif text-brand-navy/60 italic">Precision Repair & System Diagnostic</p>
           </div>
-          <div className="text-right">
+          <div className="md:text-right">
             <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 mb-1">Created On</p>
             <p className="text-sm font-bold text-brand-navy">Apr 09, 2026 • 08:45 AM</p>
           </div>
@@ -64,7 +64,7 @@ export default function BookingDetail() {
       </div>
 
       {/* Live Tracker */}
-      <div className="bg-brand-navy p-10 rounded-sm text-white mb-8 shadow-2xl relative overflow-hidden">
+      <div className="bg-brand-navy p-6 sm:p-10 rounded-sm text-white mb-8 shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-1/3 h-full bg-brand-gold/5 skew-x-12 translate-x-1/4" />
         <div className="relative z-10">
           <h3 className="text-xl font-serif mb-10 flex items-center gap-3">
@@ -72,14 +72,14 @@ export default function BookingDetail() {
             Live Status Tracker
           </h3>
           
-          <div className="relative">
-            <div className="absolute top-5 left-0 w-full h-px bg-white/10" />
-            <div className="flex justify-between relative z-10">
+          <div className="relative overflow-x-auto no-scrollbar pb-4 -mx-2 px-2">
+            <div className="absolute top-5 left-0 min-w-full h-px bg-white/10" />
+            <div className="flex justify-between relative z-10 min-w-[600px] sm:min-w-0">
               {steps.map((step, i) => (
                 <div key={i} className="flex flex-col items-center text-center group">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-4 border-2 transition-all duration-500 ${
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-4 border-2 transition-all duration-500 scale-90 sm:scale-100 ${
                     step.status === 'completed' ? 'bg-brand-gold border-brand-gold text-brand-navy' :
-                    step.status === 'current' ? 'bg-brand-navy border-brand-gold text-brand-gold scale-125 shadow-[0_0_20px_rgba(212,175,55,0.4)]' :
+                    step.status === 'current' ? 'bg-brand-navy border-brand-gold text-brand-gold sm:scale-125 shadow-[0_0_20px_rgba(212,175,55,0.4)]' :
                     'bg-brand-navy border-white/10 text-white/20'
                   }`}>
                     {step.status === 'completed' ? <CheckCircle2 size={18} /> : <div className="text-[10px] font-bold">{i + 1}</div>}

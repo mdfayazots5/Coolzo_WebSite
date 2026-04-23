@@ -30,58 +30,64 @@ export default function Referral() {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <div className="mb-12">
-        <h1 className="text-4xl font-serif text-brand-navy mb-2">Refer & Earn</h1>
+      <div className="mb-8 lg:mb-12 text-center sm:text-left">
+        <h1 className="text-3xl sm:text-4xl font-serif text-brand-navy mb-2 grayscale-0">Refer & Earn</h1>
         <p className="text-brand-navy/40 text-[10px] uppercase tracking-[0.3em] font-bold">Grow the elite circle</p>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-12">
         {/* Main Referral Card */}
         <div className="lg:col-span-2 space-y-8">
-          <div className="bg-brand-navy p-12 rounded-sm text-white relative overflow-hidden shadow-2xl">
-            <div className="absolute top-0 right-0 w-1/2 h-full bg-brand-gold/5 skew-x-12 translate-x-1/4" />
-            <div className="relative z-10">
-              <Gift size={48} className="text-brand-gold mb-8" />
-              <h2 className="text-4xl font-serif mb-6">Give ₹500, Get ₹500.</h2>
-              <p className="text-white/50 text-lg mb-12 leading-relaxed font-light max-w-xl">
-                Invite your friends to experience Coolzo Premium AC Services. They get ₹500 off their first booking, and you get ₹500 in credits when they complete their service.
+          <div className="bg-brand-navy rounded-sm p-8 sm:p-12 lg:p-20 text-white relative overflow-hidden shadow-2xl mb-12">
+            <div className="absolute top-0 right-0 w-1/3 h-full bg-white/5 -skew-x-12 translate-x-1/2" />
+            <div className="relative z-10 text-center lg:text-left">
+              <div className="flex flex-col lg:flex-row items-center gap-6 mb-10">
+                <div className="p-4 bg-brand-gold rounded-sm shrink-0">
+                  <Gift className="text-brand-navy" size={28} />
+                </div>
+                <p className="text-[10px] uppercase tracking-[0.4em] font-bold text-brand-gold animate-pulse tracking-wide">Limited Time Professional Engagement</p>
+              </div>
+              
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-serif mb-8 leading-tight">Give ₹500, <br className="hidden lg:block" /> Get ₹500.</h2>
+              <p className="text-white/60 text-base sm:text-lg mb-12 font-light leading-relaxed max-w-xl mx-auto lg:mx-0">
+                Invite your network to experience premium AC care. They get a special introductory discount, and you earn credits for your next professional service visit.
               </p>
 
-              <div className="bg-white/5 border border-white/10 p-8 rounded-sm flex flex-col md:flex-row items-center justify-between gap-8">
-                <div>
-                  <p className="text-[10px] uppercase tracking-widest font-bold text-white/40 mb-2">Your Personal Code</p>
-                  <p className="text-2xl font-serif tracking-widest text-brand-gold">{referralCode}</p>
-                </div>
-                <div className="flex gap-4 w-full md:w-auto">
-                  <button 
-                    onClick={handleCopy}
-                    className="flex-grow md:flex-none bg-white text-brand-navy px-8 py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all flex items-center justify-center gap-3"
-                  >
-                    {copied ? <CheckCircle2 size={16} /> : <Copy size={16} />}
-                    {copied ? "Copied" : "Copy Code"}
-                  </button>
-                  <button className="p-4 bg-green-600 text-white rounded-sm hover:bg-green-700 transition-all">
-                    <MessageSquare size={20} />
-                  </button>
-                  <button className="p-4 bg-white/10 text-white rounded-sm hover:bg-white/20 transition-all">
-                    <Share2 size={20} />
-                  </button>
+              <div className="bg-white/5 p-6 sm:p-10 rounded-sm border border-white/10 max-w-2xl mx-auto lg:mx-0">
+                <p className="text-[10px] uppercase tracking-widest font-bold text-white/40 mb-4">Your Professional Referral Code</p>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex-grow bg-white/10 border border-white/20 px-6 py-4 rounded-sm text-lg sm:text-xl font-serif tracking-widest flex items-center justify-between overflow-hidden">
+                    <span className="truncate">{referralCode}</span>
+                    {copied && <span className="text-brand-gold text-[8px] uppercase animate-in fade-in shrink-0 ml-4">Copied!</span>}
+                  </div>
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={handleCopy}
+                      className="flex-grow sm:flex-none bg-brand-gold text-brand-navy px-8 py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-white transition-all whitespace-nowrap flex items-center justify-center gap-3 shadow-lg"
+                    >
+                      {copied ? <CheckCircle2 size={16} /> : <Copy size={16} />} 
+                      {copied ? "Copied" : "Copy"}
+                    </button>
+                    <button className="p-4 bg-green-600 text-white rounded-sm hover:bg-green-700 transition-all flex items-center justify-center shadow-lg">
+                      <MessageSquare size={20} />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* How it works */}
-          <div className="bg-white p-10 rounded-sm border border-brand-navy/5 shadow-sm">
-            <h3 className="text-xl font-serif text-brand-navy mb-10">How it works</h3>
-            <div className="grid md:grid-cols-3 gap-12">
+          <div className="bg-white p-6 sm:p-10 rounded-sm border border-brand-navy/5 shadow-sm">
+            <h3 className="text-lg sm:text-xl font-serif text-brand-navy mb-8 sm:mb-10">How it works</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10 md:gap-12">
               {[
                 { step: "01", title: "Share Code", desc: "Send your unique referral code to your friends and family." },
                 { step: "02", title: "They Book", desc: "They get ₹500 off their first premium service using your code." },
                 { step: "03", title: "You Earn", desc: "You receive ₹500 in Coolzo credits once their service is done." },
               ].map((item, i) => (
                 <div key={i} className="relative">
-                  <span className="text-6xl font-serif text-brand-navy/5 absolute -top-4 -left-2">{item.step}</span>
+                  <span className="text-5xl sm:text-6xl font-serif text-brand-navy/5 absolute -top-4 -left-2">{item.step}</span>
                   <div className="relative z-10">
                     <h4 className="text-sm font-bold text-brand-navy mb-3">{item.title}</h4>
                     <p className="text-xs text-brand-navy/40 leading-relaxed">{item.desc}</p>
@@ -92,22 +98,22 @@ export default function Referral() {
           </div>
 
           {/* Referral List */}
-          <div className="bg-white p-10 rounded-sm border border-brand-navy/5 shadow-sm">
-            <h3 className="text-xl font-serif text-brand-navy mb-8">My Referrals</h3>
+          <div className="bg-white p-6 sm:p-10 rounded-sm border border-brand-navy/5 shadow-sm">
+            <h3 className="text-lg sm:text-xl font-serif text-brand-navy mb-8">My Referrals</h3>
             <div className="space-y-4">
               {referrals.map((ref, i) => (
-                <div key={i} className="flex items-center justify-between p-6 rounded-sm border border-brand-navy/5 hover:bg-brand-navy/5 transition-colors">
-                  <div className="flex items-center gap-6">
-                    <div className="w-12 h-12 rounded-full bg-brand-navy/5 flex items-center justify-center text-brand-navy/40">
-                      <Users size={20} />
+                <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-5 sm:p-6 rounded-sm border border-brand-navy/5 hover:bg-brand-navy/5 transition-colors gap-4">
+                  <div className="flex items-center gap-4 sm:gap-6">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-brand-navy/5 flex items-center justify-center text-brand-navy/40 shrink-0">
+                      <Users size={18} />
                     </div>
                     <div>
                       <p className="text-sm font-bold text-brand-navy">{ref.name}</p>
                       <p className="text-[9px] uppercase tracking-widest text-brand-navy/40">{ref.date}</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <span className={`text-[8px] uppercase tracking-widest font-bold px-3 py-1 rounded-full mb-1 inline-block ${
+                  <div className="text-left sm:text-right flex sm:flex-col justify-between items-center sm:items-end w-full sm:w-auto">
+                    <span className={`text-[8px] uppercase tracking-widest font-bold px-3 py-1 rounded-full sm:mb-1 ${
                       ref.status === 'Invited' ? 'bg-amber-50 text-amber-600' : 'bg-green-50 text-green-600'
                     }`}>
                       {ref.status}

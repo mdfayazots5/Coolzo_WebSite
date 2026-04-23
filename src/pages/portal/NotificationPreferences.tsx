@@ -61,8 +61,8 @@ export default function NotificationPreferences() {
 
   return (
     <div className="max-w-5xl mx-auto">
-      <div className="mb-12">
-        <h1 className="text-4xl font-serif text-brand-navy mb-2">Notification Preferences</h1>
+      <div className="mb-8 lg:mb-12">
+        <h1 className="text-3xl sm:text-4xl font-serif text-brand-navy mb-2">Notification Preferences</h1>
         <p className="text-brand-navy/40 text-[10px] uppercase tracking-[0.3em] font-bold">Control how we communicate with you</p>
       </div>
 
@@ -71,7 +71,7 @@ export default function NotificationPreferences() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
-          className="fixed bottom-12 right-12 z-50 bg-brand-navy text-white px-8 py-4 rounded-sm shadow-2xl flex items-center gap-4"
+          className="fixed bottom-4 left-4 right-4 sm:bottom-12 sm:left-auto sm:right-12 z-50 bg-brand-navy text-white px-6 sm:px-8 py-4 rounded-sm shadow-2xl flex items-center justify-center sm:justify-start gap-4"
         >
           <CheckCircle2 size={20} className="text-brand-gold" />
           <span className="text-[10px] uppercase tracking-widest font-bold">Preferences Saved Successfully</span>
@@ -79,7 +79,8 @@ export default function NotificationPreferences() {
       )}
 
       <div className="bg-white rounded-sm border border-brand-navy/5 shadow-sm overflow-hidden">
-        <div className="p-8 bg-brand-navy/5 border-b border-brand-navy/5 grid grid-cols-12 gap-4 items-center">
+        {/* Desktop Header */}
+        <div className="hidden md:grid p-8 bg-brand-navy/5 border-b border-brand-navy/5 grid-cols-12 gap-4 items-center">
           <div className="col-span-6">
             <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">Communication Category</p>
           </div>
@@ -95,8 +96,8 @@ export default function NotificationPreferences() {
 
         <div className="divide-y divide-brand-navy/5">
           {categories.map((cat) => (
-            <div key={cat.id} className="p-8 grid grid-cols-12 gap-4 items-center hover:bg-brand-navy/[0.01] transition-colors">
-              <div className="col-span-6">
+            <div key={cat.id} className="p-6 sm:p-8 flex flex-col md:grid md:grid-cols-12 gap-6 md:gap-4 items-start md:items-center hover:bg-brand-navy/[0.01] transition-colors">
+              <div className="w-full md:col-span-6">
                 <div className="flex items-center gap-3 mb-1">
                   <h3 className="text-sm font-bold text-brand-navy">{cat.label}</h3>
                   {cat.mandatory && (
@@ -107,19 +108,24 @@ export default function NotificationPreferences() {
                 </div>
                 <p className="text-xs text-brand-navy/40">{cat.desc}</p>
               </div>
-              <div className="col-span-6 grid grid-cols-4 gap-4">
+              
+              {/* Channel Toggles */}
+              <div className="w-full md:col-span-6 grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-4">
                 {channels.map(chan => (
-                  <div key={chan.id} className="flex justify-center">
+                  <div key={chan.id} className="flex flex-col md:flex-row items-center justify-between md:justify-center gap-2 bg-brand-navy/[0.02] md:bg-transparent p-3 md:p-0 rounded-sm">
+                    <span className="md:hidden text-[8px] uppercase tracking-widest font-bold text-brand-navy/40 flex items-center gap-2">
+                      {chan.icon} {chan.label}
+                    </span>
                     <button 
                       onClick={() => togglePreference(cat.id, chan.id)}
                       disabled={cat.mandatory}
-                      className={`w-12 h-6 rounded-full p-1 transition-all duration-300 ${
+                      className={`w-10 sm:w-12 h-5 sm:h-6 rounded-full p-1 transition-all duration-300 relative ${
                         preferences[cat.id][chan.id] ? 'bg-brand-gold' : 'bg-brand-navy/10'
                       } ${cat.mandatory ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                     >
                       <motion.div 
-                        animate={{ x: preferences[cat.id][chan.id] ? 24 : 0 }}
-                        className="w-4 h-4 bg-white rounded-full shadow-sm"
+                        animate={{ x: preferences[cat.id][chan.id] ? (typeof window !== 'undefined' && window.innerWidth < 640 ? 20 : 24) : 0 }}
+                        className="w-3 h-3 sm:w-4 sm:h-4 bg-white rounded-full shadow-sm"
                       />
                     </button>
                   </div>
@@ -129,10 +135,10 @@ export default function NotificationPreferences() {
           ))}
         </div>
 
-        <div className="p-8 bg-brand-navy/5 flex flex-col md:flex-row items-center justify-between gap-8">
+        <div className="p-6 sm:p-8 bg-brand-navy/5 flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="flex items-center gap-4 text-brand-navy/40">
-            <ShieldCheck size={20} className="text-brand-gold" />
-            <p className="text-[10px] uppercase tracking-widest font-bold">We only send relevant updates — no spam, ever.</p>
+            <ShieldCheck size={20} className="text-brand-gold shrink-0" />
+            <p className="text-[10px] uppercase tracking-widest font-bold text-center sm:text-left">We only send relevant updates — no spam, ever.</p>
           </div>
           <button 
             onClick={handleSave}

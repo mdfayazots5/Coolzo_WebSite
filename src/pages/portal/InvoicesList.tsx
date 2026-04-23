@@ -42,18 +42,18 @@ export default function InvoicesList() {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-12">
         <div>
-          <h1 className="text-4xl font-serif text-brand-navy mb-2">My Invoices</h1>
+          <h1 className="text-3xl sm:text-4xl font-serif text-brand-navy mb-2">My Invoices</h1>
           <p className="text-brand-navy/40 text-[10px] uppercase tracking-[0.3em] font-bold">Financial self-service portal</p>
         </div>
         
-        <div className="flex bg-white p-1 rounded-sm border border-brand-navy/5 shadow-sm">
+        <div className="flex bg-white p-1 rounded-sm border border-brand-navy/5 shadow-sm overflow-x-auto no-scrollbar">
           {["All", "Unpaid", "Paid", "Overdue"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab as InvoiceStatus)}
-              className={`px-6 py-3 rounded-sm text-[10px] uppercase tracking-widest font-bold transition-all ${
+              className={`px-4 sm:px-6 py-3 rounded-sm text-[10px] uppercase tracking-widest font-bold transition-all whitespace-nowrap ${
                 activeTab === tab 
                   ? "bg-brand-navy text-white shadow-lg" 
                   : "text-brand-navy/40 hover:text-brand-navy"
@@ -69,18 +69,18 @@ export default function InvoicesList() {
         <motion.div 
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-amber-50 border border-amber-100 p-6 rounded-sm mb-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm"
+          className="bg-amber-50 border border-amber-100 p-6 sm:p-8 rounded-sm mb-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm"
         >
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center text-amber-600">
+          <div className="flex items-center gap-4 w-full md:w-auto">
+            <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center text-amber-600 shrink-0">
               <AlertCircle size={24} />
             </div>
             <div>
               <p className="text-[10px] uppercase tracking-widest font-bold text-amber-600 mb-1">Outstanding Balance</p>
-              <p className="text-2xl font-serif text-brand-navy">₹{totalOutstanding.toLocaleString()}</p>
+              <p className="text-2xl sm:text-3xl font-serif text-brand-navy">₹{totalOutstanding.toLocaleString()}</p>
             </div>
           </div>
-          <button className="w-full md:w-auto bg-brand-navy text-white px-10 py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl">
+          <button className="w-full md:w-auto bg-brand-navy text-white px-10 py-5 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl">
             Pay All Outstanding
           </button>
         </motion.div>
@@ -115,54 +115,54 @@ export default function InvoicesList() {
                 exit={{ opacity: 0, scale: 0.95 }}
                 className="bg-white p-6 md:p-8 rounded-sm border border-brand-navy/5 shadow-sm hover:shadow-md transition-all group"
               >
-                <div className="flex flex-col lg:flex-row lg:items-center gap-8">
+                <div className="flex flex-col lg:flex-row lg:items-center gap-6 lg:gap-8">
                   {/* Invoice & SR */}
-                  <div className="flex items-center gap-6 lg:w-1/4">
-                    <div className="w-12 h-12 rounded-full bg-brand-navy/5 flex items-center justify-center text-brand-gold shrink-0">
+                  <div className="flex items-center gap-4 sm:gap-6 lg:w-1/4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-brand-navy/5 flex items-center justify-center text-brand-gold shrink-0">
                       <FileText size={20} />
                     </div>
                     <div>
                       <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 mb-1">{invoice.id}</p>
-                      <h3 className="text-lg font-serif text-brand-navy">{invoice.type}</h3>
-                      <p className="text-[9px] uppercase tracking-widest text-brand-navy/20 mt-1">Ref: {invoice.sr}</p>
+                      <h3 className="text-base sm:text-lg font-serif text-brand-navy">{invoice.type}</h3>
+                      <p className="text-[9px] uppercase tracking-widest text-brand-navy/20 mt-1 whitespace-nowrap">Ref: {invoice.sr}</p>
                     </div>
                   </div>
 
-                  {/* Date */}
-                  <div className="flex items-center gap-4 lg:w-1/5">
-                    <Clock size={18} className="text-brand-navy/20" />
-                    <div>
-                      <p className="text-sm font-bold text-brand-navy">{invoice.date}</p>
-                      <p className="text-[10px] uppercase tracking-widest text-brand-navy/40">Issue Date</p>
+                  <div className="grid grid-cols-2 lg:flex lg:flex-row lg:items-center gap-6 lg:gap-8 lg:flex-grow">
+                    {/* Date */}
+                    <div className="flex items-center gap-4 lg:w-1/3">
+                      <Clock size={18} className="text-brand-navy/20" />
+                      <div>
+                        <p className="text-sm font-bold text-brand-navy">{invoice.date}</p>
+                        <p className="text-[10px] uppercase tracking-widest text-brand-navy/40">Issue Date</p>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Amount */}
-                  <div className="flex items-center gap-4 lg:w-1/5">
-                    <div className="text-right lg:text-left">
+                    {/* Amount */}
+                    <div className="flex flex-col justify-center lg:w-1/3">
                       <p className="text-lg font-serif text-brand-navy">₹{(invoice.amount + invoice.tax).toLocaleString()}</p>
                       <p className="text-[9px] uppercase tracking-widest text-brand-navy/40">Net Payable</p>
                     </div>
-                  </div>
 
-                  {/* Status & Actions */}
-                  <div className="flex items-center justify-between lg:justify-end gap-6 lg:w-1/3 ml-auto">
-                    <span className={`text-[9px] uppercase tracking-widest font-bold px-4 py-1.5 rounded-full ${invoice.color}`}>
-                      {invoice.status}
-                    </span>
-                    
-                    <div className="flex items-center gap-2">
-                      <Link to={`/portal/invoices/${invoice.id}`} className="p-3 border border-brand-navy/10 text-brand-navy/40 hover:text-brand-navy hover:border-brand-navy transition-all rounded-sm">
-                        <ChevronRight size={16} />
-                      </Link>
-                      {(invoice.status === "Unpaid" || invoice.status === "Overdue") && (
-                        <Link to={`/portal/invoices/${invoice.id}`} className="p-3 bg-brand-gold text-brand-navy rounded-sm hover:bg-brand-navy hover:text-white transition-all shadow-sm">
-                          <CreditCard size={16} />
+                    {/* Status & Actions */}
+                    <div className="flex items-center justify-between lg:justify-end gap-6 lg:w-1/3 col-span-2 lg:col-auto">
+                      <span className={`text-[9px] uppercase tracking-widest font-bold px-4 py-1.5 rounded-full ${invoice.color}`}>
+                        {invoice.status}
+                      </span>
+                      
+                      <div className="flex items-center gap-2">
+                        <Link to={`/portal/invoices/${invoice.id}`} className="p-3 border border-brand-navy/10 text-brand-navy/40 hover:text-brand-navy hover:border-brand-navy transition-all rounded-sm">
+                          <ChevronRight size={16} />
                         </Link>
-                      )}
-                      <button className="p-3 border border-brand-navy/10 text-brand-navy/40 hover:text-brand-gold hover:border-brand-gold transition-all rounded-sm">
-                        <Download size={16} />
-                      </button>
+                        {(invoice.status === "Unpaid" || invoice.status === "Overdue") && (
+                          <Link to={`/portal/invoices/${invoice.id}`} className="p-3 bg-brand-gold text-brand-navy rounded-sm hover:bg-brand-navy hover:text-white transition-all shadow-sm">
+                            <CreditCard size={16} />
+                          </Link>
+                        )}
+                        <button className="p-3 border border-brand-navy/10 text-brand-navy/40 hover:text-brand-gold hover:border-brand-gold transition-all rounded-sm">
+                          <Download size={16} />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>

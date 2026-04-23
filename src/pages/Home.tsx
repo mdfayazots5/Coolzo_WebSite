@@ -34,11 +34,11 @@ export default function Home() {
             <span className="text-brand-gold text-xs uppercase tracking-[0.4em] font-bold mb-6 block">
               Modern Climate Solutions
             </span>
-            <h1 className="text-7xl md:text-9xl font-serif text-white leading-[0.85] mb-8">
+            <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-serif text-white leading-tight md:leading-[0.85] mb-8">
               Cooling <br />
               <span className="italic">Perfected.</span>
             </h1>
-            <p className="text-white/60 text-xl mb-10 max-w-xl leading-relaxed font-light">
+            <p className="text-white/60 text-lg sm:text-xl mb-10 max-w-xl leading-relaxed font-light">
               Experience the smart way to manage your indoor environment. 
               Professional, reliable, and flawlessly executed AC services across Hyderabad.
             </p>
@@ -57,8 +57,8 @@ export default function Home() {
       {/* Trust Strip */}
       <section className="bg-white py-12 border-b border-brand-navy/5">
         <div className="container mx-auto px-6">
-          <div className="flex flex-wrap justify-between items-center gap-8">
-            <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-8">
+            <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
               <div className="flex -space-x-2">
                 {[1, 2, 3, 4].map(i => (
                   <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-brand-navy/10 overflow-hidden">
@@ -67,25 +67,25 @@ export default function Home() {
                 ))}
               </div>
               <div>
-                <div className="flex items-center gap-1 text-brand-gold mb-0.5">
+                <div className="flex items-center justify-center sm:justify-start gap-1 text-brand-gold mb-0.5">
                   {[1, 2, 3, 4, 5].map(i => <Star key={i} size={12} className="fill-brand-gold" />)}
                 </div>
-                <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy">4.9/5 Local Rating in Hyderabad</p>
+                <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy whitespace-nowrap">4.9/5 Hyderabad Rating</p>
               </div>
             </div>
             
-            <div className="flex gap-12 items-center">
+            <div className="flex gap-8 sm:gap-12 items-center flex-wrap justify-center">
               <div className="text-center">
-                <p className="text-2xl font-serif text-brand-navy">20+</p>
+                <p className="text-xl sm:text-2xl font-serif text-brand-navy">20+</p>
                 <p className="text-[9px] uppercase tracking-widest font-bold text-brand-gold">Hyderabad Zones</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-serif text-brand-navy">500+</p>
+                <p className="text-xl sm:text-2xl font-serif text-brand-navy">500+</p>
                 <p className="text-[9px] uppercase tracking-widest font-bold text-brand-gold">Certified Technicians</p>
               </div>
-              <div className="hidden md:flex gap-8 opacity-30 grayscale">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Daikin_logo.svg/1200px-Daikin_logo.svg.png" alt="Daikin" className="h-4 object-contain" referrerPolicy="no-referrer" />
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Mitsubishi_Electric_logo.svg/1200px-Mitsubishi_Electric_logo.svg.png" alt="Mitsubishi" className="h-4 object-contain" referrerPolicy="no-referrer" />
+              <div className="hidden sm:flex gap-4 sm:gap-8 opacity-30 grayscale items-center">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Daikin_logo.svg/1200px-Daikin_logo.svg.png" alt="Daikin" className="h-3 sm:h-4 object-contain" referrerPolicy="no-referrer" />
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Mitsubishi_Electric_logo.svg/1200px-Mitsubishi_Electric_logo.svg.png" alt="Mitsubishi" className="h-3 sm:h-4 object-contain" referrerPolicy="no-referrer" />
               </div>
             </div>
           </div>
@@ -100,7 +100,7 @@ export default function Home() {
             <h2 className="text-5xl font-serif text-brand-navy">Professional Climate Solutions</h2>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
             {[
               { title: "Repair", icon: <ShieldCheck size={32} />, desc: "Diagnostic excellence for all systems." },
               { title: "Cleaning", icon: <Clock size={32} />, desc: "Deep jet-wash for pure air." },
@@ -146,7 +146,7 @@ export default function Home() {
             </div>
             <div>
               <span className="text-brand-gold text-[10px] uppercase tracking-[0.4em] font-bold mb-4 block">Service Coverage</span>
-              <h2 className="text-5xl font-serif text-brand-navy mb-8">Serving Across Hyderabad.</h2>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif text-brand-navy mb-8">Serving Across Hyderabad.</h2>
               <p className="text-brand-navy/60 text-lg mb-12 leading-relaxed font-light">
                 From the bustling streets of Gachibowli to the serene lanes of Jubilee Hills, our technicians are ready to serve you. We cover all major zones with a 4-hour response promise.
               </p>
@@ -169,7 +169,7 @@ export default function Home() {
           <div className="grid lg:grid-cols-2 gap-20 items-center">
             <div>
               <span className="text-brand-gold text-[10px] uppercase tracking-[0.4em] font-bold mb-4 block">The Process</span>
-              <h2 className="text-5xl font-serif mb-12">Seamless Experience.</h2>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif mb-12">Seamless Experience.</h2>
               
               <div className="space-y-12">
                 {[
@@ -213,10 +213,10 @@ export default function Home() {
         <div className="container mx-auto px-6">
           <div className="bg-brand-black p-12 md:p-20 rounded-sm relative overflow-hidden">
             <div className="absolute top-0 right-0 w-1/2 h-full bg-brand-gold/5 skew-x-12 translate-x-1/4" />
-            <div className="relative z-10 grid lg:grid-cols-2 gap-16 items-center">
+            <div className="relative z-10 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
               <div>
                 <span className="text-brand-gold text-[10px] uppercase tracking-[0.4em] font-bold mb-6 block">Total Protection</span>
-                <h2 className="text-5xl font-serif text-white mb-8">The Smart Care Advantage.</h2>
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif text-white mb-8">The Smart Care Advantage.</h2>
                 <p className="text-white/50 text-lg mb-10 leading-relaxed font-light">
                   Join our circle of smart property owners. Zero downtime, priority response, and comprehensive health monitoring for your entire cooling infrastructure.
                 </p>

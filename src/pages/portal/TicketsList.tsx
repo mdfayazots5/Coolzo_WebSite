@@ -36,19 +36,19 @@ export default function TicketsList() {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 sm:gap-8 mb-8 sm:mb-12">
         <div>
-          <h1 className="text-4xl font-serif text-brand-navy mb-2">Support Tickets</h1>
-          <p className="text-brand-navy/40 text-[10px] uppercase tracking-[0.3em] font-bold">We're here to help you</p>
+          <h1 className="text-3xl sm:text-4xl font-serif text-brand-navy mb-2 grayscale-0">Support Tickets</h1>
+          <p className="text-brand-navy/40 text-[10px] uppercase tracking-[0.3em] font-bold">Professional Help & Technical Support</p>
         </div>
         
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex bg-white p-1 rounded-sm border border-brand-navy/5 shadow-sm">
+        <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+          <div className="flex bg-white p-1 rounded-sm border border-brand-navy/5 shadow-sm overflow-x-auto no-scrollbar scroll-smooth flex-grow sm:flex-grow-0">
             {["All", "Open", "Resolved"].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab as TicketStatus)}
-                className={`px-6 py-3 rounded-sm text-[10px] uppercase tracking-widest font-bold transition-all ${
+                className={`px-4 sm:px-6 py-3 rounded-sm text-[10px] uppercase tracking-widest font-bold transition-all whitespace-nowrap ${
                   activeTab === tab 
                     ? "bg-brand-navy text-white shadow-lg" 
                     : "text-brand-navy/40 hover:text-brand-navy"
@@ -58,7 +58,7 @@ export default function TicketsList() {
               </button>
             ))}
           </div>
-          <Link to="/portal/support/new" className="flex items-center justify-center gap-3 bg-brand-navy text-white px-8 py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl">
+          <Link to="/portal/support/new" className="flex items-center justify-center gap-3 bg-brand-navy text-white px-8 py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl whitespace-nowrap">
             <Plus size={16} /> Raise New Ticket
           </Link>
         </div>
@@ -97,10 +97,10 @@ export default function TicketsList() {
                   <div className="absolute top-0 left-0 w-1 h-full bg-brand-gold" />
                 )}
                 
-                <div className="flex flex-col lg:flex-row lg:items-center gap-8">
+                <div className="flex flex-col lg:flex-row lg:items-center gap-6 lg:gap-8">
                   {/* Ticket Info */}
-                  <div className="flex items-center gap-6 lg:w-1/3">
-                    <div className="w-12 h-12 rounded-full bg-brand-navy/5 flex items-center justify-center text-brand-gold shrink-0">
+                  <div className="flex items-center gap-4 sm:gap-6 lg:w-1/3">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-brand-navy/5 flex items-center justify-center text-brand-gold shrink-0">
                       <MessageSquare size={20} />
                     </div>
                     <div>
@@ -108,36 +108,38 @@ export default function TicketsList() {
                         <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">{ticket.id}</p>
                         {ticket.unread && <span className="w-2 h-2 bg-brand-gold rounded-full" />}
                       </div>
-                      <h3 className="text-lg font-serif text-brand-navy group-hover:text-brand-gold transition-colors">{ticket.subject}</h3>
+                      <h3 className="text-base sm:text-lg font-serif text-brand-navy group-hover:text-brand-gold transition-colors">{ticket.subject}</h3>
                     </div>
                   </div>
 
-                  {/* Date */}
-                  <div className="flex items-center gap-4 lg:w-1/5">
-                    <Clock size={18} className="text-brand-navy/20" />
-                    <div>
-                      <p className="text-sm font-bold text-brand-navy">{ticket.date}</p>
-                      <p className="text-[10px] uppercase tracking-widest text-brand-navy/40">Created Date</p>
+                  <div className="grid grid-cols-2 lg:flex lg:flex-row lg:items-center gap-6 lg:gap-8 lg:flex-grow">
+                    {/* Date */}
+                    <div className="flex items-center gap-4 lg:w-1/3">
+                      <Clock size={16} className="text-brand-navy/20" />
+                      <div>
+                        <p className="text-sm font-bold text-brand-navy">{ticket.date}</p>
+                        <p className="text-[10px] uppercase tracking-widest text-brand-navy/40">Created Date</p>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Last Reply */}
-                  <div className="flex items-center gap-4 lg:w-1/5">
-                    <div className="text-right lg:text-left">
-                      <p className="text-sm font-bold text-brand-navy">{ticket.lastReply}</p>
-                      <p className="text-[10px] uppercase tracking-widest text-brand-navy/40">Last Activity</p>
+                    {/* Last Reply */}
+                    <div className="flex items-center gap-4 lg:w-1/3">
+                      <div className="text-left">
+                        <p className="text-sm font-bold text-brand-navy">{ticket.lastReply}</p>
+                        <p className="text-[10px] uppercase tracking-widest text-brand-navy/40">Last Activity</p>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Status & Actions */}
-                  <div className="flex items-center justify-between lg:justify-end gap-6 lg:w-1/4 ml-auto">
-                    <span className={`text-[9px] uppercase tracking-widest font-bold px-4 py-1.5 rounded-full ${ticket.color}`}>
-                      {ticket.status}
-                    </span>
-                    
-                    <Link to={`/portal/support/${ticket.id}`} className="p-3 border border-brand-navy/10 text-brand-navy/40 hover:text-brand-navy hover:border-brand-navy transition-all rounded-sm">
-                      <ChevronRight size={16} />
-                    </Link>
+                    {/* Status & Actions */}
+                    <div className="flex items-center justify-between lg:justify-end gap-6 lg:w-1/3 col-span-2 lg:col-auto">
+                      <span className={`text-[9px] uppercase tracking-widest font-bold px-4 py-1.5 rounded-full ${ticket.color}`}>
+                        {ticket.status}
+                      </span>
+                      
+                      <Link to={`/portal/support/${ticket.id}`} className="p-3 border border-brand-navy/10 text-brand-navy/40 hover:text-brand-navy hover:border-brand-navy transition-all rounded-sm">
+                        <ChevronRight size={16} />
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </motion.div>

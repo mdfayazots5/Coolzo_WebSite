@@ -29,11 +29,11 @@ export default function NewTicket() {
 
   if (showSuccess) {
     return (
-      <div className="max-w-xl mx-auto py-20 text-center">
+      <div className="max-w-xl mx-auto py-12 md:py-20 text-center px-4">
         <motion.div 
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="bg-white p-12 rounded-sm border border-brand-navy/5 shadow-2xl relative overflow-hidden"
+          className="bg-white p-8 sm:p-12 rounded-sm border border-brand-navy/5 shadow-2xl relative overflow-hidden"
         >
           <div className="absolute top-0 left-0 w-full h-2 bg-brand-gold" />
           <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-8">
@@ -65,15 +65,15 @@ export default function NewTicket() {
 
   return (
     <div className="max-w-3xl mx-auto">
-      <div className="mb-12">
-        <Link to="/portal/support" className="flex items-center gap-2 text-brand-navy/40 hover:text-brand-navy text-[10px] uppercase tracking-widest font-bold transition-colors mb-8">
+      <div className="mb-8 lg:mb-12">
+        <Link to="/portal/support" className="flex items-center gap-2 text-brand-navy/40 hover:text-brand-navy text-[10px] uppercase tracking-widest font-bold transition-colors mb-6 sm:mb-8">
           <ChevronLeft size={14} /> Back to Support
         </Link>
-        <h1 className="text-4xl font-serif text-brand-navy mb-2">Raise New Ticket</h1>
+        <h1 className="text-3xl sm:text-4xl font-serif text-brand-navy mb-2">Raise New Ticket</h1>
         <p className="text-brand-navy/40 text-[10px] uppercase tracking-[0.3em] font-bold">How can we assist you today?</p>
       </div>
 
-      <div className="bg-white p-10 md:p-12 rounded-sm border border-brand-navy/5 shadow-sm">
+      <div className="bg-white p-6 sm:p-10 md:p-12 rounded-sm border border-brand-navy/5 shadow-sm">
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="space-y-2">
             <label className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">Subject</label>
@@ -85,25 +85,35 @@ export default function NewTicket() {
             />
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid sm:grid-cols-2 gap-6 sm:gap-10">
             <div className="space-y-2">
               <label className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">Category</label>
-              <select className="w-full bg-brand-navy/5 border border-transparent rounded-sm px-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors appearance-none">
-                <option>Booking Issue</option>
-                <option>Technician Concern</option>
-                <option>Invoice Query</option>
-                <option>AMC Query</option>
-                <option>App Issue</option>
-                <option>General Inquiry</option>
-              </select>
+              <div className="relative group">
+                <select className="w-full bg-brand-navy/5 border border-transparent rounded-sm px-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors appearance-none">
+                  <option>Booking Issue</option>
+                  <option>Technician Concern</option>
+                  <option>Invoice Query</option>
+                  <option>AMC Query</option>
+                  <option>App Issue</option>
+                  <option>General Inquiry</option>
+                </select>
+                <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-brand-navy/30 group-focus-within:text-brand-gold transition-colors">
+                  <ArrowRight size={14} className="rotate-90" />
+                </div>
+              </div>
             </div>
             <div className="space-y-2">
               <label className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">Related Booking (Optional)</label>
-              <select className="w-full bg-brand-navy/5 border border-transparent rounded-sm px-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors appearance-none" defaultValue="">
-                <option value="">None</option>
-                <option value="SR-88291">SR-88291 - Precision Repair</option>
-                <option value="SR-88210">SR-88210 - Luxury Jet Wash</option>
-              </select>
+              <div className="relative group">
+                <select className="w-full bg-brand-navy/5 border border-transparent rounded-sm px-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors appearance-none" defaultValue="">
+                  <option value="">None</option>
+                  <option value="SR-88291">SR-88291 - Precision Repair</option>
+                  <option value="SR-88210">SR-88210 - Luxury Jet Wash</option>
+                </select>
+                <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-brand-navy/30 group-focus-within:text-brand-gold transition-colors">
+                  <ArrowRight size={14} className="rotate-90" />
+                </div>
+              </div>
             </div>
           </div>
 

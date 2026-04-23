@@ -44,7 +44,7 @@ export default function ForgotPassword() {
         </div>
 
         {/* Card */}
-        <div className="bg-white p-10 md:p-12 rounded-sm border border-brand-gold/20 shadow-2xl">
+        <div className="bg-white p-6 sm:p-10 md:p-12 rounded-sm border border-brand-gold/20 shadow-2xl">
           <AnimatePresence mode="wait">
             {!submitted ? (
               <motion.div 
@@ -56,7 +56,7 @@ export default function ForgotPassword() {
                 <Link to="/login" className="flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 hover:text-brand-navy mb-8 transition-colors">
                   <ChevronLeft size={14} /> Back to Login
                 </Link>
-                <h2 className="text-3xl font-serif text-brand-navy mb-4">Reset Password.</h2>
+                <h2 className="text-2xl sm:text-3xl font-serif text-brand-navy mb-4">Reset Password.</h2>
                 <p className="text-brand-navy/50 text-sm leading-relaxed mb-6">
                   Enter your registered email address and we'll send you a secure link to reset your password.
                 </p>

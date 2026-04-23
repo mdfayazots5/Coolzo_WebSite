@@ -104,8 +104,8 @@ export default function Register() {
         </div>
 
         {/* Register Card */}
-        <div className="bg-white p-10 md:p-12 rounded-sm border border-brand-gold/20 shadow-2xl">
-          <h2 className="text-3xl font-serif text-brand-navy mb-8 text-center">Create Account.</h2>
+        <div className="bg-white p-6 sm:p-10 md:p-12 rounded-sm border border-brand-gold/20 shadow-2xl">
+          <h2 className="text-2xl sm:text-3xl font-serif text-brand-navy mb-8 text-center">Create Account.</h2>
           
           {error && (
             <div className="bg-red-50 border border-red-200 p-4 rounded-sm mb-6 flex items-start gap-3">

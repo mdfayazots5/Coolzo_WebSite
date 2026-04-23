@@ -92,7 +92,7 @@ export default function ServiceDetail() {
         </Link>
 
         {/* Hero */}
-        <div className="grid lg:grid-cols-2 gap-20 items-center mb-24">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center mb-16 lg:mb-24">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
@@ -100,7 +100,7 @@ export default function ServiceDetail() {
             <div className="text-brand-gold mb-8">
               {service.category === 'Repair' ? <ShieldCheck size={48} /> : <Clock size={48} />}
             </div>
-            <h1 className="text-7xl font-serif text-brand-navy mb-6 leading-tight">{service.name}</h1>
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-serif text-brand-navy mb-6 leading-tight">{service.name}</h1>
             <p className="text-brand-navy/60 text-xl font-light leading-relaxed mb-10 max-w-lg italic">
               "{service.description}"
             </p>
@@ -140,7 +140,7 @@ export default function ServiceDetail() {
         </div>
 
         {/* Details Grid */}
-        <div className="grid lg:grid-cols-3 gap-20 mb-24">
+        <div className="grid lg:grid-cols-3 gap-12 lg:gap-20 mb-16 lg:mb-24">
           <div className="lg:col-span-1">
             <h3 className="text-2xl font-serif text-brand-navy mb-8 border-b border-brand-navy/5 pb-4">Specialized Benefits</h3>
             <ul className="space-y-6">

@@ -116,23 +116,23 @@ export default function Feedback() {
 
   return (
     <div className="max-w-3xl mx-auto">
-      <div className="mb-12">
-        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-brand-navy/40 hover:text-brand-navy text-[10px] uppercase tracking-widest font-bold transition-colors mb-8">
+      <div className="mb-8 lg:mb-12">
+        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-brand-navy/40 hover:text-brand-navy text-[10px] uppercase tracking-widest font-bold transition-colors mb-6 sm:mb-8">
           <ChevronLeft size={14} /> Back
         </button>
-        <h1 className="text-4xl font-serif text-brand-navy mb-2">Service Feedback</h1>
+        <h1 className="text-3xl sm:text-4xl font-serif text-brand-navy mb-2">Service Feedback</h1>
         <p className="text-brand-navy/40 text-[10px] uppercase tracking-[0.3em] font-bold">Rate your experience</p>
       </div>
 
-      <div className="bg-white p-10 md:p-12 rounded-sm border border-brand-navy/5 shadow-sm">
+      <div className="bg-white p-6 sm:p-10 md:p-12 rounded-sm border border-brand-navy/5 shadow-sm">
         {/* Service Summary */}
-        <div className="flex items-center gap-8 p-8 bg-brand-navy/5 rounded-sm mb-12">
+        <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-8 p-6 sm:p-8 bg-brand-navy/5 rounded-sm mb-12">
           <div className="w-20 h-20 rounded-full border-2 border-brand-gold p-1 shrink-0">
             <img src={service.techPhoto} alt={service.technician} className="w-full h-full rounded-full object-cover" referrerPolicy="no-referrer" />
           </div>
-          <div>
+          <div className="text-center sm:text-left">
             <p className="text-[10px] uppercase tracking-widest font-bold text-brand-gold mb-1">{service.id}</p>
-            <h3 className="text-xl font-serif text-brand-navy">{service.type}</h3>
+            <h3 className="text-lg sm:text-xl font-serif text-brand-navy">{service.type}</h3>
             <p className="text-xs text-brand-navy/40 mt-1">Performed by {service.technician} on {service.date}</p>
           </div>
         </div>
@@ -141,7 +141,7 @@ export default function Feedback() {
           {/* Main Star Rating */}
           <div className="text-center">
             <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 mb-6">Overall Experience</p>
-            <div className="flex justify-center gap-4">
+            <div className="flex justify-center gap-2 sm:gap-4">
               {[1, 2, 3, 4, 5].map((i) => (
                 <button
                   key={i}
@@ -149,13 +149,12 @@ export default function Feedback() {
                   onMouseEnter={() => setHoverRating(i)}
                   onMouseLeave={() => setHoverRating(0)}
                   onClick={() => setRating(i)}
-                  className="p-2 transition-transform hover:scale-125"
+                  className="p-1 sm:p-2 transition-transform hover:scale-125"
                 >
                   <Star 
-                    size={48} 
                     className={`${
                       (hoverRating || rating) >= i ? 'text-brand-gold fill-brand-gold' : 'text-brand-navy/10'
-                    } transition-colors`}
+                    } transition-colors w-8 h-8 sm:w-12 sm:h-12`}
                   />
                 </button>
               ))}
@@ -163,19 +162,19 @@ export default function Feedback() {
           </div>
 
           {/* Sub-ratings */}
-          <div className="grid md:grid-cols-3 gap-8 pt-12 border-t border-brand-navy/5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-10 pt-12 border-t border-brand-navy/5">
             {[
-              { label: "Punctuality", icon: <Calendar size={16} /> },
-              { label: "Professionalism", icon: <User size={16} /> },
-              { label: "Work Quality", icon: <Smartphone size={16} /> },
+              { label: "Punctuality", icon: <Calendar size={18} /> },
+              { label: "Professionalism", icon: <User size={18} /> },
+              { label: "Work Quality", icon: <Smartphone size={18} /> },
             ].map((dim, i) => (
-              <div key={i} className="text-center">
-                <div className="text-brand-gold mb-3 flex justify-center">{dim.icon}</div>
-                <p className="text-[9px] uppercase tracking-widest font-bold text-brand-navy/60 mb-4">{dim.label}</p>
-                <div className="flex justify-center gap-1">
+              <div key={i} className="bg-brand-navy/[0.02] p-8 rounded-sm text-center border border-brand-navy/5 group hover:border-brand-gold/30 transition-all">
+                <div className="text-brand-gold mb-4 flex justify-center group-hover:scale-110 transition-transform">{dim.icon}</div>
+                <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/60 mb-6">{dim.label}</p>
+                <div className="flex justify-center gap-1.5 px-4">
                   {[1, 2, 3, 4, 5].map(star => (
                     <button key={star} type="button" className="text-brand-navy/10 hover:text-brand-gold transition-colors">
-                      <Star size={14} className="fill-current" />
+                      <Star size={16} className="fill-current" />
                     </button>
                   ))}
                 </div>
@@ -195,11 +194,11 @@ export default function Feedback() {
           </div>
 
           {/* Recommendation Toggle */}
-          <div className="flex items-center justify-between p-6 bg-brand-navy/5 rounded-sm">
-            <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy">Would you recommend Coolzo to others?</p>
-            <div className="flex gap-4">
-              <button type="button" className="px-6 py-2 bg-white border border-brand-navy/10 rounded-sm text-[9px] uppercase tracking-widest font-bold text-brand-navy hover:bg-brand-navy hover:text-white transition-all">Yes</button>
-              <button type="button" className="px-6 py-2 bg-white border border-brand-navy/10 rounded-sm text-[9px] uppercase tracking-widest font-bold text-brand-navy hover:bg-brand-navy hover:text-white transition-all">No</button>
+          <div className="flex flex-col sm:flex-row items-center justify-between p-6 bg-brand-navy/5 rounded-sm gap-4">
+            <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy text-center sm:text-left">Would you recommend Coolzo to others?</p>
+            <div className="flex gap-4 w-full sm:w-auto">
+              <button type="button" className="flex-1 sm:flex-none px-6 py-3 bg-white border border-brand-navy/10 rounded-sm text-[9px] uppercase tracking-widest font-bold text-brand-navy hover:bg-brand-navy hover:text-white transition-all">Yes</button>
+              <button type="button" className="flex-1 sm:flex-none px-6 py-3 bg-white border border-brand-navy/10 rounded-sm text-[9px] uppercase tracking-widest font-bold text-brand-navy hover:bg-brand-navy hover:text-white transition-all">No</button>
             </div>
           </div>
 

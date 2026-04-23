@@ -37,7 +37,7 @@ export default function ResetPassword() {
         </div>
 
         {/* Card */}
-        <div className="bg-white p-10 md:p-12 rounded-sm border border-brand-gold/20 shadow-2xl">
+        <div className="bg-white p-6 sm:p-10 md:p-12 rounded-sm border border-brand-gold/20 shadow-2xl">
           <AnimatePresence mode="wait">
             {!submitted ? (
               <motion.div 
@@ -46,7 +46,7 @@ export default function ResetPassword() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 10 }}
               >
-                <h2 className="text-3xl font-serif text-brand-navy mb-4">New Password.</h2>
+                <h2 className="text-2xl sm:text-3xl font-serif text-brand-navy mb-4">New Password.</h2>
                 <p className="text-brand-navy/50 text-sm leading-relaxed mb-10">
                   Please choose a strong, unique password to secure your Coolzo account.
                 </p>

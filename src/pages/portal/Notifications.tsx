@@ -62,13 +62,13 @@ export default function Notifications() {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="flex justify-between items-end mb-12">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-8 lg:mb-12">
         <div>
-          <h1 className="text-4xl font-serif text-brand-navy mb-2">Notifications</h1>
+          <h1 className="text-3xl sm:text-4xl font-serif text-brand-navy mb-2 grayscale-0">Notifications</h1>
           <p className="text-brand-navy/40 text-[10px] uppercase tracking-[0.3em] font-bold">Stay updated on your curation</p>
         </div>
         {notifications.length > 0 && (
-          <button className="text-[10px] uppercase tracking-widest font-bold text-brand-gold hover:text-brand-navy transition-colors">
+          <button className="w-full sm:w-auto text-[10px] uppercase tracking-widest font-bold text-brand-gold hover:text-brand-navy transition-colors text-left sm:text-right">
             Mark all as read
           </button>
         )}
@@ -80,27 +80,27 @@ export default function Notifications() {
             {notifications.map((notif) => (
               <div 
                 key={notif.id} 
-                className={`p-6 flex gap-6 hover:bg-brand-navy/[0.02] transition-colors relative group ${!notif.isRead ? 'bg-brand-gold/[0.03]' : ''}`}
+                className={`p-6 sm:p-8 flex gap-4 sm:gap-6 hover:bg-brand-navy/[0.02] transition-colors relative group ${!notif.isRead ? 'bg-brand-gold/[0.03]' : ''}`}
               >
                 {!notif.isRead && (
                   <div className="absolute left-0 top-0 w-1 h-full bg-brand-gold" />
                 )}
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${!notif.isRead ? 'bg-white shadow-sm' : 'bg-brand-navy/5'}`}>
+                <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center shrink-0 ${!notif.isRead ? 'bg-white shadow-sm' : 'bg-brand-navy/5'}`}>
                   {getIcon(notif.type)}
                 </div>
-                <div className="flex-grow">
-                  <div className="flex justify-between items-start mb-1">
-                    <h3 className={`text-sm font-bold ${!notif.isRead ? 'text-brand-navy' : 'text-brand-navy/70'}`}>
+                <div className="flex-grow min-w-0">
+                  <div className="flex flex-col sm:flex-row justify-between items-start mb-2 sm:mb-1 gap-1 sm:gap-4">
+                    <h3 className={`text-sm font-bold truncate pr-4 ${!notif.isRead ? 'text-brand-navy' : 'text-brand-navy/70'}`}>
                       {notif.title}
                     </h3>
-                    <span className="text-[9px] uppercase tracking-widest text-brand-navy/30 font-bold">
+                    <span className="text-[9px] uppercase tracking-widest text-brand-navy/30 font-bold whitespace-nowrap">
                       {new Date(notif.createdAt).toLocaleDateString()}
                     </span>
                   </div>
                   <p className="text-xs text-brand-navy/50 leading-relaxed mb-4">
                     {notif.message}
                   </p>
-                  <div className="flex gap-4">
+                  <div className="flex items-center gap-6">
                     {!notif.isRead && (
                       <button 
                         onClick={() => handleMarkAsRead(notif.id)}
@@ -109,7 +109,7 @@ export default function Notifications() {
                         Mark as read
                       </button>
                     )}
-                    <button className="text-[9px] uppercase tracking-widest font-bold text-brand-navy/20 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100">
+                    <button className="text-[9px] uppercase tracking-widest font-bold text-brand-navy/20 hover:text-red-400 transition-colors sm:opacity-0 sm:group-hover:opacity-100">
                       Delete
                     </button>
                   </div>

@@ -87,36 +87,35 @@ export default function InvoiceDetail() {
         )}
       </AnimatePresence>
 
-      {/* Header */}
-      <div className="flex items-center justify-between mb-12">
+      <div className="flex flex-col sm:flex-row items-center justify-between mb-8 sm:mb-12 gap-6 sm:gap-0">
         <Link to="/portal/invoices" className="flex items-center gap-2 text-brand-navy/40 hover:text-brand-navy text-[10px] uppercase tracking-widest font-bold transition-colors">
           <ChevronLeft size={14} /> Back to Invoices
         </Link>
-        <div className="flex gap-4">
-          <button className="p-3 border border-brand-navy/10 text-brand-navy/40 hover:text-brand-navy transition-all rounded-sm">
-            <Printer size={18} />
+        <div className="flex gap-4 w-full sm:w-auto">
+          <button className="flex-1 sm:flex-initial p-3 border border-brand-navy/10 text-brand-navy/40 hover:text-brand-navy transition-all rounded-sm flex items-center justify-center gap-2">
+            <Printer size={18} /> <span className="sm:hidden text-[9px] uppercase tracking-widest font-bold">Print</span>
           </button>
-          <button className="p-3 border border-brand-navy/10 text-brand-navy/40 hover:text-brand-navy transition-all rounded-sm">
-            <Download size={18} />
+          <button className="flex-1 sm:flex-initial p-3 border border-brand-navy/10 text-brand-navy/40 hover:text-brand-navy transition-all rounded-sm flex items-center justify-center gap-2">
+            <Download size={18} /> <span className="sm:hidden text-[9px] uppercase tracking-widest font-bold">Download</span>
           </button>
         </div>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-12">
         {/* Invoice Body */}
-        <div className="lg:col-span-2 bg-white p-10 md:p-16 rounded-sm border border-brand-navy/5 shadow-sm relative overflow-hidden">
+        <div className="lg:col-span-2 bg-white p-6 sm:p-10 md:p-16 rounded-sm border border-brand-navy/5 shadow-sm relative overflow-hidden">
           <div className="absolute top-0 right-0 w-48 h-48 bg-brand-navy/5 -rotate-45 translate-x-24 -translate-y-24" />
           
-          <div className="flex justify-between items-start mb-16 relative z-10">
+          <div className="flex flex-col sm:flex-row justify-between items-start mb-12 sm:mb-16 relative z-10 gap-8 sm:gap-0">
             <div>
-              <h1 className="text-4xl font-serif text-brand-navy mb-4">Invoice</h1>
+              <h1 className="text-3xl sm:text-4xl font-serif text-brand-navy mb-4">Invoice</h1>
               <p className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand-gold mb-1">Number</p>
               <p className="text-lg font-serif text-brand-navy">{invoice.id}</p>
             </div>
-            <div className="text-right">
-              <div className="mb-6">
+            <div className="sm:text-right flex sm:flex-col justify-between sm:justify-start w-full sm:w-auto">
+              <div className="mb-0 sm:mb-6">
                 <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 mb-1">Status</p>
-                <span className={`text-[9px] uppercase tracking-widest font-bold px-4 py-1.5 rounded-full ${
+                <span className={`text-[9px] uppercase tracking-widest font-bold px-4 py-1.5 rounded-full inline-block ${
                   invoice.status === 'Paid' ? 'bg-green-50 text-green-600' : 'bg-amber-50 text-amber-600'
                 }`}>
                   {invoice.status}
@@ -130,7 +129,7 @@ export default function InvoiceDetail() {
           </div>
 
           {/* Service Reference */}
-          <div className="grid md:grid-cols-3 gap-8 p-8 bg-brand-navy/5 rounded-sm mb-16">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 p-6 sm:p-8 bg-brand-navy/5 rounded-sm mb-12 sm:mb-16">
             <div>
               <p className="text-[9px] uppercase tracking-widest font-bold text-brand-navy/40 mb-2">Service Request</p>
               <Link to={`/portal/bookings/${invoice.sr}`} className="text-sm font-bold text-brand-navy hover:text-brand-gold transition-colors">{invoice.sr}</Link>
@@ -145,8 +144,8 @@ export default function InvoiceDetail() {
             </div>
           </div>
 
-          {/* Billing Table */}
-          <div className="mb-16">
+          {/* Billing Table - Desktop */}
+          <div className="mb-12 sm:mb-16 hidden sm:block">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-brand-navy/5">
@@ -169,9 +168,23 @@ export default function InvoiceDetail() {
             </table>
           </div>
 
+          {/* Billing List - Mobile */}
+          <div className="mb-12 space-y-6 sm:hidden">
+            <h4 className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 border-b border-brand-navy/5 pb-4">Line Items</h4>
+            {invoice.items.map((item, i) => (
+              <div key={i} className="flex justify-between items-start gap-4">
+                <div>
+                  <p className="text-sm text-brand-navy font-serif mb-1">{item.desc}</p>
+                  <p className="text-[10px] text-brand-navy/40 uppercase tracking-widest font-bold">Qty: {item.qty} × ₹{item.price.toLocaleString()}</p>
+                </div>
+                <p className="text-sm font-bold text-brand-navy shrink-0">₹{(item.price * item.qty).toLocaleString()}</p>
+              </div>
+            ))}
+          </div>
+
           {/* Totals */}
           <div className="flex justify-end">
-            <div className="w-full max-w-xs space-y-4">
+            <div className="w-full sm:max-w-xs space-y-4">
               <div className="flex justify-between text-sm">
                 <span className="text-brand-navy/40">Subtotal</span>
                 <span className="text-brand-navy font-bold">₹{subtotal.toLocaleString()}</span>
@@ -182,7 +195,7 @@ export default function InvoiceDetail() {
               </div>
               <div className="pt-4 border-t border-brand-navy/5 flex justify-between items-end">
                 <span className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">Net Payable</span>
-                <span className="text-4xl font-serif text-brand-navy">₹{total.toLocaleString()}</span>
+                <span className="text-3xl sm:text-4xl font-serif text-brand-navy">₹{total.toLocaleString()}</span>
               </div>
             </div>
           </div>

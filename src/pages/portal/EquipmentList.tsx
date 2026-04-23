@@ -30,14 +30,14 @@ export default function EquipmentList() {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-8 mb-12">
         <div>
-          <h1 className="text-4xl font-serif text-brand-navy mb-2">My Equipment</h1>
+          <h1 className="text-3xl sm:text-4xl font-serif text-brand-navy mb-2 grayscale-0">My Equipment</h1>
           <p className="text-brand-navy/40 text-[10px] uppercase tracking-[0.3em] font-bold">Manage your home's cooling assets</p>
         </div>
         <button 
           onClick={() => setIsAddModalOpen(true)}
-          className="flex items-center gap-3 bg-brand-navy text-white px-8 py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all shadow-xl"
+          className="w-full sm:w-auto flex items-center justify-center gap-3 bg-brand-navy text-white px-8 py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all shadow-xl"
         >
           <Plus size={16} /> Add New Equipment
         </button>
@@ -135,10 +135,10 @@ export default function EquipmentList() {
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
-              className="fixed top-0 right-0 h-full w-full max-w-md bg-white z-[110] shadow-2xl p-10 overflow-y-auto"
+              className="fixed top-0 right-0 h-full w-full sm:max-w-md bg-white z-[110] shadow-2xl p-6 sm:p-10 overflow-y-auto"
             >
-              <div className="flex justify-between items-center mb-12">
-                <h2 className="text-3xl font-serif text-brand-navy">Register Unit</h2>
+              <div className="flex justify-between items-center mb-8 sm:mb-12">
+                <h2 className="text-2xl sm:text-3xl font-serif text-brand-navy">Register Unit</h2>
                 <button onClick={() => setIsAddModalOpen(false)} className="text-brand-navy/40 hover:text-brand-navy transition-colors">
                   <X size={24} />
                 </button>
