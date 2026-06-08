@@ -2,43 +2,35 @@ import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Search, Filter, Clock, Gem, ShieldCheck, Smartphone, ArrowRight, X, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { CatalogService, ACService } from "../services/catalogService";
+import { CatalogService } from "../services/catalogService";
+import type { ServiceLookupResponse, ServiceCategoryLookupResponse } from "../types/catalog";
 
-const categories = [
-  { id: "all", name: "All Services" },
-  { id: "Repair", name: "Repair" },
-  { id: "Maintenance", name: "Maintenance" },
-  { id: "Installation", name: "Installation" },
-  { id: "gas", name: "Gas" },
-  { id: "Cleaning", name: "Cleaning" },
-  { id: "amc", name: "AMC" },
-];
+const STATIC_CATEGORY_ALL: { serviceCategoryId: number; categoryName: string } = { serviceCategoryId: 0, categoryName: "All Services" };
 
 export default function Services() {
-  const [activeCategory, setActiveCategory] = useState("all");
+  const [activeCategory, setActiveCategory] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
-  const [services, setServices] = useState<ACService[]>([]);
+  const [services, setServices] = useState<ServiceLookupResponse[]>([]);
+  const [categories, setCategories] = useState<ServiceCategoryLookupResponse[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchServices = async () => {
-      try {
-        const data = await CatalogService.getServices();
-        setServices(data);
-      } catch (err) {
-        console.error("Failed to fetch services:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchServices();
+    Promise.allSettled([
+      CatalogService.getServices(),
+      CatalogService.getServiceCategories(),
+    ]).then(([svcResult, catResult]) => {
+      if (svcResult.status === "fulfilled") setServices(svcResult.value ?? []);
+      if (catResult.status === "fulfilled") setCategories(catResult.value ?? []);
+    }).finally(() => setLoading(false));
   }, []);
 
   const filteredServices = useMemo(() => {
-    return services.filter(service => {
-      const matchesCategory = activeCategory === "all" || service.category.toLowerCase() === activeCategory.toLowerCase();
-      const matchesSearch = service.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                            service.description.toLowerCase().includes(searchQuery.toLowerCase());
+    return services.filter((service) => {
+      const matchesCategory =
+        activeCategory === 0 || service.serviceCategoryId === activeCategory;
+      const matchesSearch =
+        service.serviceName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (service.summary ?? "").toLowerCase().includes(searchQuery.toLowerCase());
       return matchesCategory && matchesSearch;
     });
   }, [activeCategory, searchQuery, services]);
@@ -66,13 +58,13 @@ export default function Services() {
             <div className="sticky top-20 sm:top-24 z-30 bg-brand-cream/80 backdrop-blur-md py-4 sm:py-6 border-y border-brand-navy/5 mb-8 sm:mb-12">
               <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 justify-between items-center">
                 <div className="flex overflow-x-auto no-scrollbar pb-4 -mx-6 px-6 lg:mx-0 lg:px-0 flex-nowrap lg:flex-wrap gap-2 sm:gap-3 justify-start lg:justify-start items-center">
-                  {categories.map(cat => (
+                  {[STATIC_CATEGORY_ALL, ...categories].map((cat) => (
                     <button
-                      key={cat.id}
-                      onClick={() => setActiveCategory(cat.id)}
-                      className={`px-6 py-2 rounded-sm text-[10px] uppercase tracking-widest font-bold transition-all duration-300 whitespace-nowrap ${activeCategory === cat.id ? "bg-brand-navy text-white shadow-lg" : "bg-white text-brand-navy/60 hover:text-brand-navy border border-brand-navy/5"}`}
+                      key={cat.serviceCategoryId}
+                      onClick={() => setActiveCategory(cat.serviceCategoryId)}
+                      className={`px-6 py-2 rounded-sm text-[10px] uppercase tracking-widest font-bold transition-all duration-300 whitespace-nowrap ${activeCategory === cat.serviceCategoryId ? "bg-brand-navy text-white shadow-lg" : "bg-white text-brand-navy/60 hover:text-brand-navy border border-brand-navy/5"}`}
                     >
-                      {cat.name}
+                      {cat.serviceCategoryName}
                     </button>
                   ))}
                 </div>
@@ -102,7 +94,7 @@ export default function Services() {
               <AnimatePresence mode="popLayout">
                 {filteredServices.map((service, i) => (
                   <motion.div
-                    key={service.id}
+                    key={service.serviceId}
                     layout
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -112,27 +104,40 @@ export default function Services() {
                   >
                     <div className="flex justify-between items-start mb-8">
                       <div className="text-brand-gold group-hover:scale-110 transition-transform duration-500">
-                        {service.category === 'Repair' ? <ShieldCheck size={24} /> : <Clock size={24} />}
+                        {service.serviceCategoryName?.toLowerCase().includes("repair")
+                          ? <ShieldCheck size={24} />
+                          : <Clock size={24} />}
                       </div>
                       <span className="text-[9px] uppercase tracking-widest font-bold px-3 py-1 bg-brand-cream text-brand-gold rounded-sm">
-                        ₹{service.price}
+                        {service.basePrice != null ? `₹${service.basePrice.toLocaleString()}` : "Quote"}
                       </span>
                     </div>
-                    <h3 className="text-xl font-serif text-brand-navy mb-3">{service.name}</h3>
-                    <p className="text-brand-navy/50 text-sm leading-relaxed mb-8 flex-grow line-clamp-3">{service.description}</p>
-                    
+                    <h3 className="text-xl font-serif text-brand-navy mb-3">{service.serviceName}</h3>
+                    <p className="text-brand-navy/50 text-sm leading-relaxed mb-8 flex-grow line-clamp-3">
+                      {service.description ?? "Professional AC service by certified technicians."}
+                    </p>
+
                     <div className="flex items-center gap-4 mb-8 text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">
-                      <div className="flex items-center gap-2">
-                        <Clock size={14} />
-                        {service.duration}
-                      </div>
+                      {service.estimatedDurationMinutes != null && (
+                        <div className="flex items-center gap-2">
+                          <Clock size={14} />
+                          {service.estimatedDurationMinutes} min
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex flex-col gap-3">
-                      <Link to={`/services/${service.id}`} className="text-[10px] uppercase tracking-widest font-bold text-brand-navy hover:text-brand-gold transition-colors flex items-center gap-2">
+                      <Link
+                        to={`/services/${service.serviceId}`}
+                        className="text-[10px] uppercase tracking-widest font-bold text-brand-navy hover:text-brand-gold transition-colors flex items-center gap-2"
+                      >
                         Learn More <ArrowRight size={12} />
                       </Link>
-                      <Link to="/book" state={{ serviceId: service.id, serviceName: service.name, price: service.price }} className="bg-brand-navy text-white text-center py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all">
+                      <Link
+                        to="/book"
+                        state={{ serviceId: service.serviceId, serviceName: service.serviceName, price: service.basePrice }}
+                        className="bg-brand-navy text-white text-center py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all"
+                      >
                         Book Now
                       </Link>
                     </div>
@@ -158,7 +163,7 @@ export default function Services() {
               We couldn't find any services matching your search or filter. Try adjusting your criteria.
             </p>
             <button 
-              onClick={() => { setActiveCategory("all"); setSearchQuery(""); }}
+              onClick={() => { setActiveCategory(0); setSearchQuery(""); }}
               className="mt-8 text-brand-gold text-xs uppercase tracking-widest font-bold hover:text-brand-navy transition-colors"
             >
               Reset All Filters

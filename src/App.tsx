@@ -23,6 +23,7 @@ import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import PortalLayout from "./components/PortalLayout";
+import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/portal/Dashboard";
 import BookingsList from "./pages/portal/BookingsList";
 import BookingDetail from "./pages/portal/BookingDetail";
@@ -72,23 +73,32 @@ export default function App() {
           <Route path="privacy" element={<Privacy />} />
         </Route>
         
-        <Route path="/portal" element={<PortalLayout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="bookings" element={<BookingsList />} />
-          <Route path="bookings/:id" element={<BookingDetail />} />
-          <Route path="amc" element={<AMCDashboard />} />
-          <Route path="equipment" element={<EquipmentList />} />
-          <Route path="equipment/:id" element={<EquipmentDetail />} />
-          <Route path="invoices" element={<InvoicesList />} />
-          <Route path="invoices/:id" element={<InvoiceDetail />} />
-          <Route path="support" element={<TicketsList />} />
-          <Route path="support/:id" element={<TicketDetail />} />
-          <Route path="support/new" element={<NewTicket />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="addresses" element={<Addresses />} />
-          <Route path="notifications" element={<Notifications />} />
-          <Route path="referral" element={<Referral />} />
-          <Route path="feedback/:id" element={<Feedback />} />
+        {/* ── Authenticated portal routes ─────────────────────────────────────
+             ProtectedRoute guards the entire /portal subtree.
+             Unauthenticated visitors are redirected to /login?returnUrl=<path>
+             and returned here after successful sign-in.
+        ──────────────────────────────────────────────────────────────────── */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/portal" element={<PortalLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="bookings" element={<BookingsList />} />
+            <Route path="bookings/:id" element={<BookingDetail />} />
+            <Route path="amc" element={<AMCDashboard />} />
+            <Route path="equipment" element={<EquipmentList />} />
+            <Route path="equipment/:id" element={<EquipmentDetail />} />
+            <Route path="invoices" element={<InvoicesList />} />
+            <Route path="invoices/:id" element={<InvoiceDetail />} />
+            <Route path="support" element={<TicketsList />} />
+            <Route path="support/:id" element={<TicketDetail />} />
+            <Route path="support/new" element={<NewTicket />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="addresses" element={<Addresses />} />
+            <Route path="notifications" element={<Notifications />} />
+            <Route path="referral" element={<Referral />} />
+            <Route path="feedback/:id" element={<Feedback />} />
+            {/* Authenticated booking — stays inside portal shell */}
+            <Route path="book" element={<BookingWizard />} />
+          </Route>
         </Route>
 
         <Route path="/login" element={<Login />} />

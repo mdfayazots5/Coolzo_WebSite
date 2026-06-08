@@ -1,88 +1,70 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, FormEvent } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { User, Mail, Lock, Phone, ArrowRight, ShieldCheck, Eye, EyeOff, Check, AlertCircle } from "lucide-react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { User, Phone, ArrowRight, ShieldCheck, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
-export default function Register() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { loginWithGoogle, register } = useAuth();
-  
-  const [showPassword, setShowPassword] = useState(false);
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpVerified, setOtpVerified] = useState(false);
-  const [timer, setTimer] = useState(0);
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+type Step = "form" | "otp";
 
+export default function Register() {
+  const navigate = useNavigate();
+  const { createAccount, loginOtp } = useAuth();
+
+  // ── Step ──────────────────────────────────────────────────────────────────
+  const [step, setStep] = useState<Step>("form");
+
+  // ── Form Step ─────────────────────────────────────────────────────────────
   const [formData, setFormData] = useState({
     fullName: "",
-    email: location.state?.email || "",
     mobile: "",
-    password: "",
   });
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
 
-  const getPasswordStrength = () => {
-    if (!password) return 0;
-    let strength = 0;
-    if (password.length > 8) strength += 1;
-    if (/[A-Z]/.test(password)) strength += 1;
-    if (/[0-9]/.test(password)) strength += 1;
-    if (/[^A-Za-z0-9]/.test(password)) strength += 1;
-    return strength;
-  };
+  // ── OTP Step ──────────────────────────────────────────────────────────────
+  const [otp, setOtp] = useState("");
+  const [isVerifying, setIsVerifying] = useState(false);
 
-  const handleSendOtp = () => {
-    setOtpSent(true);
-    setTimer(30);
-    const interval = setInterval(() => {
-      setTimer(t => {
-        if (t <= 1) {
-          clearInterval(interval);
-          return 0;
-        }
-        return t - 1;
-      });
-    }, 1000);
-  };
+  // ── Shared ────────────────────────────────────────────────────────────────
+  const [error, setError] = useState<string | null>(null);
 
-  const handleVerifyOtp = () => {
-    // Simulate verification
-    setOtpVerified(true);
-  };
-
-  const handleRegister = async (e: React.FormEvent) => {
+  // ── Step 1: Create account → backend creates user + sends OTP ────────────
+  const handleCreateAccount = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
-    setIsSubmitting(true);
-    
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      setIsSubmitting(false);
-      return;
-    }
-
+    setIsCreating(true);
     try {
-      await register(formData.email, password, formData.fullName);
-      navigate('/portal');
+      await createAccount(formData.fullName, formData.mobile.trim());
+      // Account created. OTP has been sent to the mobile.
+      setStep("otp");
     } catch (err: any) {
-      console.error("Registration error:", err);
-      setError(err.message || "Failed to create account");
+      const msg: string = err?.message ?? "Failed to create account.";
+      if (msg.toLowerCase().includes("duplicate") || msg.toLowerCase().includes("already")) {
+        setError("An account with this mobile or email already exists. Try signing in instead.");
+      } else {
+        setError(msg);
+      }
     } finally {
-      setIsSubmitting(false);
+      setIsCreating(false);
     }
   };
 
-  const handleGoogleSignup = async () => {
+  // ── Step 2: Verify OTP → auto-login ──────────────────────────────────────
+  const handleVerifyOtp = async (e: FormEvent) => {
+    e.preventDefault();
+    if (otp.length < 6) {
+      setError("Please enter the 6-digit OTP.");
+      return;
+    }
     setError(null);
+    setIsVerifying(true);
     try {
-      await loginWithGoogle();
-      navigate('/portal');
+      await loginOtp(formData.mobile.trim(), otp.trim());
+      navigate("/portal");
     } catch (err: any) {
-      setError(err.message || "Failed to sign up with Google");
+      setError(err?.message ?? "Invalid OTP. Please try again.");
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -92,152 +74,215 @@ export default function Register() {
       <div className="absolute top-0 right-0 w-1/2 h-full bg-brand-gold/5 skew-x-12 translate-x-1/4" />
       <div className="absolute bottom-0 left-0 w-1/3 h-1/2 bg-brand-gold/5 -skew-x-12 -translate-x-1/4" />
 
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-lg relative z-10"
       >
         {/* Logo */}
         <div className="text-center mb-12">
-          <Link to="/" className="text-4xl font-serif font-bold tracking-tighter text-white mb-4 block">Coolzo</Link>
-          <p className="text-white/40 text-[10px] uppercase tracking-[0.4em] font-bold">The Gold Standard of Climate</p>
+          <Link to="/" className="text-4xl font-serif font-bold tracking-tighter text-white mb-4 block">
+            Coolzo
+          </Link>
+          <p className="text-white/40 text-[10px] uppercase tracking-[0.4em] font-bold">
+            The Gold Standard of Climate
+          </p>
         </div>
 
-        {/* Register Card */}
+        {/* Card */}
         <div className="bg-white p-6 sm:p-10 md:p-12 rounded-sm border border-brand-gold/20 shadow-2xl">
-          <h2 className="text-2xl sm:text-3xl font-serif text-brand-navy mb-8 text-center">Create Account.</h2>
-          
-          {error && (
-            <div className="bg-red-50 border border-red-200 p-4 rounded-sm mb-6 flex items-start gap-3">
-              <AlertCircle size={16} className="text-red-500 mt-0.5" />
-              <p className="text-xs text-red-600 font-medium">{error}</p>
+
+          {/* Step indicator */}
+          <div className="flex items-center gap-3 mb-8">
+            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${
+              step === "form" ? "bg-brand-navy text-white" : "bg-green-500 text-white"
+            }`}>
+              {step === "otp" ? "✓" : "1"}
             </div>
-          )}
-
-          <form className="space-y-6" onSubmit={handleRegister}>
-            <div className="grid sm:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">Full Name</label>
-                <div className="relative">
-                  <User size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-brand-navy/30" />
-                  <input required type="text" value={formData.fullName} onChange={(e) => setFormData({...formData, fullName: e.target.value})} placeholder="John Doe" className="w-full bg-brand-navy/5 border border-brand-navy/5 rounded-sm pl-14 pr-6 py-4 text-brand-navy text-sm focus:outline-none focus:border-brand-gold transition-colors" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">Email Address</label>
-                <div className="relative">
-                  <Mail size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-brand-navy/30" />
-                  <input required type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} placeholder="email@example.com" className="w-full bg-brand-navy/5 border border-brand-navy/5 rounded-sm pl-14 pr-6 py-4 text-brand-navy text-sm focus:outline-none focus:border-brand-gold transition-colors" />
-                </div>
-              </div>
+            <div className={`flex-grow h-px transition-all ${step === "otp" ? "bg-brand-gold" : "bg-brand-navy/10"}`} />
+            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${
+              step === "otp" ? "bg-brand-navy text-white" : "bg-brand-navy/10 text-brand-navy/30"
+            }`}>
+              2
             </div>
-
-            <div className="space-y-2">
-              <label className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">Mobile Number</label>
-              <div className="flex gap-2">
-                <div className="relative flex-grow">
-                  <Phone size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-brand-navy/30" />
-                  <input required type="tel" value={formData.mobile} onChange={(e) => setFormData({...formData, mobile: e.target.value})} placeholder="+91 98765 43210" className="w-full bg-brand-navy/5 border border-brand-navy/5 rounded-sm pl-14 pr-6 py-4 text-brand-navy text-sm focus:outline-none focus:border-brand-gold transition-colors" />
-                </div>
-                {!otpVerified && (
-                  <button 
-                    type="button"
-                    onClick={handleSendOtp}
-                    disabled={otpSent && timer > 0}
-                    className="px-6 bg-brand-gold text-brand-navy rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-navy hover:text-white transition-all disabled:opacity-50 whitespace-nowrap"
-                  >
-                    {otpSent ? (timer > 0 ? `Resend in ${timer}s` : 'Resend') : 'Send OTP'}
-                  </button>
-                )}
-                {otpVerified && (
-                  <div className="px-6 bg-green-50 text-green-600 rounded-sm flex items-center gap-2 border border-green-100">
-                    <Check size={16} />
-                    <span className="text-[10px] uppercase tracking-widest font-bold">Verified</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <AnimatePresence>
-              {otpSent && !otpVerified && (
-                <motion.div 
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  className="space-y-4 p-6 bg-brand-navy/5 rounded-sm"
-                >
-                  <label className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">Enter 6-Digit OTP</label>
-                  <div className="flex gap-4">
-                    <input type="text" maxLength={6} placeholder="000000" className="flex-grow bg-white border border-brand-navy/5 rounded-sm px-6 py-4 text-brand-navy text-center text-xl font-serif tracking-[0.5em] focus:outline-none focus:border-brand-gold transition-colors" />
-                    <button 
-                      type="button"
-                      onClick={handleVerifyOtp}
-                      className="px-8 bg-brand-navy text-white rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all"
-                    >
-                      Verify
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <div className="grid sm:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">Password</label>
-                <div className="relative">
-                  <Lock size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-brand-navy/30" />
-                  <input required type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="w-full bg-brand-navy/5 border border-brand-navy/5 rounded-sm pl-14 pr-14 py-4 text-brand-navy text-sm focus:outline-none focus:border-brand-gold transition-colors" />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-6 top-1/2 -translate-y-1/2 text-brand-navy/30 hover:text-brand-navy transition-colors">
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                </div>
-                {/* Strength Indicator */}
-                <div className="flex gap-1 h-1 mt-2">
-                  {[1, 2, 3, 4].map(i => (
-                    <div key={i} className={`flex-grow rounded-full transition-all ${i <= getPasswordStrength() ? (getPasswordStrength() <= 2 ? 'bg-red-400' : getPasswordStrength() === 3 ? 'bg-yellow-400' : 'bg-green-400') : 'bg-brand-navy/5'}`} />
-                  ))}
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">Confirm Password</label>
-                <div className="relative">
-                  <Lock size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-brand-navy/30" />
-                  <input required type={showPassword ? "text" : "password"} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••••" className="w-full bg-brand-navy/5 border border-brand-navy/5 rounded-sm pl-14 pr-6 py-4 text-brand-navy text-sm focus:outline-none focus:border-brand-gold transition-colors" />
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <label className="flex items-start gap-3 cursor-pointer group">
-                <input type="checkbox" required className="mt-1 accent-brand-gold" />
-                <span className="text-[9px] text-brand-navy/40 uppercase tracking-widest leading-relaxed group-hover:text-brand-navy transition-colors">
-                  I accept the <Link to="/terms" className="text-brand-gold underline">Terms of Service</Link> and <Link to="/privacy" className="text-brand-gold underline">Privacy Protocol</Link>.
-                </span>
-              </label>
-            </div>
-
-            <button type="submit" disabled={isSubmitting || !otpVerified || password !== confirmPassword || getPasswordStrength() < 3} className="w-full bg-brand-navy text-white py-5 rounded-sm text-xs uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl flex items-center justify-center gap-3 disabled:opacity-50">
-              {isSubmitting ? "Creating Account..." : "Create Account"} <ArrowRight size={16} />
-            </button>
-          </form>
-
-          {/* Social Divider */}
-          <div className="relative my-12">
-            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-brand-navy/5"></div></div>
-            <div className="relative flex justify-center text-[10px] uppercase tracking-widest font-bold"><span className="bg-white px-4 text-brand-navy/20">Or sign up with</span></div>
           </div>
 
-          <button 
-            type="button" 
-            onClick={handleGoogleSignup}
-            className="w-full border border-brand-navy/10 py-4 rounded-sm flex items-center justify-center gap-3 hover:bg-brand-navy/5 transition-all mb-10"
-          >
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
-            <span className="text-[10px] uppercase tracking-widest font-bold text-brand-navy">Sign up with Google</span>
-          </button>
+          <AnimatePresence mode="wait">
 
-          <p className="text-center text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">
-            Already have an account? <Link to="/login" className="text-brand-gold hover:text-brand-navy transition-colors">Sign in</Link>
-          </p>
+            {/* ── STEP 1: Account Details ─────────────────────────────────── */}
+            {step === "form" && (
+              <motion.div
+                key="form"
+                initial={{ opacity: 0, x: -16 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 16 }}
+              >
+                <h2 className="text-2xl sm:text-3xl font-serif text-brand-navy mb-2">
+                  Create Account.
+                </h2>
+                <p className="text-brand-navy/40 text-xs mb-10">
+                  Fill in your details — we'll send a verification code to your mobile.
+                </p>
+
+                {error && (
+                  <div className="bg-red-50 border border-red-200 p-4 rounded-sm mb-6 flex items-start gap-3">
+                    <AlertCircle size={16} className="text-red-500 mt-0.5 shrink-0" />
+                    <p className="text-xs text-red-600 font-medium">{error}</p>
+                  </div>
+                )}
+
+                <form className="space-y-6" onSubmit={handleCreateAccount}>
+                  {/* Full Name */}
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">
+                      Full Name
+                    </label>
+                    <div className="relative">
+                      <User size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-brand-navy/30" />
+                      <input
+                        required
+                        type="text"
+                        value={formData.fullName}
+                        onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                        placeholder="John Doe"
+                        className="w-full bg-brand-navy/5 border border-brand-navy/5 rounded-sm pl-14 pr-6 py-4 text-brand-navy text-sm focus:outline-none focus:border-brand-gold transition-colors"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Mobile */}
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">
+                      Mobile Number
+                    </label>
+                    <div className="relative">
+                      <Phone size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-brand-navy/30" />
+                      <input
+                        required
+                        type="tel"
+                        value={formData.mobile}
+                        onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
+                        placeholder="+91 98765 43210"
+                        className="w-full bg-brand-navy/5 border border-brand-navy/5 rounded-sm pl-14 pr-6 py-4 text-brand-navy text-sm focus:outline-none focus:border-brand-gold transition-colors"
+                      />
+                    </div>
+                    <p className="text-[9px] text-brand-navy/30 uppercase tracking-widest font-bold pl-1">
+                      A one-time code will be sent to this number.
+                    </p>
+                  </div>
+
+                  {/* Terms */}
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      required
+                      checked={termsAccepted}
+                      onChange={(e) => setTermsAccepted(e.target.checked)}
+                      className="mt-1 accent-brand-gold"
+                    />
+                    <span className="text-[9px] text-brand-navy/40 uppercase tracking-widest leading-relaxed group-hover:text-brand-navy transition-colors">
+                      I accept the{" "}
+                      <Link to="/terms" className="text-brand-gold underline">
+                        Terms of Service
+                      </Link>{" "}
+                      and{" "}
+                      <Link to="/privacy" className="text-brand-gold underline">
+                        Privacy Protocol
+                      </Link>
+                      .
+                    </span>
+                  </label>
+
+                  <button
+                    type="submit"
+                    disabled={isCreating || !termsAccepted}
+                    className="w-full bg-brand-navy text-white py-5 rounded-sm text-xs uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl flex items-center justify-center gap-3 disabled:opacity-40"
+                  >
+                    {isCreating ? "Creating Account..." : "Continue — Send OTP"}
+                    <ArrowRight size={16} />
+                  </button>
+                </form>
+              </motion.div>
+            )}
+
+            {/* ── STEP 2: OTP Verification ────────────────────────────────── */}
+            {step === "otp" && (
+              <motion.div
+                key="otp"
+                initial={{ opacity: 0, x: 16 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -16 }}
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <CheckCircle2 size={24} className="text-green-500 shrink-0" />
+                  <h2 className="text-2xl sm:text-3xl font-serif text-brand-navy">
+                    Verify Number.
+                  </h2>
+                </div>
+                <p className="text-brand-navy/40 text-xs mb-10">
+                  A 6-digit code was sent to{" "}
+                  <span className="font-bold text-brand-navy">{formData.mobile}</span>.
+                  {" "}Enter it below to complete sign-up.
+                </p>
+
+                {error && (
+                  <div className="bg-red-50 border border-red-200 p-4 rounded-sm mb-6 flex items-start gap-3">
+                    <AlertCircle size={16} className="text-red-500 mt-0.5 shrink-0" />
+                    <p className="text-xs text-red-600 font-medium">{error}</p>
+                  </div>
+                )}
+
+                <form className="space-y-6" onSubmit={handleVerifyOtp}>
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">
+                      Enter 6-Digit OTP
+                    </label>
+                    <input
+                      autoFocus
+                      required
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={6}
+                      value={otp}
+                      onChange={(e) => {
+                        setOtp(e.target.value.replace(/\D/g, ""));
+                        setError(null);
+                      }}
+                      placeholder="000000"
+                      className="w-full bg-brand-navy/5 border border-brand-navy/5 rounded-sm px-6 py-5 text-brand-navy text-center text-3xl font-serif tracking-[0.6em] focus:outline-none focus:border-brand-gold transition-colors"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={otp.length < 6 || isVerifying}
+                    className="w-full bg-brand-navy text-white py-5 rounded-sm text-xs uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl flex items-center justify-center gap-3 disabled:opacity-40"
+                  >
+                    {isVerifying ? "Verifying..." : "Verify & Sign In"}
+                    <ArrowRight size={16} />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => { setStep("form"); setOtp(""); setError(null); }}
+                    className="w-full py-3 text-[10px] uppercase tracking-widest font-bold text-brand-navy/30 hover:text-brand-navy transition-colors"
+                  >
+                    ← Change details
+                  </button>
+                </form>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Footer link */}
+          {step === "form" && (
+            <p className="text-center text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 mt-10">
+              Already have an account?{" "}
+              <Link to="/login" className="text-brand-gold hover:text-brand-navy transition-colors">
+                Sign in
+              </Link>
+            </p>
+          )}
         </div>
 
         {/* Trust Footer */}

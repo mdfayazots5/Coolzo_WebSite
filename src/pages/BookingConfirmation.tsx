@@ -2,17 +2,33 @@ import { motion } from "motion/react";
 import { ShieldCheck, Check, Copy, Smartphone, ArrowRight, Calendar, MapPin, Clock } from "lucide-react";
 import { useLocation, Link, Navigate } from "react-router-dom";
 import { useState } from "react";
+import type { BookingSummaryResponse } from "../types/booking";
+
+interface ConfirmationState {
+  booking: BookingSummaryResponse;
+  email?: string;
+  addressLine?: string;
+  cityName?: string;
+  pincode?: string;
+}
+
+function formatScheduledDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString("en-IN", {
+    weekday: "long", month: "long", day: "numeric",
+  });
+}
 
 export default function BookingConfirmation() {
   const location = useLocation();
-  const bookingData = location.state?.bookingData;
-  const refNumber = location.state?.ref;
+  const state = location.state as ConfirmationState | null;
   const [copied, setCopied] = useState(false);
 
-  if (!bookingData) return <Navigate to="/" />;
+  if (!state?.booking) return <Navigate to="/" />;
+
+  const { booking, email, addressLine, cityName, pincode } = state;
 
   const copyRef = () => {
-    navigator.clipboard.writeText(refNumber);
+    navigator.clipboard.writeText(booking.bookingReference);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -22,7 +38,7 @@ export default function BookingConfirmation() {
       <div className="container mx-auto px-6 max-w-3xl">
         {/* Success Header */}
         <div className="text-center mb-16">
-          <motion.div 
+          <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: "spring", damping: 12 }}
@@ -30,20 +46,21 @@ export default function BookingConfirmation() {
           >
             <Check size={48} className="text-brand-navy" />
           </motion.div>
-          <motion.h1 
+          <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-3xl sm:text-5xl font-serif text-brand-navy mb-4"
           >
             Booking Confirmed.
           </motion.h1>
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             className="text-brand-navy/50 text-lg font-light"
           >
-            Your climate curation is scheduled. We've sent a confirmation to {bookingData.contact.email}.
+            Your climate curation is scheduled.
+            {email ? ` We've sent a confirmation to ${email}.` : ""}
           </motion.p>
         </div>
 
@@ -53,9 +70,10 @@ export default function BookingConfirmation() {
           <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-8">
             <div className="text-center md:text-left">
               <p className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand-gold mb-2">Reference Number</p>
-              <h2 className="text-2xl sm:text-4xl font-serif tracking-widest">{refNumber}</h2>
+              <h2 className="text-2xl sm:text-4xl font-serif tracking-widest">{booking.bookingReference}</h2>
+              <p className="text-white/40 text-xs mt-2 uppercase tracking-widest">{booking.serviceName}</p>
             </div>
-            <button 
+            <button
               onClick={copyRef}
               className="flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 rounded-sm text-[10px] uppercase tracking-widest font-bold transition-all border border-white/10"
             >
@@ -71,17 +89,42 @@ export default function BookingConfirmation() {
             <Calendar className="text-brand-gold mb-4" size={20} />
             <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 mb-2">Appointment</p>
             <p className="text-lg font-serif text-brand-navy">
-              {new Date(bookingData.appointment.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+              {formatScheduledDate(booking.scheduledDate)}
             </p>
-            <p className="text-sm text-brand-navy/60 mt-1">Window: {bookingData.appointment.slot === 'morning' ? '8 AM – 12 PM' : bookingData.appointment.slot === 'afternoon' ? '12 PM – 4 PM' : '4 PM – 7 PM'}</p>
+            {booking.scheduledTime && (
+              <p className="text-sm text-brand-navy/60 mt-1">Time: {booking.scheduledTime}</p>
+            )}
           </div>
           <div className="bg-white p-8 rounded-sm border border-brand-navy/5 shadow-sm">
             <MapPin className="text-brand-gold mb-4" size={20} />
             <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 mb-2">Location</p>
-            <p className="text-lg font-serif text-brand-navy line-clamp-1">{bookingData.address.line1}</p>
-            <p className="text-sm text-brand-navy/60 mt-1">{bookingData.address.city} — {bookingData.address.pinCode}</p>
+            {addressLine ? (
+              <>
+                <p className="text-lg font-serif text-brand-navy line-clamp-1">{addressLine}</p>
+                <p className="text-sm text-brand-navy/60 mt-1">
+                  {cityName ?? ""}{pincode ? ` — ${pincode}` : ""}
+                </p>
+              </>
+            ) : (
+              <p className="text-sm text-brand-navy/60">Address on file</p>
+            )}
           </div>
         </div>
+
+        {/* Cost Summary (if available) */}
+        {booking.totalAmount != null && (
+          <div className="bg-white p-8 rounded-sm border border-brand-navy/5 shadow-sm mb-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 mb-1">Estimated Total</p>
+                <p className="text-2xl font-serif text-brand-navy">₹{booking.totalAmount.toLocaleString()}</p>
+              </div>
+              <span className="text-[9px] uppercase tracking-widest font-bold px-4 py-2 bg-amber-50 text-amber-600 rounded-full">
+                {booking.currentStatus}
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Next Steps Timeline */}
         <div className="mb-16">
@@ -90,7 +133,7 @@ export default function BookingConfirmation() {
             {[
               { title: "Technician Assignment", desc: "A certified technician will be assigned to your booking within 2 hours.", icon: <ShieldCheck size={20} /> },
               { title: "WhatsApp Confirmation", desc: "You'll receive a detailed health-check link and technician profile via WhatsApp.", icon: <Smartphone size={20} /> },
-              { title: "Arrival Protocol", desc: "Our technician will call 30 minutes before arrival to confirm the window.", icon: <Clock size={20} /> }
+              { title: "Arrival Protocol", desc: "Our technician will call 30 minutes before arrival to confirm the window.", icon: <Clock size={20} /> },
             ].map((step, i) => (
               <div key={i} className="flex gap-6 relative">
                 {i < 2 && <div className="absolute left-6 top-10 w-px h-12 bg-brand-navy/10" />}
@@ -114,21 +157,27 @@ export default function BookingConfirmation() {
             Save this booking and track your technician in real-time by creating a free Coolzo account.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link 
-              to="/register" 
-              state={{ email: bookingData.contact.email }}
+            <Link
+              to="/register"
+              state={{ email: email }}
               className="bg-brand-navy text-white px-10 py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl"
             >
               Create Free Account
             </Link>
-            <button className="border border-brand-navy/10 text-brand-navy px-10 py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-navy hover:text-white transition-all">
-              Share on WhatsApp
-            </button>
+            <Link
+              to="/portal/bookings"
+              className="border border-brand-navy/10 text-brand-navy px-10 py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-navy hover:text-white transition-all"
+            >
+              View My Bookings
+            </Link>
           </div>
         </div>
 
         <div className="text-center">
-          <Link to="/" className="text-brand-navy/40 hover:text-brand-navy text-[10px] uppercase tracking-[0.3em] font-bold transition-colors flex items-center justify-center gap-2">
+          <Link
+            to="/"
+            className="text-brand-navy/40 hover:text-brand-navy text-[10px] uppercase tracking-[0.3em] font-bold transition-colors flex items-center justify-center gap-2"
+          >
             Return to Homepage <ArrowRight size={14} />
           </Link>
         </div>

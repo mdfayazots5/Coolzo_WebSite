@@ -42,3 +42,8 @@
     display: none; /* Chrome, Safari and Opera */
   }
 }
+
+/* iOS notch / home-indicator safe area for fixed bottom bars */
+@utility safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}

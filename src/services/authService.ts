@@ -1,66 +1,135 @@
-import { auth, googleProvider } from '../lib/firebase';
-import { 
-  signInWithPopup, 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword,
-  updateProfile as firebaseUpdateProfile,
-  signOut,
-  User as FirebaseUser
-} from 'firebase/auth';
-import { apiConfig } from '../config/apiConfig';
-import { mockResponse } from './mockUtils';
+import apiClient from './apiClient';
+import { tokenStorage } from './tokenStorage';
+import type {
+  AuthTokenResponse,
+  CurrentUserResponse,
+  CustomerProfileResponse,
+} from '../types/auth';
 
-export interface UserProfile {
-  uid: string;
-  email: string | null;
-  displayName: string | null;
-  photoURL: string | null;
-  phone?: string;
-}
-
+/**
+ * AuthService — all calls go to the backend JWT auth endpoints.
+ * Firebase has been removed.
+ */
 export const AuthService = {
-  async loginWithGoogle(): Promise<FirebaseUser> {
-    if (apiConfig.IS_MOCK) {
-      return mockResponse({
-        uid: 'mock-123',
-        email: 'mockuser@example.com',
-        displayName: 'Mock User',
-        photoURL: 'https://picsum.photos/seed/user/100/100',
-      } as any);
-    }
-    const result = await signInWithPopup(auth, googleProvider);
-    return result.user;
+  /**
+   * Login with email / password.
+   * Stores tokens and returns the current user.
+   */
+  async loginEmail(email: string, password: string): Promise<CurrentUserResponse> {
+    const tokenData: AuthTokenResponse = await apiClient.post('/api/auth/login', {
+      userNameOrEmail: email,
+      password,
+    });
+
+    tokenStorage.setTokens(tokenData.accessToken, tokenData.refreshToken);
+    return AuthService.getMe();
   },
 
-  async loginEmail(email: string, pass: string): Promise<FirebaseUser> {
-    if (apiConfig.IS_MOCK) {
-       if (email === 'admin@coolzo.com' && pass === 'Admin@123') {
-         return mockResponse({ uid: 'mock-admin', email, displayName: 'Admin User' } as any);
-       }
-       throw new Error("Invalid credentials in mock mode");
-    }
-    const result = await signInWithEmailAndPassword(auth, email, pass);
-    return result.user;
+  /**
+   * Send an OTP to the given mobile number.
+   */
+  async sendOtp(mobileNumber: string): Promise<void> {
+    await apiClient.post('/api/auth/otp/send', { phone: mobileNumber });
   },
 
-  async register(email: string, pass: string, name: string): Promise<FirebaseUser> {
-    if (apiConfig.IS_MOCK) {
-      return mockResponse({ uid: 'mock-new', email, displayName: name } as any);
-    }
-    const result = await createUserWithEmailAndPassword(auth, email, pass);
-    await firebaseUpdateProfile(result.user, { displayName: name });
-    return result.user;
+  /**
+   * Verify OTP and log the user in.
+   * Stores tokens and returns the current user.
+   */
+  async loginOtp(mobileNumber: string, otp: string): Promise<CurrentUserResponse> {
+    const tokenData: AuthTokenResponse = await apiClient.post('/api/auth/otp/verify', {
+      phone: mobileNumber,
+      otp,
+    });
+
+    tokenStorage.setTokens(tokenData.accessToken, tokenData.refreshToken);
+    return AuthService.getMe();
   },
 
-  async updateProfile(user: FirebaseUser, data: { displayName?: string, photoURL?: string }): Promise<void> {
-    if (apiConfig.IS_MOCK) {
-      return mockResponse(undefined);
-    }
-    await firebaseUpdateProfile(user, data);
+  /**
+   * Create a new customer account then immediately send an OTP to the mobile.
+   *
+   * Flow: POST /api/customer-auth/register → POST /api/auth/otp/send
+   * The account must exist BEFORE otp/send is called (backend throws 404 otherwise).
+   * Call loginOtp() once the user submits the 6-digit code.
+   */
+  async createAccount(
+    customerName: string,
+    mobileNumber: string,
+  ): Promise<void> {
+    // Step 1 — create the account (no password — backend generates temp)
+    await apiClient.post('/api/customer-auth/register', {
+      customerName,
+      mobileNumber,
+    });
+
+    // Step 2 — now that the user exists, send the OTP
+    await apiClient.post('/api/auth/otp/send', { phone: mobileNumber });
   },
 
+  /**
+   * @deprecated — replaced by createAccount() + loginOtp() two-step flow.
+   * Kept to avoid breaking any other callers; delegates to createAccount + loginOtp.
+   */
+  async register(
+    customerName: string,
+    mobileNumber: string,
+    otp: string,
+  ): Promise<CurrentUserResponse> {
+    await AuthService.createAccount(customerName, mobileNumber);
+    return AuthService.loginOtp(mobileNumber, otp);
+  },
+
+  /**
+   * Fetch the currently authenticated user from the backend.
+   */
+  async getMe(): Promise<CurrentUserResponse> {
+    return apiClient.get('/api/auth/me');
+  },
+
+  /**
+   * Log the current user out and clear all stored tokens.
+   */
   async logout(): Promise<void> {
-    if(apiConfig.IS_MOCK) return mockResponse(undefined);
-    await signOut(auth);
-  }
+    const refreshToken = tokenStorage.getRefreshToken();
+    if (refreshToken) {
+      try {
+        await apiClient.post('/api/auth/logout', { refreshToken });
+      } catch {
+        // Proceed with local logout even if the server call fails
+      }
+    }
+    tokenStorage.clear();
+  },
+
+  /**
+   * Trigger a forgot-password email / SMS.
+   */
+  async forgotPassword(loginId: string): Promise<void> {
+    await apiClient.post('/api/auth/forgot-password', { loginId });
+  },
+
+  /**
+   * Reset password using the token from the forgot-password email.
+   */
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    await apiClient.post('/api/auth/reset-password', { token, password: newPassword });
+  },
+
+  /**
+   * Change password for the currently logged-in customer.
+   */
+  async changePassword(currentPassword: string, newPassword: string): Promise<void> {
+    await apiClient.post('/api/auth/change-password', {
+      currentPassword,
+      newPassword,
+    });
+  },
+
+  /**
+   * Fetch the full customer profile (separate from the auth identity).
+   */
+  async getProfile(): Promise<CustomerProfileResponse> {
+    return apiClient.get('/api/customers/me/profile');
+  },
 };

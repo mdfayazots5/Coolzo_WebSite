@@ -1,63 +1,67 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "motion/react";
-import { 
-  Star, 
-  CheckCircle2, 
-  ArrowRight, 
-  User, 
-  Calendar, 
+import {
+  Star,
+  CheckCircle2,
+  ArrowRight,
+  User,
+  Calendar,
   Smartphone,
   ChevronLeft,
-  Loader2
+  Loader2,
 } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
 import { ReviewService } from "../../services/reviewService";
-import { BookingService, Booking } from "../../services/bookingService";
+import { BookingService } from "../../services/bookingService";
+import type { BookingDetailResponse } from "../../types/booking";
+
+function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString("en-IN", {
+    day: "numeric", month: "short", year: "numeric",
+  });
+}
 
 export default function Feedback() {
-  const { id } = useParams();
-  const { user } = useAuth();
+  const { id } = useParams<{ id: string }>();
+  const bookingId = Number(id);
   const navigate = useNavigate();
+
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [booking, setBooking] = useState<Booking | null>(null);
+  const [booking, setBooking] = useState<BookingDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchBooking = async () => {
-      if (!id) return;
-      try {
-        const data = await BookingService.getBookingDetail(id);
-        if (data) setBooking(data);
-      } catch (error) {
-        console.error("Error fetching booking for feedback:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchBooking();
-  }, [id]);
+  const loadBooking = useCallback(async () => {
+    if (!bookingId) return;
+    try {
+      const data = await BookingService.getBookingById(bookingId);
+      setBooking(data);
+    } catch {
+      setBooking(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [bookingId]);
+
+  useEffect(() => { loadBooking(); }, [loadBooking]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !rating) return;
-
+    if (!rating) return;
     setIsSubmitting(true);
     try {
       await ReviewService.submitReview({
-        userId: user.uid,
-        userName: user.displayName || "Client",
+        bookingId: bookingId || undefined,
+        serviceId: booking?.serviceId,
         rating,
         comment,
-        serviceId: booking?.serviceId
       });
       setIsSubmitted(true);
-    } catch (error) {
-      console.error("Feedback submission error:", error);
+    } catch {
+      /* silent — button re-enables so user can retry */
     } finally {
       setIsSubmitting(false);
     }
@@ -71,18 +75,13 @@ export default function Feedback() {
     );
   }
 
-  const service = {
-    id: booking?.id || id || "SR-88210",
-    type: booking?.serviceName || "AC Service",
-    date: booking?.date || "Mar 12, 2026",
-    technician: booking?.technician?.name || "Rahul K.",
-    techPhoto: booking?.technician?.image || "https://picsum.photos/seed/tech2/100/100"
-  };
+  const techName = booking?.technicianName ?? "Our Technician";
+  const techAvatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(techName)}&background=1B2A4A&color=C9A84C&size=100`;
 
   if (isSubmitted) {
     return (
       <div className="max-w-xl mx-auto py-20 text-center">
-        <motion.div 
+        <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           className="bg-white p-12 rounded-sm border border-brand-navy/5 shadow-2xl relative overflow-hidden"
@@ -93,16 +92,17 @@ export default function Feedback() {
           </div>
           <h2 className="text-3xl font-serif text-brand-navy mb-4">Thank You.</h2>
           <p className="text-brand-navy/50 text-sm mb-10 leading-relaxed">
-            Your feedback helps us maintain the highest standards of premium service. We've shared your appreciation with {service.technician}.
+            Your feedback helps us maintain the highest standards of premium service.
+            We've shared your appreciation with {techName}.
           </p>
           <div className="space-y-4">
-            <Link 
+            <Link
               to="/book"
               className="w-full bg-brand-navy text-white py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all flex items-center justify-center gap-3 shadow-xl"
             >
               Book Next Service <ArrowRight size={16} />
             </Link>
-            <button 
+            <button
               onClick={() => navigate("/portal")}
               className="w-full py-4 text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 hover:text-brand-navy transition-colors"
             >
@@ -117,7 +117,10 @@ export default function Feedback() {
   return (
     <div className="max-w-3xl mx-auto">
       <div className="mb-8 lg:mb-12">
-        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-brand-navy/40 hover:text-brand-navy text-[10px] uppercase tracking-widest font-bold transition-colors mb-6 sm:mb-8">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 text-brand-navy/40 hover:text-brand-navy text-[10px] uppercase tracking-widest font-bold transition-colors mb-6 sm:mb-8"
+        >
           <ChevronLeft size={14} /> Back
         </button>
         <h1 className="text-3xl sm:text-4xl font-serif text-brand-navy mb-2">Service Feedback</h1>
@@ -128,12 +131,24 @@ export default function Feedback() {
         {/* Service Summary */}
         <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-8 p-6 sm:p-8 bg-brand-navy/5 rounded-sm mb-12">
           <div className="w-20 h-20 rounded-full border-2 border-brand-gold p-1 shrink-0">
-            <img src={service.techPhoto} alt={service.technician} className="w-full h-full rounded-full object-cover" referrerPolicy="no-referrer" />
+            <img
+              src={techAvatarUrl}
+              alt={techName}
+              className="w-full h-full rounded-full object-cover"
+              referrerPolicy="no-referrer"
+            />
           </div>
           <div className="text-center sm:text-left">
-            <p className="text-[10px] uppercase tracking-widest font-bold text-brand-gold mb-1">{service.id}</p>
-            <h3 className="text-lg sm:text-xl font-serif text-brand-navy">{service.type}</h3>
-            <p className="text-xs text-brand-navy/40 mt-1">Performed by {service.technician} on {service.date}</p>
+            <p className="text-[10px] uppercase tracking-widest font-bold text-brand-gold mb-1">
+              {booking?.bookingReference ?? `SR-${bookingId}`}
+            </p>
+            <h3 className="text-lg sm:text-xl font-serif text-brand-navy">
+              {booking?.serviceName ?? "AC Service"}
+            </h3>
+            <p className="text-xs text-brand-navy/40 mt-1">
+              Performed by {techName}
+              {booking?.scheduledDate ? ` on ${formatDate(booking.scheduledDate)}` : ""}
+            </p>
           </div>
         </div>
 
@@ -151,9 +166,11 @@ export default function Feedback() {
                   onClick={() => setRating(i)}
                   className="p-1 sm:p-2 transition-transform hover:scale-125"
                 >
-                  <Star 
+                  <Star
                     className={`${
-                      (hoverRating || rating) >= i ? 'text-brand-gold fill-brand-gold' : 'text-brand-navy/10'
+                      (hoverRating || rating) >= i
+                        ? "text-brand-gold fill-brand-gold"
+                        : "text-brand-navy/10"
                     } transition-colors w-8 h-8 sm:w-12 sm:h-12`}
                   />
                 </button>
@@ -164,15 +181,20 @@ export default function Feedback() {
           {/* Sub-ratings */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-10 pt-12 border-t border-brand-navy/5">
             {[
-              { label: "Punctuality", icon: <Calendar size={18} /> },
+              { label: "Punctuality",     icon: <Calendar size={18} /> },
               { label: "Professionalism", icon: <User size={18} /> },
-              { label: "Work Quality", icon: <Smartphone size={18} /> },
+              { label: "Work Quality",    icon: <Smartphone size={18} /> },
             ].map((dim, i) => (
-              <div key={i} className="bg-brand-navy/[0.02] p-8 rounded-sm text-center border border-brand-navy/5 group hover:border-brand-gold/30 transition-all">
-                <div className="text-brand-gold mb-4 flex justify-center group-hover:scale-110 transition-transform">{dim.icon}</div>
+              <div
+                key={i}
+                className="bg-brand-navy/[0.02] p-8 rounded-sm text-center border border-brand-navy/5 group hover:border-brand-gold/30 transition-all"
+              >
+                <div className="text-brand-gold mb-4 flex justify-center group-hover:scale-110 transition-transform">
+                  {dim.icon}
+                </div>
                 <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/60 mb-6">{dim.label}</p>
                 <div className="flex justify-center gap-1.5 px-4">
-                  {[1, 2, 3, 4, 5].map(star => (
+                  {[1, 2, 3, 4, 5].map((star) => (
                     <button key={star} type="button" className="text-brand-navy/10 hover:text-brand-gold transition-colors">
                       <Star size={16} className="fill-current" />
                     </button>
@@ -184,8 +206,10 @@ export default function Feedback() {
 
           {/* Written Review */}
           <div className="space-y-4">
-            <label className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">Your Comments (Optional)</label>
-            <textarea 
+            <label className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">
+              Your Comments (Optional)
+            </label>
+            <textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="Tell us what you loved or how we can improve..."
@@ -195,18 +219,30 @@ export default function Feedback() {
 
           {/* Recommendation Toggle */}
           <div className="flex flex-col sm:flex-row items-center justify-between p-6 bg-brand-navy/5 rounded-sm gap-4">
-            <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy text-center sm:text-left">Would you recommend Coolzo to others?</p>
+            <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy text-center sm:text-left">
+              Would you recommend Coolzo to others?
+            </p>
             <div className="flex gap-4 w-full sm:w-auto">
-              <button type="button" className="flex-1 sm:flex-none px-6 py-3 bg-white border border-brand-navy/10 rounded-sm text-[9px] uppercase tracking-widest font-bold text-brand-navy hover:bg-brand-navy hover:text-white transition-all">Yes</button>
-              <button type="button" className="flex-1 sm:flex-none px-6 py-3 bg-white border border-brand-navy/10 rounded-sm text-[9px] uppercase tracking-widest font-bold text-brand-navy hover:bg-brand-navy hover:text-white transition-all">No</button>
+              <button
+                type="button"
+                className="flex-1 sm:flex-none px-6 py-3 bg-white border border-brand-navy/10 rounded-sm text-[9px] uppercase tracking-widest font-bold text-brand-navy hover:bg-brand-navy hover:text-white transition-all"
+              >
+                Yes
+              </button>
+              <button
+                type="button"
+                className="flex-1 sm:flex-none px-6 py-3 bg-white border border-brand-navy/10 rounded-sm text-[9px] uppercase tracking-widest font-bold text-brand-navy hover:bg-brand-navy hover:text-white transition-all"
+              >
+                No
+              </button>
             </div>
           </div>
 
-          <button 
+          <button
             type="submit"
             disabled={rating === 0 || isSubmitting}
             className={`w-full bg-brand-navy text-white py-5 rounded-sm text-xs uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl flex items-center justify-center gap-3 ${
-              (rating === 0 || isSubmitting) ? 'opacity-50 cursor-not-allowed' : ''
+              rating === 0 || isSubmitting ? "opacity-50 cursor-not-allowed" : ""
             }`}
           >
             {isSubmitting ? <Loader2 className="animate-spin" size={16} /> : "Submit Review"}

@@ -1,10 +1,10 @@
-export const apiConfig = {
-  BASE_URL: 'https://api.coolzo.com/v1', // Placeholder for real API
-  IS_MOCK: true, // Toggle this for development/testing
-  TIMEOUT: 10000,
-};
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL as string;
 
-export const getAuthHeader = () => {
-  // Logic to get token from storage/firebase
-  return {};
+if (!apiBaseUrl) {
+  console.warn('[Coolzo] VITE_API_BASE_URL is not set. API calls will fail. Add it to .env.development.');
+}
+
+export const apiConfig = {
+  BASE_URL: apiBaseUrl || '',
+  TIMEOUT: 10000,
 };

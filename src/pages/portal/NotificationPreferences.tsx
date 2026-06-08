@@ -1,63 +1,125 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import { 
-  Bell, 
-  Mail, 
-  MessageSquare, 
-  Smartphone, 
-  CheckCircle2, 
-  ShieldCheck, 
+import {
+  Bell,
+  Mail,
+  MessageSquare,
+  Smartphone,
+  CheckCircle2,
+  ShieldCheck,
   Info,
-  Lock
+  Lock,
+  Loader2,
 } from "lucide-react";
+import { NotificationService } from "../../services/notificationService";
+import type { CommunicationPreferenceResponse } from "../../types/notification";
 
-const categories = [
-  { id: "booking", label: "Booking Confirmations", desc: "Instant confirmation of your service requests", mandatory: true },
+type ChannelId = "whatsapp" | "email" | "sms" | "push";
+type CategoryId = "booking" | "technician" | "status" | "payment" | "amc" | "promo" | "support";
+type LocalMatrix = Record<CategoryId, Record<ChannelId, boolean>>;
+
+const CATEGORIES: { id: CategoryId; label: string; desc: string; mandatory?: boolean }[] = [
+  { id: "booking",    label: "Booking Confirmations",    desc: "Instant confirmation of your service requests", mandatory: true },
   { id: "technician", label: "Technician Updates & ETA", desc: "Live tracking and technician arrival notices" },
-  { id: "status", label: "Job Status Changes", desc: "Updates as your service progresses" },
-  { id: "payment", label: "Invoice & Payment", desc: "Payment receipts and billing updates" },
-  { id: "amc", label: "AMC Reminders", desc: "Proactive maintenance schedule notices" },
-  { id: "promo", label: "Promotional Offers", desc: "Exclusive trusted member deals and events" },
-  { id: "support", label: "Support Ticket Updates", desc: "Replies to your help requests" },
+  { id: "status",     label: "Job Status Changes",       desc: "Updates as your service progresses" },
+  { id: "payment",    label: "Invoice & Payment",        desc: "Payment receipts and billing updates", mandatory: true },
+  { id: "amc",        label: "AMC Reminders",            desc: "Proactive maintenance schedule notices" },
+  { id: "promo",      label: "Promotional Offers",       desc: "Exclusive trusted member deals and events" },
+  { id: "support",    label: "Support Ticket Updates",   desc: "Replies to your help requests" },
 ];
 
-const channels = [
+const CHANNELS: { id: ChannelId; label: string; icon: React.ReactNode }[] = [
   { id: "whatsapp", label: "WhatsApp", icon: <MessageSquare size={16} /> },
-  { id: "email", label: "Email", icon: <Mail size={16} /> },
-  { id: "sms", label: "SMS", icon: <Smartphone size={16} /> },
-  { id: "push", label: "Push", icon: <Bell size={16} /> },
+  { id: "email",    label: "Email",    icon: <Mail size={16} /> },
+  { id: "sms",      label: "SMS",      icon: <Smartphone size={16} /> },
+  { id: "push",     label: "Push",     icon: <Bell size={16} /> },
 ];
+
+function toLocalMatrix(p: CommunicationPreferenceResponse): LocalMatrix {
+  const ch = (channel: ChannelId) => p[channel];
+  return {
+    booking:    { whatsapp: true,                          email: true,                       sms: true,                        push: true },
+    technician: { whatsapp: ch("whatsapp") && p.statusUpdates, email: ch("email") && p.statusUpdates, sms: ch("sms") && p.statusUpdates, push: ch("push") && p.statusUpdates },
+    status:     { whatsapp: ch("whatsapp") && p.statusUpdates, email: ch("email") && p.statusUpdates, sms: ch("sms") && p.statusUpdates, push: ch("push") && p.statusUpdates },
+    payment:    { whatsapp: true,                          email: true,                       sms: true,                        push: true },
+    amc:        { whatsapp: ch("whatsapp") && p.reminders,     email: ch("email") && p.reminders,     sms: ch("sms") && p.reminders,     push: ch("push") && p.reminders },
+    promo:      { whatsapp: ch("whatsapp") && p.promotions,    email: ch("email") && p.promotions,    sms: ch("sms") && p.promotions,    push: ch("push") && p.promotions },
+    support:    { whatsapp: ch("whatsapp"),                email: ch("email"),                sms: ch("sms"),                   push: ch("push") },
+  };
+}
+
+function toApiFormat(matrix: LocalMatrix): Partial<CommunicationPreferenceResponse> {
+  const allRows = Object.values(matrix) as Record<ChannelId, boolean>[];
+  return {
+    email:         allRows.some((r) => r.email),
+    sms:           allRows.some((r) => r.sms),
+    whatsapp:      allRows.some((r) => r.whatsapp),
+    push:          allRows.some((r) => r.push),
+    promotions:    Object.values(matrix.promo).some(Boolean),
+    reminders:     Object.values(matrix.amc).some(Boolean),
+    statusUpdates: Object.values(matrix.status).some(Boolean) || Object.values(matrix.technician).some(Boolean),
+  };
+}
+
+const DEFAULT_MATRIX: LocalMatrix = {
+  booking:    { whatsapp: true,  email: true,  sms: true,  push: true },
+  technician: { whatsapp: true,  email: false, sms: true,  push: true },
+  status:     { whatsapp: false, email: false, sms: false, push: true },
+  payment:    { whatsapp: true,  email: true,  sms: false, push: true },
+  amc:        { whatsapp: true,  email: true,  sms: true,  push: true },
+  promo:      { whatsapp: false, email: true,  sms: false, push: false },
+  support:    { whatsapp: true,  email: true,  sms: false, push: true },
+};
 
 export default function NotificationPreferences() {
-  const [preferences, setPreferences] = useState<Record<string, Record<string, boolean>>>({
-    booking: { whatsapp: true, email: true, sms: true, push: true },
-    technician: { whatsapp: true, email: false, sms: true, push: true },
-    status: { whatsapp: false, email: false, sms: false, push: true },
-    payment: { whatsapp: true, email: true, sms: false, push: true },
-    amc: { whatsapp: true, email: true, sms: true, push: true },
-    promo: { whatsapp: false, email: true, sms: false, push: false },
-    support: { whatsapp: true, email: true, sms: false, push: true },
-  });
-
+  const [preferences, setPreferences] = useState<LocalMatrix>(DEFAULT_MATRIX);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [showToast, setShowToast] = useState(false);
 
-  const togglePreference = (catId: string, chanId: string) => {
-    const category = categories.find(c => c.id === catId);
-    if (category?.mandatory) return;
+  useEffect(() => {
+    NotificationService.getPreferences()
+      .then((prefs) => {
+        setPreferences(toLocalMatrix(prefs));
+      })
+      .catch(() => {
+        /* keep defaults */
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
-    setPreferences(prev => ({
+  const togglePreference = (catId: CategoryId, chanId: ChannelId) => {
+    const cat = CATEGORIES.find((c) => c.id === catId);
+    if (cat?.mandatory) return;
+    setPreferences((prev) => ({
       ...prev,
       [catId]: {
         ...prev[catId],
-        [chanId]: !prev[catId][chanId]
-      }
+        [chanId]: !prev[catId][chanId],
+      },
     }));
   };
 
-  const handleSave = () => {
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 3000);
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await NotificationService.updatePreferences(toApiFormat(preferences));
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+    } catch {
+      /* silent — user can retry */
+    } finally {
+      setSaving(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="animate-spin text-brand-gold" size={40} />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -67,7 +129,7 @@ export default function NotificationPreferences() {
       </div>
 
       {showToast && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
@@ -85,7 +147,7 @@ export default function NotificationPreferences() {
             <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">Communication Category</p>
           </div>
           <div className="col-span-6 grid grid-cols-4 gap-4 text-center">
-            {channels.map(chan => (
+            {CHANNELS.map((chan) => (
               <div key={chan.id} className="flex flex-col items-center gap-2">
                 <div className="text-brand-navy/40">{chan.icon}</div>
                 <p className="text-[8px] uppercase tracking-widest font-bold text-brand-navy/40">{chan.label}</p>
@@ -95,8 +157,11 @@ export default function NotificationPreferences() {
         </div>
 
         <div className="divide-y divide-brand-navy/5">
-          {categories.map((cat) => (
-            <div key={cat.id} className="p-6 sm:p-8 flex flex-col md:grid md:grid-cols-12 gap-6 md:gap-4 items-start md:items-center hover:bg-brand-navy/[0.01] transition-colors">
+          {CATEGORIES.map((cat) => (
+            <div
+              key={cat.id}
+              className="p-6 sm:p-8 flex flex-col md:grid md:grid-cols-12 gap-6 md:gap-4 items-start md:items-center hover:bg-brand-navy/[0.01] transition-colors"
+            >
               <div className="w-full md:col-span-6">
                 <div className="flex items-center gap-3 mb-1">
                   <h3 className="text-sm font-bold text-brand-navy">{cat.label}</h3>
@@ -108,23 +173,30 @@ export default function NotificationPreferences() {
                 </div>
                 <p className="text-xs text-brand-navy/40">{cat.desc}</p>
               </div>
-              
+
               {/* Channel Toggles */}
-              <div className="w-full md:col-span-6 grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-4">
-                {channels.map(chan => (
-                  <div key={chan.id} className="flex flex-col md:flex-row items-center justify-between md:justify-center gap-2 bg-brand-navy/[0.02] md:bg-transparent p-3 md:p-0 rounded-sm">
+              <div className="w-full md:col-span-6 grid grid-cols-2 sm:grid-cols-4 gap-4">
+                {CHANNELS.map((chan) => (
+                  <div
+                    key={chan.id}
+                    className="flex flex-col md:flex-row items-center justify-between md:justify-center gap-2 bg-brand-navy/[0.02] md:bg-transparent p-3 md:p-0 rounded-sm"
+                  >
                     <span className="md:hidden text-[8px] uppercase tracking-widest font-bold text-brand-navy/40 flex items-center gap-2">
                       {chan.icon} {chan.label}
                     </span>
-                    <button 
-                      onClick={() => togglePreference(cat.id, chan.id)}
+                    <button
+                      onClick={() => togglePreference(cat.id as CategoryId, chan.id)}
                       disabled={cat.mandatory}
                       className={`w-10 sm:w-12 h-5 sm:h-6 rounded-full p-1 transition-all duration-300 relative ${
-                        preferences[cat.id][chan.id] ? 'bg-brand-gold' : 'bg-brand-navy/10'
-                      } ${cat.mandatory ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                        preferences[cat.id as CategoryId][chan.id] ? "bg-brand-gold" : "bg-brand-navy/10"
+                      } ${cat.mandatory ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
                     >
-                      <motion.div 
-                        animate={{ x: preferences[cat.id][chan.id] ? (typeof window !== 'undefined' && window.innerWidth < 640 ? 20 : 24) : 0 }}
+                      <motion.div
+                        animate={{
+                          x: preferences[cat.id as CategoryId][chan.id]
+                            ? (typeof window !== "undefined" && window.innerWidth < 640 ? 20 : 24)
+                            : 0,
+                        }}
                         className="w-3 h-3 sm:w-4 sm:h-4 bg-white rounded-full shadow-sm"
                       />
                     </button>
@@ -138,13 +210,22 @@ export default function NotificationPreferences() {
         <div className="p-6 sm:p-8 bg-brand-navy/5 flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="flex items-center gap-4 text-brand-navy/40">
             <ShieldCheck size={20} className="text-brand-gold shrink-0" />
-            <p className="text-[10px] uppercase tracking-widest font-bold text-center sm:text-left">We only send relevant updates — no spam, ever.</p>
+            <p className="text-[10px] uppercase tracking-widest font-bold text-center sm:text-left">
+              We only send relevant updates — no spam, ever.
+            </p>
           </div>
-          <button 
+          <button
             onClick={handleSave}
-            className="w-full md:w-auto bg-brand-navy text-white px-12 py-5 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl"
+            disabled={saving}
+            className="w-full md:w-auto bg-brand-navy text-white px-12 py-5 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl disabled:opacity-70 flex items-center justify-center gap-3"
           >
-            Save Preferences
+            {saving ? (
+              <>
+                <Loader2 size={14} className="animate-spin" /> Saving...
+              </>
+            ) : (
+              "Save Preferences"
+            )}
           </button>
         </div>
       </div>
@@ -152,7 +233,8 @@ export default function NotificationPreferences() {
       <div className="mt-12 p-8 bg-white rounded-sm border border-brand-navy/5 shadow-sm flex gap-6">
         <Info size={24} className="text-brand-gold shrink-0" />
         <p className="text-xs text-brand-navy/60 leading-relaxed">
-          Note: Certain critical communications such as security OTPs, account recovery links, and legal notices are mandatory and will be sent via Email and SMS regardless of these settings.
+          Note: Certain critical communications such as security OTPs, account recovery links, and legal notices are
+          mandatory and will be sent via Email and SMS regardless of these settings.
         </p>
       </div>
     </div>

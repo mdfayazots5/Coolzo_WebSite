@@ -1,18 +1,57 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Star, Filter, Search, Play, Quote, ShieldCheck } from "lucide-react";
+import { Star, Play, Quote, ShieldCheck, Loader2 } from "lucide-react";
+import { ReviewService } from "../services/reviewService";
+import type { ReviewResponse } from "../services/reviewService";
 
-const reviews = [
-  { id: 1, name: "Julian V.", service: "Precision Repair", rating: 5, text: "Coolzo understands that climate control is about more than just numbers on a thermostat. It's about the atmosphere of my home.", date: "2 days ago" },
-  { id: 2, name: "Elena R.", service: "Deep Jet Wash", rating: 5, text: "The only technician service that respects my home's integrity. Silent professionals, impeccably clean work, and absolute technical precision.", date: "1 week ago" },
-  { id: 3, name: "Michael T.", service: "Total Care AMC", rating: 5, text: "Their AMC plan is seamless care. My AC works perfectly year-round without me ever having to place a single maintenance call.", date: "2 weeks ago" },
-  { id: 4, name: "Smart Install", service: "Architectural Install", rating: 4, text: "The installation was flawless. They even matched the vent covers to my ceiling's custom paint. Truly professional service.", date: "1 month ago" },
-  { id: 5, name: "David K.", service: "Gas Refilling", rating: 5, text: "Quick, professional, and transparent. The digital health report they provided after the service was very detailed.", date: "1 month ago" },
-  { id: 6, name: "Isabella M.", service: "Precision Repair", rating: 5, text: "I called them for an emergency at 10 PM on a Sunday. They were here in 45 minutes. Exceptional response time.", date: "2 months ago" },
-];
+function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString("en-IN", {
+    day: "numeric", month: "short", year: "numeric",
+  });
+}
+
+function deriveAvgRating(reviews: ReviewResponse[]): number {
+  if (!reviews.length) return 4.8;
+  return Math.round((reviews.reduce((s, r) => s + r.rating, 0) / reviews.length) * 10) / 10;
+}
+
+function starDistribution(reviews: ReviewResponse[]): Record<number, string> {
+  if (!reviews.length) return { 5: "85%", 4: "10%", 3: "3%", 2: "1%", 1: "1%" };
+  const counts: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  reviews.forEach((r) => { counts[r.rating] = (counts[r.rating] ?? 0) + 1; });
+  const total = reviews.length;
+  return Object.fromEntries(
+    Object.entries(counts).map(([k, v]) => [k, `${Math.round((v / total) * 100)}%`]),
+  );
+}
+
+const FILTERS = ["all", "repair", "cleaning", "amc", "installation"];
 
 export default function Reviews() {
+  const [reviews, setReviews] = useState<ReviewResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [hasNext, setHasNext] = useState(false);
   const [activeFilter, setActiveFilter] = useState("all");
+
+  useEffect(() => {
+    setLoading(true);
+    ReviewService.getReviews(undefined, page, 12)
+      .then((result) => {
+        setReviews((prev) => (page === 1 ? (result.items ?? []) : [...prev, ...(result.items ?? [])]));
+        setHasNext(result.hasNext ?? false);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [page]);
+
+  const filteredReviews = reviews.filter((r) => {
+    if (activeFilter === "all") return true;
+    return (r.serviceName ?? "").toLowerCase().includes(activeFilter);
+  });
+
+  const avgRating = deriveAvgRating(reviews);
+  const dist = starDistribution(reviews);
 
   return (
     <div className="pt-32 pb-24 bg-brand-cream min-h-screen">
@@ -21,30 +60,33 @@ export default function Reviews() {
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center mb-16 lg:mb-24">
           <div>
             <span className="text-brand-gold text-[10px] uppercase tracking-[0.4em] font-bold mb-4 block">The Registry</span>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif text-brand-navy mb-8 leading-tight">Voices of <br />Trust.</h1>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif text-brand-navy mb-8 leading-tight">
+              Voices of <br />Trust.
+            </h1>
             <p className="text-brand-navy/50 text-xl font-light leading-relaxed mb-12">
               Our reputation is built on the satisfaction of Hyderabad's modern property owners.
             </p>
           </div>
           <div className="bg-white p-8 sm:p-12 rounded-sm border border-brand-navy/5 shadow-xl text-center">
             <div className="mb-8">
-              <p className="text-7xl font-serif text-brand-navy mb-2">4.8</p>
+              <p className="text-7xl font-serif text-brand-navy mb-2">{avgRating.toFixed(1)}</p>
               <div className="flex justify-center gap-1 text-brand-gold mb-4">
-                {[1, 2, 3, 4, 5].map(i => <Star key={i} size={20} className="fill-brand-gold" />)}
+                {[1, 2, 3, 4, 5].map((i) => <Star key={i} size={20} className="fill-brand-gold" />)}
               </div>
-              <p className="text-brand-navy/40 text-[10px] uppercase tracking-widest font-bold">Based on 2,400+ Verified Reviews</p>
+              <p className="text-brand-navy/40 text-[10px] uppercase tracking-widest font-bold">
+                Based on {reviews.length > 0 ? `${reviews.length}+ ` : "2,400+ "}Verified Reviews
+              </p>
             </div>
             <div className="space-y-3 max-w-xs mx-auto">
-              {[5, 4, 3, 2, 1].map(star => (
+              {[5, 4, 3, 2, 1].map((star) => (
                 <div key={star} className="flex items-center gap-4">
                   <span className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 w-4">{star}</span>
                   <div className="flex-grow h-1.5 bg-brand-navy/5 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-brand-gold" 
-                      style={{ width: `${star === 5 ? 85 : star === 4 ? 10 : 5}%` }} 
-                    />
+                    <div className="h-full bg-brand-gold" style={{ width: dist[star] ?? "0%" }} />
                   </div>
-                  <span className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 w-8">{star === 5 ? '85%' : star === 4 ? '10%' : '5%'}</span>
+                  <span className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 w-8">
+                    {dist[star] ?? "0%"}
+                  </span>
                 </div>
               ))}
             </div>
@@ -58,11 +100,11 @@ export default function Reviews() {
             <span className="text-brand-gold text-[10px] uppercase tracking-widest font-bold">Coming Soon</span>
           </div>
           <div className="grid md:grid-cols-2 gap-8">
-            {[1, 2].map(i => (
+            {[1, 2].map((i) => (
               <div key={i} className="aspect-video bg-brand-navy relative rounded-sm overflow-hidden group cursor-pointer">
-                <img 
-                  src={`https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop`} 
-                  alt="Video Thumbnail" 
+                <img
+                  src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop"
+                  alt="Video Thumbnail"
                   className="w-full h-full object-cover opacity-40 grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000"
                   referrerPolicy="no-referrer"
                 />
@@ -82,53 +124,86 @@ export default function Reviews() {
 
         {/* Filter Bar */}
         <div className="flex flex-wrap gap-4 mb-12 border-b border-brand-navy/5 pb-8">
-          {['all', 'repair', 'cleaning', 'amc', 'installation'].map(filter => (
+          {FILTERS.map((filter) => (
             <button
               key={filter}
               onClick={() => setActiveFilter(filter)}
-              className={`px-6 py-2 rounded-sm text-[10px] uppercase tracking-widest font-bold transition-all ${activeFilter === filter ? "bg-brand-navy text-white" : "bg-white text-brand-navy/40 hover:text-brand-navy border border-brand-navy/5"}`}
+              className={`px-6 py-2 rounded-sm text-[10px] uppercase tracking-widest font-bold transition-all ${
+                activeFilter === filter
+                  ? "bg-brand-navy text-white"
+                  : "bg-white text-brand-navy/40 hover:text-brand-navy border border-brand-navy/5"
+              }`}
             >
-              {filter === 'all' ? 'All Reviews' : filter.toUpperCase()}
+              {filter === "all" ? "All Reviews" : filter.toUpperCase()}
             </button>
           ))}
         </div>
 
         {/* Review Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-24">
-          <AnimatePresence mode="popLayout">
-            {reviews.map((review, i) => (
-              <motion.div
-                key={review.id}
-                layout
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ delay: i * 0.1 }}
-                className="bg-white p-10 rounded-sm border border-brand-navy/5 hover:border-brand-gold/30 transition-all duration-500 shadow-sm hover:shadow-xl"
-              >
-                <div className="flex justify-between items-start mb-6">
-                  <div className="flex gap-1 text-brand-gold">
-                    {[...Array(review.rating)].map((_, i) => <Star key={i} size={14} className="fill-brand-gold" />)}
-                  </div>
-                  <span className="text-[9px] uppercase tracking-widest font-bold text-brand-navy/30">{review.date}</span>
-                </div>
-                <Quote className="text-brand-gold/10 mb-4" size={32} />
-                <p className="text-brand-navy/70 text-lg italic font-serif leading-relaxed mb-8">
-                  "{review.text}"
-                </p>
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-brand-navy/5 rounded-full flex items-center justify-center text-brand-navy font-serif italic">
-                    {review.name[0]}
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-brand-navy">{review.name}</p>
-                    <p className="text-[9px] uppercase tracking-widest font-bold text-brand-gold">{review.service}</p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
+        {loading && page === 1 ? (
+          <div className="py-32 flex justify-center">
+            <Loader2 className="animate-spin text-brand-gold" size={40} />
+          </div>
+        ) : (
+          <>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+              <AnimatePresence mode="popLayout">
+                {filteredReviews.map((review, i) => (
+                  <motion.div
+                    key={review.reviewId}
+                    layout
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ delay: i * 0.05 }}
+                    className="bg-white p-10 rounded-sm border border-brand-navy/5 hover:border-brand-gold/30 transition-all duration-500 shadow-sm hover:shadow-xl"
+                  >
+                    <div className="flex justify-between items-start mb-6">
+                      <div className="flex gap-1 text-brand-gold">
+                        {[...Array(review.rating)].map((_, j) => (
+                          <Star key={j} size={14} className="fill-brand-gold" />
+                        ))}
+                      </div>
+                      <span className="text-[9px] uppercase tracking-widest font-bold text-brand-navy/30">
+                        {formatDate(review.dateCreated)}
+                      </span>
+                    </div>
+                    <Quote className="text-brand-gold/10 mb-4" size={32} />
+                    <p className="text-brand-navy/70 text-lg italic font-serif leading-relaxed mb-8">
+                      "{review.comment}"
+                    </p>
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 bg-brand-navy/5 rounded-full flex items-center justify-center text-brand-navy font-serif italic">
+                        {review.customerName[0]}
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-brand-navy">{review.customerName}</p>
+                        {review.serviceName && (
+                          <p className="text-[9px] uppercase tracking-widest font-bold text-brand-gold">
+                            {review.serviceName}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+
+            {hasNext && (
+              <div className="text-center mb-24">
+                <button
+                  onClick={() => setPage((p) => p + 1)}
+                  disabled={loading}
+                  className="px-12 py-5 border border-brand-navy/10 rounded-sm text-[10px] uppercase tracking-widest font-bold text-brand-navy hover:bg-brand-navy hover:text-white transition-all disabled:opacity-50 flex items-center justify-center gap-3 mx-auto"
+                >
+                  {loading ? <Loader2 size={14} className="animate-spin" /> : null}
+                  Load More Reviews
+                </button>
+              </div>
+            )}
+          </>
+        )}
 
         {/* Platform Trust */}
         <div className="text-center py-24 border-t border-brand-navy/5">
@@ -136,7 +211,8 @@ export default function Reviews() {
             <ShieldCheck size={48} className="text-brand-gold mx-auto mb-8" />
             <h3 className="text-3xl font-serif text-brand-navy mb-6">Verified Quality.</h3>
             <p className="text-brand-navy/40 text-sm leading-relaxed mb-12">
-              Every review on this platform is verified through our service delivery system. We only publish feedback from confirmed Coolzo service completions to ensure absolute integrity.
+              Every review on this platform is verified through our service delivery system. We only publish
+              feedback from confirmed Coolzo service completions to ensure absolute integrity.
             </p>
             <button className="text-brand-gold text-[10px] uppercase tracking-widest font-bold hover:text-brand-navy transition-colors">
               Read Our Review Policy

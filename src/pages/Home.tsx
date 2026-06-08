@@ -1,6 +1,9 @@
 import { motion } from "motion/react";
-import { ChevronRight, ShieldCheck, Clock, CheckCircle2, Star, ArrowRight, MapPin } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ChevronRight, ShieldCheck, Clock, CheckCircle2, Star, ArrowRight, MapPin, Gem } from "lucide-react";
 import { Link } from "react-router-dom";
+import { CatalogService } from "../services/catalogService";
+import type { ServiceCategoryLookupResponse } from "../types/catalog";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -9,7 +12,50 @@ const fadeIn = {
   transition: { duration: 0.6, ease: "easeOut" }
 };
 
+const STATIC_CATEGORIES = [
+  { title: "Repair", icon: <ShieldCheck size={32} />, desc: "Diagnostic excellence for all systems." },
+  { title: "Cleaning", icon: <Clock size={32} />, desc: "Deep jet-wash for pure air." },
+  { title: "Gas Refill", icon: <Gem size={32} />, desc: "Precision pressure restoration." },
+  { title: "Installation", icon: <MapPin size={32} />, desc: "Smart system placement." },
+  { title: "AMC Plans", icon: <Star size={32} />, desc: "Proactive total care maintenance." },
+];
+
+const ICONS = [
+  <ShieldCheck size={32} />,
+  <Clock size={32} />,
+  <CheckCircle2 size={32} />,
+  <MapPin size={32} />,
+  <Star size={32} />,
+  <Gem size={32} />,
+];
+
+function categoryIcon(name: string | undefined | null, idx: number) {
+  const n = (name ?? "").toLowerCase();
+  if (n.includes("repair")) return <ShieldCheck size={32} />;
+  if (n.includes("clean") || n.includes("wash")) return <Clock size={32} />;
+  if (n.includes("install")) return <MapPin size={32} />;
+  if (n.includes("gas")) return <Gem size={32} />;
+  if (n.includes("amc") || n.includes("maint")) return <Star size={32} />;
+  return ICONS[idx % ICONS.length];
+}
+
 export default function Home() {
+  const [categories, setCategories] = useState<ServiceCategoryLookupResponse[]>([]);
+
+  useEffect(() => {
+    CatalogService.getServiceCategories()
+      .then((data) => { if (data?.length) setCategories(data); })
+      .catch(() => {/* keep static fallback */});
+  }, []);
+
+  const displayCategories = categories.length > 0
+    ? categories.slice(0, 6).map((cat, i) => ({
+        title: cat.categoryName ?? "Service",
+        icon: categoryIcon(cat.categoryName, i),
+        desc: cat.description ?? "Professional AC services by certified technicians.",
+      }))
+    : STATIC_CATEGORIES;
+
   return (
     <div className="bg-brand-cream">
       {/* Hero Section */}
@@ -101,13 +147,7 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-            {[
-              { title: "Repair", icon: <ShieldCheck size={32} />, desc: "Diagnostic excellence for all systems." },
-              { title: "Cleaning", icon: <Clock size={32} />, desc: "Deep jet-wash for pure air." },
-              { title: "Gas Refill", icon: <CheckCircle2 size={32} />, desc: "Precision pressure restoration." },
-              { title: "Installation", icon: <MapPin size={32} />, desc: "Smart system placement." },
-              { title: "AMC Plans", icon: <Star size={32} />, desc: "Proactive total care maintenance." }
-            ].map((service, i) => (
+            {displayCategories.map((service, i) => (
               <motion.div 
                 key={i}
                 {...fadeIn}

@@ -3,12 +3,14 @@ import { ShoppingBag, User, Menu, X, LayoutDashboard, Bell } from "lucide-react"
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "../contexts/AuthContext";
-import { NotificationService, AppNotification } from "../services/notificationService";
+import { getDashboardRoute } from "../utils/roleRoutes";
+import { NotificationService } from "../services/notificationService";
+import type { CustomerNotificationResponse } from "../types/notification";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [notifications, setNotifications] = useState<CustomerNotificationResponse[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const location = useLocation();
   const { user } = useAuth();
@@ -21,19 +23,12 @@ export default function Navbar() {
 
   useEffect(() => {
     if (user) {
-      const fetchNotifications = async () => {
-        const data = await NotificationService.getNotifications(user.uid);
-        setNotifications(data);
-        setUnreadCount(data.filter(n => !n.isRead).length);
-      };
-      fetchNotifications();
-
-      // Subscribe to real-time updates
-      const unsubscribe = NotificationService.subscribeToNotifications(user.uid, (newNotif) => {
-        setNotifications(prev => [newNotif, ...prev]);
-        setUnreadCount(prev => prev + 1);
-      });
-      return () => unsubscribe();
+      NotificationService.getNotifications()
+        .then((data) => {
+          setNotifications(data);
+          setUnreadCount(data.filter((n) => !n.isRead).length);
+        })
+        .catch(() => {/* non-critical — keep zero count on error */});
     }
   }, [user]);
 
@@ -50,7 +45,8 @@ export default function Navbar() {
   return (
     <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${scrolled || isOpen ? "bg-brand-cream/95 backdrop-blur-md py-3 shadow-md" : "bg-transparent py-6"}`}>
       <div className="container mx-auto px-4 sm:px-6 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 group shrink-0">
+        {/* Logo — authenticated users go to their dashboard; guests go to marketing home */}
+        <Link to={user ? getDashboardRoute(user) : "/"} className="flex items-center gap-2 group shrink-0">
           <span className={`text-xl sm:text-2xl font-serif font-bold tracking-tighter transition-colors duration-500 ${scrolled || isOpen || location.pathname !== "/" ? "text-brand-navy" : "text-white"}`}>
             Coolzo
           </span>
