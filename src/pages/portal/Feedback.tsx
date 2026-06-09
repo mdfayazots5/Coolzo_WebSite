@@ -84,7 +84,7 @@ export default function Feedback() {
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="bg-white p-12 rounded-sm border border-brand-navy/5 shadow-2xl relative overflow-hidden"
+          className="bg-white p-12 rounded-xl border border-brand-navy/5 shadow-2xl relative overflow-hidden"
         >
           <div className="absolute top-0 left-0 w-full h-2 bg-brand-gold" />
           <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-8">
@@ -98,7 +98,7 @@ export default function Feedback() {
           <div className="space-y-4">
             <Link
               to="/book"
-              className="w-full bg-brand-navy text-white py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all flex items-center justify-center gap-3 shadow-xl"
+              className="w-full bg-brand-navy text-white py-4 rounded-lg text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all flex items-center justify-center gap-3 shadow-xl"
             >
               Book Next Service <ArrowRight size={16} />
             </Link>
@@ -127,9 +127,9 @@ export default function Feedback() {
         <p className="text-brand-navy/40 text-[10px] uppercase tracking-[0.3em] font-bold">Rate your experience</p>
       </div>
 
-      <div className="bg-white p-6 sm:p-10 md:p-12 rounded-sm border border-brand-navy/5 shadow-sm">
+      <div className="bg-white p-6 sm:p-10 md:p-12 rounded-xl border border-brand-navy/5 shadow-sm">
         {/* Service Summary */}
-        <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-8 p-6 sm:p-8 bg-brand-navy/5 rounded-sm mb-12">
+        <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-8 p-6 sm:p-8 bg-brand-navy/5 rounded-xl mb-12">
           <div className="w-20 h-20 rounded-full border-2 border-brand-gold p-1 shrink-0">
             <img
               src={techAvatarUrl}
@@ -187,7 +187,7 @@ export default function Feedback() {
             ].map((dim, i) => (
               <div
                 key={i}
-                className="bg-brand-navy/[0.02] p-8 rounded-sm text-center border border-brand-navy/5 group hover:border-brand-gold/30 transition-all"
+                className="bg-brand-navy/[0.02] p-8 rounded-xl text-center border border-brand-navy/5 group hover:border-brand-gold/30 transition-all"
               >
                 <div className="text-brand-gold mb-4 flex justify-center group-hover:scale-110 transition-transform">
                   {dim.icon}
@@ -213,25 +213,25 @@ export default function Feedback() {
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="Tell us what you loved or how we can improve..."
-              className="w-full bg-brand-navy/5 border border-transparent rounded-sm px-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors h-32 resize-none"
+              className="w-full bg-brand-navy/5 border border-transparent rounded-lg px-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors h-32 resize-none"
             />
           </div>
 
           {/* Recommendation Toggle */}
-          <div className="flex flex-col sm:flex-row items-center justify-between p-6 bg-brand-navy/5 rounded-sm gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between p-6 bg-brand-navy/5 rounded-xl gap-4">
             <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy text-center sm:text-left">
               Would you recommend Coolzo to others?
             </p>
             <div className="flex gap-4 w-full sm:w-auto">
               <button
                 type="button"
-                className="flex-1 sm:flex-none px-6 py-3 bg-white border border-brand-navy/10 rounded-sm text-[9px] uppercase tracking-widest font-bold text-brand-navy hover:bg-brand-navy hover:text-white transition-all"
+                className="flex-1 sm:flex-none px-6 py-3 bg-white border border-brand-navy/10 rounded-lg text-[9px] uppercase tracking-widest font-bold text-brand-navy hover:bg-brand-navy hover:text-white transition-all"
               >
                 Yes
               </button>
               <button
                 type="button"
-                className="flex-1 sm:flex-none px-6 py-3 bg-white border border-brand-navy/10 rounded-sm text-[9px] uppercase tracking-widest font-bold text-brand-navy hover:bg-brand-navy hover:text-white transition-all"
+                className="flex-1 sm:flex-none px-6 py-3 bg-white border border-brand-navy/10 rounded-lg text-[9px] uppercase tracking-widest font-bold text-brand-navy hover:bg-brand-navy hover:text-white transition-all"
               >
                 No
               </button>
@@ -241,7 +241,7 @@ export default function Feedback() {
           <button
             type="submit"
             disabled={rating === 0 || isSubmitting}
-            className={`w-full bg-brand-navy text-white py-5 rounded-sm text-xs uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl flex items-center justify-center gap-3 ${
+            className={`w-full bg-brand-navy text-white py-5 rounded-lg text-xs uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl flex items-center justify-center gap-3 ${
               rating === 0 || isSubmitting ? "opacity-50 cursor-not-allowed" : ""
             }`}
           >

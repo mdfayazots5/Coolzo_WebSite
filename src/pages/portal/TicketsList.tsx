@@ -93,12 +93,12 @@ export default function TicketsList() {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
-          <div className="flex bg-white p-1 rounded-sm border border-brand-navy/5 shadow-sm overflow-x-auto no-scrollbar scroll-smooth flex-grow sm:flex-grow-0">
+          <div className="flex bg-white p-1 rounded-xl border border-brand-navy/5 shadow-sm overflow-x-auto no-scrollbar scroll-smooth flex-grow sm:flex-grow-0">
             {["All", "Open", "Resolved"].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab as TicketStatus)}
-                className={`px-4 sm:px-6 py-3 rounded-sm text-[10px] uppercase tracking-widest font-bold transition-all whitespace-nowrap ${
+                className={`px-4 sm:px-6 py-3 rounded-lg text-[10px] uppercase tracking-widest font-bold transition-all whitespace-nowrap ${
                   activeTab === tab
                     ? "bg-brand-navy text-white shadow-lg"
                     : "text-brand-navy/40 hover:text-brand-navy"
@@ -110,7 +110,7 @@ export default function TicketsList() {
           </div>
           <Link
             to="/portal/support/new"
-            className="flex items-center justify-center gap-3 bg-brand-navy text-white px-8 py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl whitespace-nowrap"
+            className="flex items-center justify-center gap-3 bg-brand-navy text-white px-8 py-4 rounded-lg text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl whitespace-nowrap"
           >
             <Plus size={16} /> Raise New Ticket
           </Link>
@@ -118,18 +118,18 @@ export default function TicketsList() {
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white p-6 rounded-sm border border-brand-navy/5 shadow-sm mb-8 flex flex-col md:flex-row gap-4">
+      <div className="bg-white p-6 rounded-xl border border-brand-navy/5 shadow-sm mb-8 flex flex-col md:flex-row gap-4">
         <div className="flex-grow relative">
           <Search size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-brand-navy/30" />
           <input
             type="text"
             placeholder="Search by Ticket # or Subject..."
-            className="w-full bg-brand-navy/5 border border-transparent rounded-sm pl-14 pr-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors"
+            className="w-full bg-brand-navy/5 border border-transparent rounded-lg pl-14 pr-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <button className="px-8 py-4 border border-brand-navy/10 rounded-sm flex items-center justify-center gap-3 text-[10px] uppercase tracking-widest font-bold text-brand-navy hover:bg-brand-navy/5 transition-all">
+        <button className="px-8 py-4 border border-brand-navy/10 rounded-lg flex items-center justify-center gap-3 text-[10px] uppercase tracking-widest font-bold text-brand-navy hover:bg-brand-navy/5 transition-all">
           <Filter size={16} /> Category
         </button>
       </div>
@@ -143,7 +143,7 @@ export default function TicketsList() {
 
       {/* Error */}
       {!loading && error && (
-        <div className="bg-red-50 border border-red-100 rounded-sm p-6 text-center">
+        <div className="bg-red-50 border border-red-100 rounded-xl p-6 text-center">
           <p className="text-red-600 text-sm mb-4">{error}</p>
           <button
             onClick={() => fetchTickets(page)}
@@ -165,7 +165,7 @@ export default function TicketsList() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  className="bg-white p-6 md:p-8 rounded-sm border border-brand-navy/5 shadow-sm hover:shadow-md transition-all group relative"
+                  className="bg-white p-6 md:p-8 rounded-xl border border-brand-navy/5 shadow-sm hover:shadow-md transition-all group relative"
                 >
                   {ticket.hasUnreadReplies && (
                     <div className="absolute top-0 left-0 w-1 h-full bg-brand-gold" />
@@ -222,9 +222,10 @@ export default function TicketsList() {
 
                         <Link
                           to={`/portal/support/${ticket.supportTicketId}`}
-                          className="p-3 border border-brand-navy/10 text-brand-navy/40 hover:text-brand-navy hover:border-brand-navy transition-all rounded-sm"
+                          aria-label="View ticket details"
+                          className="p-3 border border-brand-navy/10 text-brand-navy/40 hover:text-brand-navy hover:border-brand-navy transition-all rounded-lg"
                         >
-                          <ChevronRight size={16} />
+                          <ChevronRight size={16} aria-hidden="true" />
                         </Link>
                       </div>
                     </div>
@@ -235,7 +236,7 @@ export default function TicketsList() {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="text-center py-24 bg-white rounded-sm border border-brand-navy/5 border-dashed"
+                className="text-center py-24 bg-white rounded-xl border border-brand-navy/5 border-dashed"
               >
                 <div className="w-24 h-24 bg-brand-navy/5 rounded-full flex items-center justify-center mx-auto mb-8">
                   <HelpCircle size={40} className="text-brand-navy/20" />
@@ -246,7 +247,7 @@ export default function TicketsList() {
                 </p>
                 <Link
                   to="/portal/support/new"
-                  className="inline-flex items-center gap-3 bg-brand-navy text-white px-10 py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all"
+                  className="inline-flex items-center gap-3 bg-brand-navy text-white px-10 py-4 rounded-lg text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all"
                 >
                   Raise New Ticket <ArrowRight size={14} />
                 </Link>
@@ -262,7 +263,7 @@ export default function TicketsList() {
           <button
             disabled={page === 1}
             onClick={() => setPage((p) => p - 1)}
-            className="px-6 h-10 rounded-sm border border-brand-navy/5 flex items-center justify-center text-brand-navy/40 hover:bg-brand-navy hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+            className="px-6 h-10 rounded-lg border border-brand-navy/5 flex items-center justify-center text-brand-navy/40 hover:bg-brand-navy hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed"
           >
             Prev
           </button>
@@ -272,7 +273,7 @@ export default function TicketsList() {
           <button
             disabled={!hasNext}
             onClick={() => setPage((p) => p + 1)}
-            className="px-6 h-10 rounded-sm border border-brand-navy/5 flex items-center justify-center text-brand-navy/40 hover:bg-brand-navy hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+            className="px-6 h-10 rounded-lg border border-brand-navy/5 flex items-center justify-center text-brand-navy/40 hover:bg-brand-navy hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed"
           >
             Next
           </button>

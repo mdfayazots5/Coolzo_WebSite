@@ -123,7 +123,7 @@ export default function InvoiceDetail() {
             animate={{ opacity: 1, scale: 1 }}
             className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-brand-navy/60 backdrop-blur-sm"
           >
-            <div className="bg-white p-12 rounded-sm max-w-md w-full text-center shadow-2xl relative overflow-hidden">
+            <div className="bg-white p-12 rounded-xl max-w-md w-full text-center shadow-2xl relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-2 bg-brand-gold" />
               <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-8">
                 <CheckCircle2 size={40} className="text-green-600" />
@@ -135,7 +135,7 @@ export default function InvoiceDetail() {
               <div className="space-y-4">
                 <button
                   onClick={handleDownload}
-                  className="w-full bg-brand-navy text-white py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all flex items-center justify-center gap-3"
+                  className="w-full bg-brand-navy text-white py-4 rounded-lg text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all flex items-center justify-center gap-3"
                 >
                   <Download size={16} /> Download Receipt
                 </button>
@@ -161,14 +161,14 @@ export default function InvoiceDetail() {
         <div className="flex gap-4 w-full sm:w-auto">
           <button
             onClick={() => window.print()}
-            className="flex-1 sm:flex-initial p-3 border border-brand-navy/10 text-brand-navy/40 hover:text-brand-navy transition-all rounded-sm flex items-center justify-center gap-2"
+            className="flex-1 sm:flex-initial p-3 border border-brand-navy/10 text-brand-navy/40 hover:text-brand-navy transition-all rounded-lg flex items-center justify-center gap-2"
           >
             <Printer size={18} />
             <span className="sm:hidden text-[9px] uppercase tracking-widest font-bold">Print</span>
           </button>
           <button
             onClick={handleDownload}
-            className="flex-1 sm:flex-initial p-3 border border-brand-navy/10 text-brand-navy/40 hover:text-brand-navy transition-all rounded-sm flex items-center justify-center gap-2"
+            className="flex-1 sm:flex-initial p-3 border border-brand-navy/10 text-brand-navy/40 hover:text-brand-navy transition-all rounded-lg flex items-center justify-center gap-2"
           >
             <Download size={18} />
             <span className="sm:hidden text-[9px] uppercase tracking-widest font-bold">Download</span>
@@ -178,7 +178,7 @@ export default function InvoiceDetail() {
 
       <div className="grid lg:grid-cols-3 gap-12">
         {/* Invoice Body */}
-        <div className="lg:col-span-2 bg-white p-6 sm:p-10 md:p-16 rounded-sm border border-brand-navy/5 shadow-sm relative overflow-hidden">
+        <div className="lg:col-span-2 bg-white p-6 sm:p-10 md:p-16 rounded-xl border border-brand-navy/5 shadow-sm relative overflow-hidden">
           <div className="absolute top-0 right-0 w-48 h-48 bg-brand-navy/5 -rotate-45 translate-x-24 -translate-y-24" />
 
           <div className="flex flex-col sm:flex-row justify-between items-start mb-12 sm:mb-16 relative z-10 gap-8 sm:gap-0">
@@ -204,7 +204,7 @@ export default function InvoiceDetail() {
           </div>
 
           {/* Service Reference */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 p-6 sm:p-8 bg-brand-navy/5 rounded-sm mb-12 sm:mb-16">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 p-6 sm:p-8 bg-brand-navy/5 rounded-xl mb-12 sm:mb-16">
             <div>
               <p className="text-[9px] uppercase tracking-widest font-bold text-brand-navy/40 mb-2">Booking Reference</p>
               {invoice.bookingReference ? (
@@ -317,7 +317,7 @@ export default function InvoiceDetail() {
         {/* Payment Sidebar */}
         <div className="space-y-8">
           {!isPaid && (
-            <div className="bg-brand-navy p-10 rounded-sm text-white shadow-2xl relative overflow-hidden">
+            <div className="bg-brand-navy p-10 rounded-xl text-white shadow-2xl relative overflow-hidden">
               <div className="absolute top-0 right-0 w-full h-full bg-brand-gold/5 skew-x-12 translate-x-1/4" />
               <div className="relative z-10">
                 <h3 className="text-xl font-serif mb-8">Secure Payment</h3>
@@ -329,7 +329,7 @@ export default function InvoiceDetail() {
                   {PAYMENT_METHODS.map((method) => (
                     <label
                       key={method.value}
-                      className="flex items-center gap-4 p-4 bg-white/5 border border-white/10 rounded-sm cursor-pointer hover:bg-white/10 transition-all group"
+                      className="flex items-center gap-4 p-4 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition-all group"
                     >
                       <input
                         type="radio"
@@ -349,7 +349,7 @@ export default function InvoiceDetail() {
                 <button
                   onClick={handlePayment}
                   disabled={isPaying}
-                  className="w-full bg-brand-gold text-brand-navy py-5 rounded-sm text-xs uppercase tracking-widest font-bold hover:bg-white transition-all shadow-xl flex items-center justify-center gap-3 disabled:opacity-70"
+                  className="w-full bg-brand-gold text-brand-navy py-5 rounded-lg text-xs uppercase tracking-widest font-bold hover:bg-white transition-all shadow-xl flex items-center justify-center gap-3 disabled:opacity-70"
                 >
                   {isPaying ? (
                     <>
@@ -364,7 +364,7 @@ export default function InvoiceDetail() {
             </div>
           )}
 
-          <div className="bg-white p-8 rounded-sm border border-brand-navy/5 shadow-sm">
+          <div className="bg-white p-8 rounded-xl border border-brand-navy/5 shadow-sm">
             <h3 className="text-lg font-serif text-brand-navy mb-6">Payment Info</h3>
             <div className="space-y-6">
               <div className="flex gap-4">
@@ -382,7 +382,7 @@ export default function InvoiceDetail() {
             </div>
           </div>
 
-          <div className="bg-brand-gold/10 p-8 rounded-sm border border-brand-gold/20">
+          <div className="bg-brand-gold/10 p-8 rounded-xl border border-brand-gold/20">
             <Info size={24} className="text-brand-gold mb-4" />
             <h4 className="text-sm font-bold text-brand-navy mb-2">Need Help?</h4>
             <p className="text-xs text-brand-navy/60 leading-relaxed mb-6">

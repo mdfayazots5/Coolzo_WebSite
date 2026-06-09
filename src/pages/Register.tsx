@@ -33,8 +33,13 @@ export default function Register() {
     e.preventDefault();
     setError(null);
     setIsCreating(true);
+    // Strip all non-digit characters so "+91 98765 43210" → "919876543210".
+    // The backend validator requires ^[0-9]{10,32}$.
+    const sanitizedMobile = formData.mobile.replace(/\D/g, "");
     try {
-      await createAccount(formData.fullName, formData.mobile.trim());
+      await createAccount(formData.fullName, sanitizedMobile);
+      // Store sanitized number — the OTP verify step uses formData.mobile
+      setFormData((prev) => ({ ...prev, mobile: sanitizedMobile }));
       // Account created. OTP has been sent to the mobile.
       setStep("otp");
     } catch (err: any) {
@@ -90,7 +95,7 @@ export default function Register() {
         </div>
 
         {/* Card */}
-        <div className="bg-white p-6 sm:p-10 md:p-12 rounded-sm border border-brand-gold/20 shadow-2xl">
+        <div className="bg-white p-6 sm:p-10 md:p-12 rounded-xl border border-brand-gold/20 shadow-2xl">
 
           {/* Step indicator */}
           <div className="flex items-center gap-3 mb-8">
@@ -117,15 +122,15 @@ export default function Register() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 16 }}
               >
-                <h2 className="text-2xl sm:text-3xl font-serif text-brand-navy mb-2">
+                <h1 className="text-2xl sm:text-3xl font-serif text-brand-navy mb-2">
                   Create Account.
-                </h2>
+                </h1>
                 <p className="text-brand-navy/40 text-xs mb-10">
                   Fill in your details — we'll send a verification code to your mobile.
                 </p>
 
                 {error && (
-                  <div className="bg-red-50 border border-red-200 p-4 rounded-sm mb-6 flex items-start gap-3">
+                  <div className="bg-red-50 border border-red-200 p-4 rounded-lg mb-6 flex items-start gap-3">
                     <AlertCircle size={16} className="text-red-500 mt-0.5 shrink-0" />
                     <p className="text-xs text-red-600 font-medium">{error}</p>
                   </div>
@@ -134,36 +139,38 @@ export default function Register() {
                 <form className="space-y-6" onSubmit={handleCreateAccount}>
                   {/* Full Name */}
                   <div className="space-y-2">
-                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">
+                    <label htmlFor="reg-name" className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">
                       Full Name
                     </label>
                     <div className="relative">
-                      <User size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-brand-navy/30" />
+                      <User size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-brand-navy/30" aria-hidden="true" />
                       <input
+                        id="reg-name"
                         required
                         type="text"
                         value={formData.fullName}
                         onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                         placeholder="John Doe"
-                        className="w-full bg-brand-navy/5 border border-brand-navy/5 rounded-sm pl-14 pr-6 py-4 text-brand-navy text-sm focus:outline-none focus:border-brand-gold transition-colors"
+                        className="w-full bg-brand-navy/5 border border-brand-navy/5 rounded-lg pl-14 pr-6 py-4 text-brand-navy text-sm focus:outline-none focus:border-brand-gold focus-visible:ring-2 focus-visible:ring-brand-gold/60 transition-colors"
                       />
                     </div>
                   </div>
 
                   {/* Mobile */}
                   <div className="space-y-2">
-                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">
+                    <label htmlFor="reg-mobile" className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">
                       Mobile Number
                     </label>
                     <div className="relative">
-                      <Phone size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-brand-navy/30" />
+                      <Phone size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-brand-navy/30" aria-hidden="true" />
                       <input
+                        id="reg-mobile"
                         required
                         type="tel"
                         value={formData.mobile}
                         onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
                         placeholder="+91 98765 43210"
-                        className="w-full bg-brand-navy/5 border border-brand-navy/5 rounded-sm pl-14 pr-6 py-4 text-brand-navy text-sm focus:outline-none focus:border-brand-gold transition-colors"
+                        className="w-full bg-brand-navy/5 border border-brand-navy/5 rounded-lg pl-14 pr-6 py-4 text-brand-navy text-sm focus:outline-none focus:border-brand-gold focus-visible:ring-2 focus-visible:ring-brand-gold/60 transition-colors"
                       />
                     </div>
                     <p className="text-[9px] text-brand-navy/30 uppercase tracking-widest font-bold pl-1">
@@ -196,7 +203,7 @@ export default function Register() {
                   <button
                     type="submit"
                     disabled={isCreating || !termsAccepted}
-                    className="w-full bg-brand-navy text-white py-5 rounded-sm text-xs uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl flex items-center justify-center gap-3 disabled:opacity-40"
+                    className="w-full bg-brand-navy text-white py-5 rounded-lg text-xs uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl flex items-center justify-center gap-3 disabled:opacity-40"
                   >
                     {isCreating ? "Creating Account..." : "Continue — Send OTP"}
                     <ArrowRight size={16} />
@@ -226,7 +233,7 @@ export default function Register() {
                 </p>
 
                 {error && (
-                  <div className="bg-red-50 border border-red-200 p-4 rounded-sm mb-6 flex items-start gap-3">
+                  <div className="bg-red-50 border border-red-200 p-4 rounded-lg mb-6 flex items-start gap-3">
                     <AlertCircle size={16} className="text-red-500 mt-0.5 shrink-0" />
                     <p className="text-xs text-red-600 font-medium">{error}</p>
                   </div>
@@ -234,10 +241,11 @@ export default function Register() {
 
                 <form className="space-y-6" onSubmit={handleVerifyOtp}>
                   <div className="space-y-2">
-                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">
+                    <label htmlFor="reg-otp" className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">
                       Enter 6-Digit OTP
                     </label>
                     <input
+                      id="reg-otp"
                       autoFocus
                       required
                       type="text"
@@ -249,14 +257,14 @@ export default function Register() {
                         setError(null);
                       }}
                       placeholder="000000"
-                      className="w-full bg-brand-navy/5 border border-brand-navy/5 rounded-sm px-6 py-5 text-brand-navy text-center text-3xl font-serif tracking-[0.6em] focus:outline-none focus:border-brand-gold transition-colors"
+                      className="w-full bg-brand-navy/5 border border-brand-navy/5 rounded-lg px-6 py-5 text-brand-navy text-center text-3xl font-serif tracking-[0.6em] focus:outline-none focus:border-brand-gold focus-visible:ring-2 focus-visible:ring-brand-gold/60 transition-colors"
                     />
                   </div>
 
                   <button
                     type="submit"
                     disabled={otp.length < 6 || isVerifying}
-                    className="w-full bg-brand-navy text-white py-5 rounded-sm text-xs uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl flex items-center justify-center gap-3 disabled:opacity-40"
+                    className="w-full bg-brand-navy text-white py-5 rounded-lg text-xs uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl flex items-center justify-center gap-3 disabled:opacity-40"
                   >
                     {isVerifying ? "Verifying..." : "Verify & Sign In"}
                     <ArrowRight size={16} />

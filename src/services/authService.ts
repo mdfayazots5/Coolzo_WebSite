@@ -57,11 +57,14 @@ export const AuthService = {
     customerName: string,
     mobileNumber: string,
   ): Promise<void> {
-    // Step 1 — create the account (no password — backend generates temp)
-    await apiClient.post('/api/customer-auth/register', {
-      customerName,
-      mobileNumber,
-    });
+    // Step 1 — create the account (no password — backend generates temp).
+    // Registration involves 5 sequential remote DB calls (reads + SaveChanges);
+    // use a longer per-call timeout to avoid false timeouts on cold connections.
+    await apiClient.post(
+      '/api/customer-auth/register',
+      { customerName, mobileNumber },
+      { timeout: 30000 },
+    );
 
     // Step 2 — now that the user exists, send the OTP
     await apiClient.post('/api/auth/otp/send', { phone: mobileNumber });

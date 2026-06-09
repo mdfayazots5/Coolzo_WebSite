@@ -91,7 +91,7 @@ export default function Notifications() {
         )}
       </div>
 
-      <div className="bg-white rounded-sm border border-brand-navy/5 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-xl border border-brand-navy/5 shadow-sm overflow-hidden">
         {notifications.length > 0 ? (
           <div className="divide-y divide-brand-navy/5">
             {notifications.map((notif) => (

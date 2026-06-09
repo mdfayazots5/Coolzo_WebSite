@@ -4,11 +4,16 @@ import type {
   BookingListItemResponse,
   BookingDetailResponse,
   BookingSummaryResponse,
+  BookingPublicSettings,
   CustomerBookingCreateRequest,
   GuestBookingCreateRequest,
 } from '../types/booking';
 
 export const BookingService = {
+  async getPublicSettings(): Promise<BookingPublicSettings> {
+    return apiClient.get('/api/bookings/public/settings');
+  },
+
   async getMyBookings(
     pageNumber = 1,
     pageSize = 10,
@@ -28,12 +33,20 @@ export const BookingService = {
 
   async createCustomerBooking(
     data: CustomerBookingCreateRequest,
+    idempotencyKey?: string,
   ): Promise<BookingSummaryResponse> {
-    return apiClient.post('/api/bookings/customer', data);
+    return apiClient.post('/api/bookings/customer', data, {
+      headers: idempotencyKey ? { 'X-Idempotency-Key': idempotencyKey } : undefined,
+    });
   },
 
-  async createGuestBooking(data: GuestBookingCreateRequest): Promise<BookingSummaryResponse> {
-    return apiClient.post('/api/bookings/guest', data);
+  async createGuestBooking(
+    data: GuestBookingCreateRequest,
+    idempotencyKey?: string,
+  ): Promise<BookingSummaryResponse> {
+    return apiClient.post('/api/bookings/guest', data, {
+      headers: idempotencyKey ? { 'X-Idempotency-Key': idempotencyKey } : undefined,
+    });
   },
 
   async rescheduleBooking(

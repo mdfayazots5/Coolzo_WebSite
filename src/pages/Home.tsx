@@ -4,6 +4,7 @@ import { ChevronRight, ShieldCheck, Clock, CheckCircle2, Star, ArrowRight, MapPi
 import { Link } from "react-router-dom";
 import { CatalogService } from "../services/catalogService";
 import type { ServiceCategoryLookupResponse } from "../types/catalog";
+import { useAuth } from "../contexts/AuthContext";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -40,6 +41,8 @@ function categoryIcon(name: string | undefined | null, idx: number) {
 }
 
 export default function Home() {
+  const { user } = useAuth();
+  const bookingPath = user ? "/portal/book" : "/book";
   const [categories, setCategories] = useState<ServiceCategoryLookupResponse[]>([]);
 
   useEffect(() => {
@@ -50,11 +53,12 @@ export default function Home() {
 
   const displayCategories = categories.length > 0
     ? categories.slice(0, 6).map((cat, i) => ({
+        categoryId: cat.serviceCategoryId,
         title: cat.categoryName ?? "Service",
         icon: categoryIcon(cat.categoryName, i),
         desc: cat.description ?? "Professional AC services by certified technicians.",
       }))
-    : STATIC_CATEGORIES;
+    : STATIC_CATEGORIES.map((cat) => ({ categoryId: undefined as number | undefined, ...cat }));
 
   return (
     <div className="bg-brand-cream">
@@ -89,10 +93,10 @@ export default function Home() {
               Professional, reliable, and flawlessly executed AC services across Hyderabad.
             </p>
             <div className="flex flex-wrap gap-6">
-              <Link to="/book" className="bg-brand-gold text-brand-navy px-10 py-5 rounded-sm text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-white transition-all flex items-center gap-2 shadow-xl">
+              <Link to={bookingPath} className="bg-brand-gold text-brand-navy px-10 py-5 rounded-lg text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-white transition-all flex items-center gap-2 shadow-xl">
                 Book a Service <ChevronRight size={16} />
               </Link>
-              <Link to="/amc" className="border border-white/20 text-white px-10 py-5 rounded-sm text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-white/10 transition-all">
+              <Link to="/amc" className="border border-white/20 text-white px-10 py-5 rounded-lg text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-white/10 transition-all">
                 Explore AMC Plans
               </Link>
             </div>
@@ -152,7 +156,7 @@ export default function Home() {
                 key={i}
                 {...fadeIn}
                 transition={{ delay: i * 0.1 }}
-                className="bg-white p-8 rounded-sm border border-brand-navy/5 hover:border-brand-gold/30 transition-all duration-500 group flex flex-col h-full"
+                className="bg-white p-8 rounded-xl border border-brand-navy/5 hover:border-brand-gold/30 transition-all duration-500 group flex flex-col h-full"
               >
                 <div className="text-brand-gold mb-6 group-hover:scale-110 transition-transform duration-500">{service.icon}</div>
                 <h3 className="text-xl font-serif text-brand-navy mb-3">{service.title}</h3>
@@ -161,7 +165,11 @@ export default function Home() {
                   <Link to="/services" className="text-[10px] uppercase tracking-widest font-bold text-brand-navy hover:text-brand-gold transition-colors flex items-center gap-2">
                     Learn More <ArrowRight size={12} />
                   </Link>
-                  <Link to="/book" className="bg-brand-navy text-white text-center py-3 rounded-sm text-[9px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all">
+                  <Link
+                    to={bookingPath}
+                    state={service.categoryId ? { serviceCategoryId: service.categoryId, serviceCategoryName: service.title } : undefined}
+                    className="bg-brand-navy text-white text-center py-3 rounded-lg text-[9px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all"
+                  >
                     Book Now
                   </Link>
                 </div>
@@ -251,7 +259,7 @@ export default function Home() {
       {/* AMC Highlight */}
       <section className="py-24">
         <div className="container mx-auto px-6">
-          <div className="bg-brand-black p-12 md:p-20 rounded-sm relative overflow-hidden">
+          <div className="bg-brand-black p-12 md:p-20 rounded-xl relative overflow-hidden">
             <div className="absolute top-0 right-0 w-1/2 h-full bg-brand-gold/5 skew-x-12 translate-x-1/4" />
             <div className="relative z-10 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
               <div>
@@ -271,7 +279,7 @@ export default function Home() {
                     <p className="text-brand-gold text-[9px] uppercase tracking-widest font-bold">Emergency Response</p>
                   </div>
                 </div>
-                <Link to="/amc" className="bg-brand-gold text-brand-navy px-10 py-5 rounded-sm text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-white transition-all inline-block">
+                <Link to="/amc" className="bg-brand-gold text-brand-navy px-10 py-5 rounded-lg text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-white transition-all inline-block">
                   Enroll in AMC
                 </Link>
               </div>

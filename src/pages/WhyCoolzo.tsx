@@ -64,7 +64,7 @@ export default function WhyCoolzo() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="bg-white p-10 rounded-sm border border-brand-navy/5 hover:border-brand-gold/30 transition-all duration-500"
+              className="bg-white p-10 rounded-xl border border-brand-navy/5 hover:border-brand-gold/30 transition-all duration-500"
             >
               <div className="mb-6">{point.icon}</div>
               <h3 className="text-xl font-serif text-brand-navy mb-4">{point.title}</h3>
@@ -74,24 +74,26 @@ export default function WhyCoolzo() {
         </div>
 
         {/* Infographic Placeholder */}
-        <div className="bg-brand-navy p-12 md:p-24 rounded-sm text-center mb-32 relative overflow-hidden">
+        <div className="bg-brand-navy p-12 md:p-24 rounded-xl text-center mb-32 relative overflow-hidden">
           <div className="absolute inset-0 bg-brand-gold/5 blur-3xl rounded-full translate-y-1/2" />
           <div className="relative z-10">
             <span className="text-brand-gold text-[10px] uppercase tracking-[0.4em] font-bold mb-8 block">The Experience Flow</span>
             <h2 className="text-5xl font-serif text-white mb-16">The Coolzo Journey.</h2>
-            <div className="flex flex-col md:flex-row justify-between items-center gap-12 max-w-5xl mx-auto">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4 md:gap-0 max-w-5xl mx-auto">
               {[
                 { title: "Book", icon: <Smartphone size={32} /> },
                 { title: "Assign", icon: <UserCheck size={32} /> },
                 { title: "Track", icon: <Clock size={32} /> },
                 { title: "Restore", icon: <ShieldCheck size={32} /> }
               ].map((step, i) => (
-                <div key={i} className="flex flex-col items-center gap-6 group">
-                  <div className="w-20 h-20 rounded-full border border-brand-gold/30 flex items-center justify-center text-brand-gold group-hover:bg-brand-gold group-hover:text-brand-navy transition-all duration-500">
-                    {step.icon}
+                <div key={i} className="flex flex-col md:flex-row items-center gap-4 md:gap-0">
+                  <div className="flex flex-col items-center gap-6 group">
+                    <div className="w-20 h-20 rounded-full border border-brand-gold/30 flex items-center justify-center text-brand-gold group-hover:bg-brand-gold group-hover:text-brand-navy transition-all duration-500">
+                      {step.icon}
+                    </div>
+                    <p className="text-white font-serif text-xl">{step.title}</p>
                   </div>
-                  <p className="text-white font-serif text-xl">{step.title}</p>
-                  {i < 3 && <ArrowRight size={24} className="text-brand-gold/20 hidden md:block absolute translate-x-32" />}
+                  {i < 3 && <ArrowRight size={24} className="text-brand-gold/20 hidden md:block mx-8 shrink-0" />}
                 </div>
               ))}
             </div>
@@ -102,10 +104,10 @@ export default function WhyCoolzo() {
         <div className="text-center">
           <h3 className="text-4xl font-serif text-brand-navy mb-12">Ready to experience the difference?</h3>
           <div className="flex flex-wrap justify-center gap-6">
-            <Link to="/services" className="bg-brand-navy text-white px-10 py-5 rounded-sm text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl">
+            <Link to="/services" className="bg-brand-navy text-white px-10 py-5 rounded-lg text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl">
               Book a Service
             </Link>
-            <Link to="/amc" className="border border-brand-navy/20 text-brand-navy px-10 py-5 rounded-sm text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-brand-navy hover:text-white transition-all">
+            <Link to="/amc" className="border border-brand-navy/20 text-brand-navy px-10 py-5 rounded-lg text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-brand-navy hover:text-white transition-all">
               Enroll in AMC
             </Link>
           </div>

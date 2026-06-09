@@ -26,22 +26,22 @@ export default function Contact() {
           {/* Contact Info */}
           <div>
             <div className="grid sm:grid-cols-2 gap-8 mb-16">
-              <a href="tel:+919876543210" className="bg-white p-8 rounded-sm border border-brand-navy/5 hover:border-brand-gold/30 transition-all group">
+              <a href="tel:+919876543210" className="bg-white p-8 rounded-xl border border-brand-navy/5 hover:border-brand-gold/30 transition-all group">
                 <Phone className="text-brand-gold mb-6 group-hover:scale-110 transition-transform" size={24} />
                 <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 mb-2">Call Support</p>
                 <p className="text-lg font-serif text-brand-navy">+91 98765 43210</p>
               </a>
-              <a href="https://wa.me/919876543210" className="bg-white p-8 rounded-sm border border-brand-navy/5 hover:border-brand-gold/30 transition-all group">
+              <a href="https://wa.me/919876543210" className="bg-white p-8 rounded-xl border border-brand-navy/5 hover:border-brand-gold/30 transition-all group">
                 <MessageCircle className="text-brand-gold mb-6 group-hover:scale-110 transition-transform" size={24} />
                 <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 mb-2">WhatsApp Direct</p>
                 <p className="text-lg font-serif text-brand-navy">Chat with us</p>
               </a>
-              <a href="mailto:support@coolzo.com" className="bg-white p-8 rounded-sm border border-brand-navy/5 hover:border-brand-gold/30 transition-all group">
+              <a href="mailto:support@coolzo.com" className="bg-white p-8 rounded-xl border border-brand-navy/5 hover:border-brand-gold/30 transition-all group">
                 <Mail className="text-brand-gold mb-6 group-hover:scale-110 transition-transform" size={24} />
                 <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 mb-2">Email Inquiry</p>
                 <p className="text-lg font-serif text-brand-navy">support@coolzo.com</p>
               </a>
-              <div className="bg-white p-8 rounded-sm border border-brand-navy/5 group">
+              <div className="bg-white p-8 rounded-xl border border-brand-navy/5 group">
                 <Clock className="text-brand-gold mb-6" size={24} />
                 <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 mb-2">Business Hours</p>
                 <div className="flex items-center gap-2">
@@ -65,7 +65,7 @@ export default function Contact() {
           </div>
 
           {/* Form */}
-          <div className="bg-brand-navy p-12 md:p-16 rounded-sm relative overflow-hidden">
+          <div className="bg-brand-navy p-12 md:p-16 rounded-xl relative overflow-hidden">
             <div className="absolute top-0 right-0 w-full h-full bg-brand-gold/5 skew-x-12 translate-x-1/2" />
             <div className="relative z-10">
               {submitted ? (
@@ -94,21 +94,21 @@ export default function Contact() {
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid sm:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <label className="text-[10px] uppercase tracking-widest font-bold text-white/40">Full Name</label>
-                        <input required type="text" className="w-full bg-white/5 border border-white/10 rounded-sm px-6 py-4 text-white text-sm focus:outline-none focus:border-brand-gold transition-colors" />
+                        <label htmlFor="contact-name" className="text-[10px] uppercase tracking-widest font-bold text-white/40">Full Name</label>
+                        <input id="contact-name" required type="text" className="w-full bg-white/5 border border-white/10 rounded-lg px-6 py-4 text-white text-sm focus:outline-none focus:border-brand-gold focus-visible:ring-2 focus-visible:ring-brand-gold/60 transition-colors" />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-[10px] uppercase tracking-widest font-bold text-white/40">Phone Number</label>
-                        <input required type="tel" className="w-full bg-white/5 border border-white/10 rounded-sm px-6 py-4 text-white text-sm focus:outline-none focus:border-brand-gold transition-colors" />
+                        <label htmlFor="contact-phone" className="text-[10px] uppercase tracking-widest font-bold text-white/40">Phone Number</label>
+                        <input id="contact-phone" required type="tel" className="w-full bg-white/5 border border-white/10 rounded-lg px-6 py-4 text-white text-sm focus:outline-none focus:border-brand-gold focus-visible:ring-2 focus-visible:ring-brand-gold/60 transition-colors" />
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] uppercase tracking-widest font-bold text-white/40">Email Address</label>
-                      <input required type="email" className="w-full bg-white/5 border border-white/10 rounded-sm px-6 py-4 text-white text-sm focus:outline-none focus:border-brand-gold transition-colors" />
+                      <label htmlFor="contact-email" className="text-[10px] uppercase tracking-widest font-bold text-white/40">Email Address</label>
+                      <input id="contact-email" required type="email" className="w-full bg-white/5 border border-white/10 rounded-lg px-6 py-4 text-white text-sm focus:outline-none focus:border-brand-gold focus-visible:ring-2 focus-visible:ring-brand-gold/60 transition-colors" />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] uppercase tracking-widest font-bold text-white/40">Subject</label>
-                      <select className="w-full bg-white/5 border border-white/10 rounded-sm px-6 py-4 text-white text-sm focus:outline-none focus:border-brand-gold transition-colors appearance-none">
+                      <label htmlFor="contact-subject" className="text-[10px] uppercase tracking-widest font-bold text-white/40">Subject</label>
+                      <select id="contact-subject" className="w-full bg-white/5 border border-white/10 rounded-lg px-6 py-4 text-white text-sm focus:outline-none focus:border-brand-gold focus-visible:ring-2 focus-visible:ring-brand-gold/60 transition-colors appearance-none">
                         <option className="bg-brand-navy">General Inquiry</option>
                         <option className="bg-brand-navy">Emergency Repair</option>
                         <option className="bg-brand-navy">AMC Enrollment</option>
@@ -116,10 +116,10 @@ export default function Contact() {
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] uppercase tracking-widest font-bold text-white/40">Message</label>
-                      <textarea required rows={4} className="w-full bg-white/5 border border-white/10 rounded-sm px-6 py-4 text-white text-sm focus:outline-none focus:border-brand-gold transition-colors resize-none"></textarea>
+                      <label htmlFor="contact-message" className="text-[10px] uppercase tracking-widest font-bold text-white/40">Message</label>
+                      <textarea id="contact-message" required rows={4} className="w-full bg-white/5 border border-white/10 rounded-lg px-6 py-4 text-white text-sm focus:outline-none focus:border-brand-gold focus-visible:ring-2 focus-visible:ring-brand-gold/60 transition-colors resize-none"></textarea>
                     </div>
-                    <button type="submit" className="w-full bg-brand-gold text-brand-navy py-5 rounded-sm text-xs uppercase tracking-widest font-bold hover:bg-white transition-all shadow-xl">
+                    <button type="submit" className="w-full bg-brand-gold text-brand-navy py-5 rounded-lg text-xs uppercase tracking-widest font-bold hover:bg-white transition-all shadow-xl">
                       Submit Inquiry
                     </button>
                   </form>

@@ -51,6 +51,30 @@ export default function PortalLayout() {
             Coolzo
           </Link>
 
+          {/* Desktop primary nav — laptop+ only; mobile uses the bottom tab bar.
+              Hidden below lg so the two navigation systems never co-exist. */}
+          <nav className="hidden lg:flex items-center gap-1 ml-6">
+            {navItems.map((item) => {
+              const active = isActive(item.path);
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  aria-current={active ? "page" : undefined}
+                  className={`flex items-center gap-2 h-11 px-3 rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold/60 ${
+                    active
+                      ? "bg-brand-navy text-white"
+                      : "text-slate-600 hover:text-brand-navy hover:bg-slate-100"
+                  }`}
+                >
+                  <Icon size={18} strokeWidth={active ? 2.25 : 1.75} className="shrink-0" />
+                  {item.name}
+                </Link>
+              );
+            })}
+          </nav>
+
           {/* ml-auto pushes the action cluster to the far right on all breakpoints */}
           <div className="ml-auto flex items-center gap-1">
 
@@ -58,10 +82,10 @@ export default function PortalLayout() {
             <Link
               to="/portal/book"
               aria-label="Book Service"
-              className="flex items-center justify-center gap-1.5 bg-brand-navy text-white rounded-lg text-sm font-medium transition-colors hover:bg-brand-gold hover:text-brand-navy h-9 w-9 sm:w-auto sm:px-4"
+              className="flex items-center justify-center gap-1.5 bg-brand-navy text-white rounded-lg text-sm font-medium transition-colors hover:bg-brand-gold hover:text-brand-navy h-9 px-3 sm:px-4"
             >
               <Plus size={16} strokeWidth={2.5} className="shrink-0" />
-              <span className="hidden sm:inline">Book Service</span>
+              <span>Book Service</span>
             </Link>
 
             {/* Notifications — 44 × 44 px touch target (WCAG 2.5.5) */}
@@ -94,7 +118,7 @@ export default function PortalLayout() {
         the fixed global footer never obscures content — p-* shorthand would
         override a bare pb-24 at sm and lg breakpoints.
       */}
-      <main className="flex-1 px-4 pt-4 pb-28 sm:px-6 sm:pt-6 sm:pb-28 lg:px-8 lg:pt-8 lg:pb-28">
+      <main className="flex-1 px-4 pt-4 pb-28 sm:px-6 sm:pt-6 sm:pb-28 lg:px-8 lg:pt-8 lg:pb-10">
         <Outlet />
       </main>
 
@@ -103,7 +127,7 @@ export default function PortalLayout() {
            Touch targets ≥ 44 px (WCAG 2.5.5). Safe-area padding for iOS notch.
       ──────────────────────────────────────────────────────────────────────── */}
       <nav
-        className="fixed bottom-0 left-0 right-0 z-40 safe-area-pb"
+        className="fixed bottom-0 left-0 right-0 z-40 safe-area-pb lg:hidden"
         style={{
           background: "linear-gradient(180deg, color-mix(in srgb, var(--color-brand-navy) 85%, #fff) 0%, var(--color-brand-navy) 100%)",
           boxShadow: "0 -8px 40px rgba(0,0,0,0.45), 0 -1px 0 rgba(212,175,55,0.18)",

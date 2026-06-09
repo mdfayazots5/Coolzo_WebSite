@@ -94,12 +94,12 @@ export default function InvoicesList() {
           </p>
         </div>
 
-        <div className="flex bg-white p-1 rounded-sm border border-brand-navy/5 shadow-sm overflow-x-auto no-scrollbar">
+        <div className="flex bg-white p-1 rounded-xl border border-brand-navy/5 shadow-sm overflow-x-auto no-scrollbar">
           {(["All", "Unpaid", "Paid", "Overdue"] as InvoiceStatus[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 sm:px-6 py-3 rounded-sm text-[10px] uppercase tracking-widest font-bold transition-all whitespace-nowrap ${
+              className={`px-4 sm:px-6 py-3 rounded-lg text-[10px] uppercase tracking-widest font-bold transition-all whitespace-nowrap ${
                 activeTab === tab
                   ? "bg-brand-navy text-white shadow-lg"
                   : "text-brand-navy/40 hover:text-brand-navy"
@@ -116,7 +116,7 @@ export default function InvoicesList() {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-amber-50 border border-amber-100 p-6 sm:p-8 rounded-sm mb-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm"
+          className="bg-amber-50 border border-amber-100 p-6 sm:p-8 rounded-xl mb-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm"
         >
           <div className="flex items-center gap-4 w-full md:w-auto">
             <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center text-amber-600 shrink-0">
@@ -131,25 +131,25 @@ export default function InvoicesList() {
               </p>
             </div>
           </div>
-          <button className="w-full md:w-auto bg-brand-navy text-white px-10 py-5 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl">
+          <button className="w-full md:w-auto bg-brand-navy text-white px-10 py-5 rounded-lg text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl">
             Pay All Outstanding
           </button>
         </motion.div>
       )}
 
       {/* Search */}
-      <div className="bg-white p-6 rounded-sm border border-brand-navy/5 shadow-sm mb-8 flex flex-col md:flex-row gap-4">
+      <div className="bg-white p-6 rounded-xl border border-brand-navy/5 shadow-sm mb-8 flex flex-col md:flex-row gap-4">
         <div className="flex-grow relative">
           <Search size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-brand-navy/30" />
           <input
             type="text"
             placeholder="Search by Invoice # or Booking Ref..."
-            className="w-full bg-brand-navy/5 border border-transparent rounded-sm pl-14 pr-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors"
+            className="w-full bg-brand-navy/5 border border-transparent rounded-lg pl-14 pr-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <button className="px-8 py-4 border border-brand-navy/10 rounded-sm flex items-center justify-center gap-3 text-[10px] uppercase tracking-widest font-bold text-brand-navy hover:bg-brand-navy/5 transition-all">
+        <button className="px-8 py-4 border border-brand-navy/10 rounded-lg flex items-center justify-center gap-3 text-[10px] uppercase tracking-widest font-bold text-brand-navy hover:bg-brand-navy/5 transition-all">
           <Calendar size={16} /> Date Range
         </button>
       </div>
@@ -163,7 +163,7 @@ export default function InvoicesList() {
 
       {/* Error */}
       {!loading && error && (
-        <div className="bg-red-50 border border-red-100 rounded-sm p-6 text-center">
+        <div className="bg-red-50 border border-red-100 rounded-xl p-6 text-center">
           <p className="text-red-600 text-sm mb-4">{error}</p>
           <button
             onClick={() => fetchInvoices(page)}
@@ -185,7 +185,7 @@ export default function InvoicesList() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  className="bg-white p-6 md:p-8 rounded-sm border border-brand-navy/5 shadow-sm hover:shadow-md transition-all group"
+                  className="bg-white p-6 md:p-8 rounded-xl border border-brand-navy/5 shadow-sm hover:shadow-md transition-all group"
                 >
                   <div className="flex flex-col lg:flex-row lg:items-center gap-6 lg:gap-8">
                     <div className="flex items-center gap-4 sm:gap-6 lg:w-1/4">
@@ -236,23 +236,26 @@ export default function InvoicesList() {
                         <div className="flex items-center gap-2">
                           <Link
                             to={`/portal/invoices/${invoice.invoiceId}`}
-                            className="p-3 border border-brand-navy/10 text-brand-navy/40 hover:text-brand-navy hover:border-brand-navy transition-all rounded-sm"
+                            aria-label="View invoice details"
+                            className="p-3 border border-brand-navy/10 text-brand-navy/40 hover:text-brand-navy hover:border-brand-navy transition-all rounded-lg"
                           >
-                            <ChevronRight size={16} />
+                            <ChevronRight size={16} aria-hidden="true" />
                           </Link>
                           {(invoice.status === 'Unpaid' || invoice.status === 'Overdue') && (
                             <Link
                               to={`/portal/invoices/${invoice.invoiceId}`}
-                              className="p-3 bg-brand-gold text-brand-navy rounded-sm hover:bg-brand-navy hover:text-white transition-all shadow-sm"
+                              aria-label="Pay invoice"
+                              className="p-3 bg-brand-gold text-brand-navy rounded-lg hover:bg-brand-navy hover:text-white transition-all shadow-sm"
                             >
-                              <CreditCard size={16} />
+                              <CreditCard size={16} aria-hidden="true" />
                             </Link>
                           )}
                           <button
                             onClick={() => handleDownload(invoice.invoiceId, invoice.invoiceNumber)}
-                            className="p-3 border border-brand-navy/10 text-brand-navy/40 hover:text-brand-gold hover:border-brand-gold transition-all rounded-sm"
+                            aria-label="Download invoice PDF"
+                            className="p-3 border border-brand-navy/10 text-brand-navy/40 hover:text-brand-gold hover:border-brand-gold transition-all rounded-lg"
                           >
-                            <Download size={16} />
+                            <Download size={16} aria-hidden="true" />
                           </button>
                         </div>
                       </div>
@@ -264,7 +267,7 @@ export default function InvoicesList() {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="text-center py-24 bg-white rounded-sm border border-brand-navy/5 border-dashed"
+                className="text-center py-24 bg-white rounded-xl border border-brand-navy/5 border-dashed"
               >
                 <div className="w-24 h-24 bg-brand-navy/5 rounded-full flex items-center justify-center mx-auto mb-8">
                   <FileText size={40} className="text-brand-navy/20" />
@@ -275,7 +278,7 @@ export default function InvoicesList() {
                 </p>
                 <Link
                   to="/book"
-                  className="inline-flex items-center gap-3 bg-brand-navy text-white px-10 py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all"
+                  className="inline-flex items-center gap-3 bg-brand-navy text-white px-10 py-4 rounded-lg text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all"
                 >
                   Book a Service <ArrowRight size={14} />
                 </Link>
@@ -291,7 +294,7 @@ export default function InvoicesList() {
           <button
             disabled={page === 1}
             onClick={() => setPage((p) => p - 1)}
-            className="px-6 h-10 rounded-sm border border-brand-navy/5 flex items-center justify-center text-brand-navy/40 hover:bg-brand-navy hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+            className="px-6 h-10 rounded-lg border border-brand-navy/5 flex items-center justify-center text-brand-navy/40 hover:bg-brand-navy hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed"
           >
             Prev
           </button>
@@ -301,7 +304,7 @@ export default function InvoicesList() {
           <button
             disabled={!hasNext}
             onClick={() => setPage((p) => p + 1)}
-            className="px-6 h-10 rounded-sm border border-brand-navy/5 flex items-center justify-center text-brand-navy/40 hover:bg-brand-navy hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+            className="px-6 h-10 rounded-lg border border-brand-navy/5 flex items-center justify-center text-brand-navy/40 hover:bg-brand-navy hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed"
           >
             Next
           </button>

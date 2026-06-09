@@ -31,12 +31,12 @@ export default function Maintenance() {
           </p>
 
           <div className="grid md:grid-cols-2 gap-8 max-w-lg mx-auto mb-24">
-            <div className="p-8 bg-white/5 border border-white/10 rounded-sm">
+            <div className="p-8 bg-white/5 border border-white/10 rounded-xl">
               <Clock size={24} className="text-brand-gold mx-auto mb-4" />
               <p className="text-[10px] uppercase tracking-widest font-bold text-white/40 mb-1">Expected Back By</p>
               <p className="text-lg font-serif text-white">06:00 AM IST</p>
             </div>
-            <div className="p-8 bg-white/5 border border-white/10 rounded-sm">
+            <div className="p-8 bg-white/5 border border-white/10 rounded-xl">
               <Mail size={24} className="text-brand-gold mx-auto mb-4" />
               <p className="text-[10px] uppercase tracking-widest font-bold text-white/40 mb-1">Urgent Inquiries</p>
               <p className="text-lg font-serif text-white">support@coolzo.com</p>

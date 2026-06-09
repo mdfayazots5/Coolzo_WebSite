@@ -9,7 +9,7 @@ export default function SessionExpired() {
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="bg-white p-12 rounded-sm shadow-2xl relative overflow-hidden"
+          className="bg-white p-12 rounded-xl shadow-2xl relative overflow-hidden"
         >
           <div className="absolute top-0 left-0 w-full h-2 bg-brand-gold" />
           
@@ -22,7 +22,7 @@ export default function SessionExpired() {
             For your security, your session has timed out due to inactivity. Please log in again to continue accessing your professional portal.
           </p>
 
-          <Link to="/login" className="w-full bg-brand-navy text-white py-5 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all shadow-xl flex items-center justify-center gap-3">
+          <Link to="/login" className="w-full bg-brand-navy text-white py-5 rounded-lg text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all shadow-xl flex items-center justify-center gap-3">
             <LogIn size={16} /> Log In Again <ArrowRight size={16} />
           </Link>
 

@@ -67,7 +67,7 @@ export default function Reviews() {
               Our reputation is built on the satisfaction of Hyderabad's modern property owners.
             </p>
           </div>
-          <div className="bg-white p-8 sm:p-12 rounded-sm border border-brand-navy/5 shadow-xl text-center">
+          <div className="bg-white p-8 sm:p-12 rounded-xl border border-brand-navy/5 shadow-xl text-center">
             <div className="mb-8">
               <p className="text-7xl font-serif text-brand-navy mb-2">{avgRating.toFixed(1)}</p>
               <div className="flex justify-center gap-1 text-brand-gold mb-4">
@@ -101,7 +101,7 @@ export default function Reviews() {
           </div>
           <div className="grid md:grid-cols-2 gap-8">
             {[1, 2].map((i) => (
-              <div key={i} className="aspect-video bg-brand-navy relative rounded-sm overflow-hidden group cursor-pointer">
+              <div key={i} className="aspect-video bg-brand-navy relative rounded-xl overflow-hidden group" aria-label="Video testimonial — coming soon" role="img">
                 <img
                   src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop"
                   alt="Video Thumbnail"
@@ -128,7 +128,7 @@ export default function Reviews() {
             <button
               key={filter}
               onClick={() => setActiveFilter(filter)}
-              className={`px-6 py-2 rounded-sm text-[10px] uppercase tracking-widest font-bold transition-all ${
+              className={`px-6 py-2 rounded-lg text-[10px] uppercase tracking-widest font-bold transition-all ${
                 activeFilter === filter
                   ? "bg-brand-navy text-white"
                   : "bg-white text-brand-navy/40 hover:text-brand-navy border border-brand-navy/5"
@@ -156,7 +156,7 @@ export default function Reviews() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.9 }}
                     transition={{ delay: i * 0.05 }}
-                    className="bg-white p-10 rounded-sm border border-brand-navy/5 hover:border-brand-gold/30 transition-all duration-500 shadow-sm hover:shadow-xl"
+                    className="bg-white p-10 rounded-xl border border-brand-navy/5 hover:border-brand-gold/30 transition-all duration-500 shadow-sm hover:shadow-xl"
                   >
                     <div className="flex justify-between items-start mb-6">
                       <div className="flex gap-1 text-brand-gold">
@@ -195,7 +195,7 @@ export default function Reviews() {
                 <button
                   onClick={() => setPage((p) => p + 1)}
                   disabled={loading}
-                  className="px-12 py-5 border border-brand-navy/10 rounded-sm text-[10px] uppercase tracking-widest font-bold text-brand-navy hover:bg-brand-navy hover:text-white transition-all disabled:opacity-50 flex items-center justify-center gap-3 mx-auto"
+                  className="px-12 py-5 border border-brand-navy/10 rounded-lg text-[10px] uppercase tracking-widest font-bold text-brand-navy hover:bg-brand-navy hover:text-white transition-all disabled:opacity-50 flex items-center justify-center gap-3 mx-auto"
                 >
                   {loading ? <Loader2 size={14} className="animate-spin" /> : null}
                   Load More Reviews
@@ -210,13 +210,10 @@ export default function Reviews() {
           <div className="max-w-2xl mx-auto">
             <ShieldCheck size={48} className="text-brand-gold mx-auto mb-8" />
             <h3 className="text-3xl font-serif text-brand-navy mb-6">Verified Quality.</h3>
-            <p className="text-brand-navy/40 text-sm leading-relaxed mb-12">
+            <p className="text-brand-navy/40 text-sm leading-relaxed">
               Every review on this platform is verified through our service delivery system. We only publish
               feedback from confirmed Coolzo service completions to ensure absolute integrity.
             </p>
-            <button className="text-brand-gold text-[10px] uppercase tracking-widest font-bold hover:text-brand-navy transition-colors">
-              Read Our Review Policy
-            </button>
           </div>
         </div>
       </div>

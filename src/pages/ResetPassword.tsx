@@ -67,7 +67,7 @@ export default function ResetPassword() {
         </div>
 
         {/* Card */}
-        <div className="bg-white p-6 sm:p-10 md:p-12 rounded-sm border border-brand-gold/20 shadow-2xl">
+        <div className="bg-white p-6 sm:p-10 md:p-12 rounded-xl border border-brand-gold/20 shadow-2xl">
           <AnimatePresence mode="wait">
             {!submitted ? (
               <motion.div
@@ -76,15 +76,15 @@ export default function ResetPassword() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 10 }}
               >
-                <h2 className="text-2xl sm:text-3xl font-serif text-brand-navy mb-4">
+                <h1 className="text-2xl sm:text-3xl font-serif text-brand-navy mb-4">
                   New Password.
-                </h2>
+                </h1>
                 <p className="text-brand-navy/50 text-sm leading-relaxed mb-10">
                   Please choose a strong, unique password to secure your Coolzo account.
                 </p>
 
                 {error && (
-                  <div className="bg-red-50 border border-red-200 p-4 rounded-sm mb-6 flex items-start gap-3">
+                  <div className="bg-red-50 border border-red-200 p-4 rounded-lg mb-6 flex items-start gap-3">
                     <AlertCircle size={16} className="text-red-500 mt-0.5" />
                     <p className="text-xs text-red-600 font-medium">{error}</p>
                   </div>
@@ -92,48 +92,51 @@ export default function ResetPassword() {
 
                 <form className="space-y-6" onSubmit={handleSubmit}>
                   <div className="space-y-2">
-                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">
+                    <label htmlFor="reset-password" className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">
                       New Password
                     </label>
                     <div className="relative">
-                      <Lock size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-brand-navy/30" />
+                      <Lock size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-brand-navy/30" aria-hidden="true" />
                       <input
+                        id="reset-password"
                         required
                         type={showPassword ? "text" : "password"}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="••••••••"
-                        className="w-full bg-brand-navy/5 border border-brand-navy/5 rounded-sm pl-14 pr-14 py-4 text-brand-navy text-sm focus:outline-none focus:border-brand-gold transition-colors"
+                        className="w-full bg-brand-navy/5 border border-brand-navy/5 rounded-lg pl-14 pr-14 py-4 text-brand-navy text-sm focus:outline-none focus:border-brand-gold focus-visible:ring-2 focus-visible:ring-brand-gold/60 transition-colors"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-6 top-1/2 -translate-y-1/2 text-brand-navy/30 hover:text-brand-navy transition-colors"
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-brand-navy/30 hover:text-brand-navy transition-colors"
                       >
-                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        {showPassword ? <EyeOff size={16} aria-hidden="true" /> : <Eye size={16} aria-hidden="true" />}
                       </button>
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">
+                    <label htmlFor="reset-confirm-password" className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">
                       Confirm Password
                     </label>
                     <div className="relative">
-                      <Lock size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-brand-navy/30" />
+                      <Lock size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-brand-navy/30" aria-hidden="true" />
                       <input
+                        id="reset-confirm-password"
                         required
                         type={showPassword ? "text" : "password"}
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="••••••••"
-                        className="w-full bg-brand-navy/5 border border-brand-navy/5 rounded-sm pl-14 pr-6 py-4 text-brand-navy text-sm focus:outline-none focus:border-brand-gold transition-colors"
+                        className="w-full bg-brand-navy/5 border border-brand-navy/5 rounded-lg pl-14 pr-6 py-4 text-brand-navy text-sm focus:outline-none focus:border-brand-gold focus-visible:ring-2 focus-visible:ring-brand-gold/60 transition-colors"
                       />
                     </div>
                   </div>
                   <button
                     type="submit"
                     disabled={isSubmitting || !password || password !== confirmPassword}
-                    className="w-full bg-brand-navy text-white py-5 rounded-sm text-xs uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl flex items-center justify-center gap-3 disabled:opacity-50"
+                    className="w-full bg-brand-navy text-white py-5 rounded-lg text-xs uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl flex items-center justify-center gap-3 disabled:opacity-50"
                   >
                     {isSubmitting ? "Resetting..." : "Reset Password"} <ArrowRight size={16} />
                   </button>

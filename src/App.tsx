@@ -98,6 +98,7 @@ export default function App() {
             <Route path="feedback/:id" element={<Feedback />} />
             {/* Authenticated booking — stays inside portal shell */}
             <Route path="book" element={<BookingWizard />} />
+            <Route path="booking-confirmation" element={<BookingConfirmation />} />
           </Route>
         </Route>
 

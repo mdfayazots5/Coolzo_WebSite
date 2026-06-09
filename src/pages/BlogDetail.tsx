@@ -95,24 +95,27 @@ export default function BlogDetail() {
                     {meta(post, "date") && <div>{meta(post, "date")}</div>}
                   </div>
                 </div>
-                <div className="flex gap-4">
+                <div className="flex gap-2">
                   <button
                     onClick={() => handleShare("facebook")}
-                    className="p-2 border border-brand-navy/10 rounded-sm hover:border-brand-gold transition-colors text-brand-navy/40 hover:text-brand-gold"
+                    aria-label="Share on Facebook"
+                    className="w-11 h-11 flex items-center justify-center border border-brand-navy/10 rounded-lg hover:border-brand-gold transition-colors text-brand-navy/40 hover:text-brand-gold"
                   >
-                    <Facebook size={18} />
+                    <Facebook size={18} aria-hidden="true" />
                   </button>
                   <button
                     onClick={() => handleShare("twitter")}
-                    className="p-2 border border-brand-navy/10 rounded-sm hover:border-brand-gold transition-colors text-brand-navy/40 hover:text-brand-gold"
+                    aria-label="Share on Twitter"
+                    className="w-11 h-11 flex items-center justify-center border border-brand-navy/10 rounded-lg hover:border-brand-gold transition-colors text-brand-navy/40 hover:text-brand-gold"
                   >
-                    <Twitter size={18} />
+                    <Twitter size={18} aria-hidden="true" />
                   </button>
                   <button
                     onClick={() => handleShare("native")}
-                    className="p-2 border border-brand-navy/10 rounded-sm hover:border-brand-gold transition-colors text-brand-navy/40 hover:text-brand-gold"
+                    aria-label="Share article"
+                    className="w-11 h-11 flex items-center justify-center border border-brand-navy/10 rounded-lg hover:border-brand-gold transition-colors text-brand-navy/40 hover:text-brand-gold"
                   >
-                    <Share2 size={18} />
+                    <Share2 size={18} aria-hidden="true" />
                   </button>
                 </div>
               </div>

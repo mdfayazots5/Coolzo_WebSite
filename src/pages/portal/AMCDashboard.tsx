@@ -59,7 +59,7 @@ export default function AMCDashboard() {
           <p className="text-brand-navy/40 text-[10px] uppercase tracking-[0.3em] font-bold">Protect your home's cooling</p>
         </div>
 
-        <div className="bg-white p-12 md:p-20 rounded-sm border border-brand-navy/5 shadow-2xl text-center relative overflow-hidden">
+        <div className="bg-white p-12 md:p-20 rounded-xl border border-brand-navy/5 shadow-2xl text-center relative overflow-hidden">
           <div className="absolute top-0 right-0 w-1/2 h-full bg-brand-gold/5 skew-x-12 translate-x-1/4" />
           <div className="relative z-10 max-w-2xl mx-auto">
             <ShieldCheck size={64} className="text-brand-gold mx-auto mb-8" />
@@ -74,7 +74,7 @@ export default function AMCDashboard() {
                 { title: "Unlimited Calls", icon: <ShieldCheck size={20} /> },
                 { title: "Free Spare Parts", icon: <ShieldCheck size={20} /> },
               ].map((benefit, i) => (
-                <div key={i} className="p-6 bg-brand-navy/5 rounded-sm">
+                <div key={i} className="p-6 bg-brand-navy/5 rounded-xl">
                   <div className="text-brand-gold mb-3 flex justify-center">{benefit.icon}</div>
                   <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy">{benefit.title}</p>
                 </div>
@@ -83,7 +83,7 @@ export default function AMCDashboard() {
 
             <Link
               to="/amc"
-              className="inline-flex items-center gap-3 bg-brand-navy text-white px-12 py-5 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl"
+              className="inline-flex items-center gap-3 bg-brand-navy text-white px-12 py-5 rounded-lg text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl"
             >
               Explore AMC Plans <ArrowRight size={16} />
             </Link>
@@ -106,7 +106,7 @@ export default function AMCDashboard() {
           <p className="text-brand-navy/40 text-[10px] uppercase tracking-[0.3em] font-bold">Professional protection active</p>
         </div>
         <div className="flex gap-4">
-          <button className="flex-1 sm:flex-initial px-8 py-4 bg-brand-navy text-white rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all shadow-lg">
+          <button className="flex-1 sm:flex-initial px-8 py-4 bg-brand-navy text-white rounded-lg text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all shadow-lg">
             Upgrade Plan
           </button>
         </div>
@@ -117,7 +117,7 @@ export default function AMCDashboard() {
         <div className="lg:col-span-2 space-y-8">
 
           {/* Active Contract Card */}
-          <div className="bg-brand-navy p-8 sm:p-10 rounded-sm text-white relative overflow-hidden shadow-2xl">
+          <div className="bg-brand-navy p-8 sm:p-10 rounded-xl text-white relative overflow-hidden shadow-2xl">
             <div className="absolute top-0 right-0 w-1/2 h-full bg-brand-gold/5 skew-x-12 translate-x-1/4" />
             <div className="relative z-10">
               <div className="flex flex-col sm:flex-row justify-between items-start gap-8 sm:gap-0 mb-12">
@@ -152,7 +152,7 @@ export default function AMCDashboard() {
                   </div>
                 </div>
                 <div className="flex items-center gap-6 order-1 md:order-2">
-                  <div className="p-4 bg-white/5 rounded-sm border border-white/10 shrink-0">
+                  <div className="p-4 bg-white/5 rounded-xl border border-white/10 shrink-0">
                     <p className="text-2xl font-serif text-brand-gold">{Math.max(0, daysToExpiry)}</p>
                     <p className="text-[8px] uppercase tracking-widest font-bold text-white/40">Days to Expiry</p>
                   </div>
@@ -167,14 +167,14 @@ export default function AMCDashboard() {
           </div>
 
           {/* Visit History */}
-          <div className="bg-white p-6 sm:p-8 rounded-sm border border-brand-navy/5 shadow-sm">
+          <div className="bg-white p-6 sm:p-8 rounded-xl border border-brand-navy/5 shadow-sm">
             <h3 className="text-xl font-serif text-brand-navy mb-8">Visit History</h3>
             {completedVisits.length > 0 ? (
               <div className="space-y-4">
                 {completedVisits.map((visit) => (
                   <div
                     key={visit.visitId}
-                    className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-6 rounded-sm border border-brand-navy/5 hover:bg-brand-navy/5 transition-colors group gap-4 sm:gap-0"
+                    className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-6 rounded-xl border border-brand-navy/5 hover:bg-brand-navy/5 transition-colors group gap-4 sm:gap-0"
                   >
                     <div className="flex items-center gap-6">
                       <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-brand-navy/5 flex items-center justify-center text-brand-navy/40 shrink-0">
@@ -190,7 +190,7 @@ export default function AMCDashboard() {
                         </p>
                       </div>
                     </div>
-                    <button className="w-full sm:w-auto p-3 border border-brand-navy/10 text-brand-navy/40 hover:text-brand-gold hover:border-brand-gold transition-all rounded-sm flex items-center justify-center gap-3 sm:gap-0">
+                    <button className="w-full sm:w-auto p-3 border border-brand-navy/10 text-brand-navy/40 hover:text-brand-gold hover:border-brand-gold transition-all rounded-lg flex items-center justify-center gap-3 sm:gap-0">
                       <Download size={18} />
                       <span className="sm:hidden text-[10px] uppercase font-bold tracking-widest">
                         Download Report
@@ -205,7 +205,7 @@ export default function AMCDashboard() {
           </div>
 
           {/* Past Contracts */}
-          <div className="bg-white p-8 rounded-sm border border-brand-navy/5 shadow-sm">
+          <div className="bg-white p-8 rounded-xl border border-brand-navy/5 shadow-sm">
             <button className="w-full flex items-center justify-between text-brand-navy/40 hover:text-brand-navy transition-colors">
               <h3 className="text-lg font-serif">Past Contracts History</h3>
               <ChevronRight size={20} />
@@ -217,7 +217,7 @@ export default function AMCDashboard() {
         <div className="space-y-8">
 
           {/* Next Scheduled Visit */}
-          <div className="bg-white p-8 rounded-sm border border-brand-navy/5 shadow-sm">
+          <div className="bg-white p-8 rounded-xl border border-brand-navy/5 shadow-sm">
             <Calendar className="text-brand-gold mb-6" size={24} />
             <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 mb-1">
               Next Scheduled Visit
@@ -241,7 +241,7 @@ export default function AMCDashboard() {
               )}
             </div>
 
-            <button className="w-full bg-brand-navy text-white py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all">
+            <button className="w-full bg-brand-navy text-white py-4 rounded-lg text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all">
               Reschedule Visit
             </button>
           </div>
@@ -251,7 +251,7 @@ export default function AMCDashboard() {
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="bg-red-50 p-8 rounded-sm border border-red-100"
+              className="bg-red-50 p-8 rounded-xl border border-red-100"
             >
               <AlertCircle className="text-red-500 mb-4" size={24} />
               <h4 className="text-sm font-bold text-red-700 mb-2">Plan Expiring Soon</h4>
@@ -259,14 +259,14 @@ export default function AMCDashboard() {
                 Your protection expires in {Math.max(0, daysToExpiry)} days. Renew now to avoid any lapse
                 in coverage and maintain your priority status.
               </p>
-              <button className="w-full bg-red-600 text-white py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-red-700 transition-all">
+              <button className="w-full bg-red-600 text-white py-4 rounded-lg text-[10px] uppercase tracking-widest font-bold hover:bg-red-700 transition-all">
                 Renew Now
               </button>
             </motion.div>
           )}
 
           {/* AMC Benefits */}
-          <div className="bg-brand-navy/5 p-8 rounded-sm">
+          <div className="bg-brand-navy/5 p-8 rounded-xl">
             <h4 className="text-[10px] uppercase tracking-widest font-bold text-brand-navy mb-6">
               Your Professional Benefits
             </h4>

@@ -71,7 +71,7 @@ export default function Blog() {
                 key={cat}
                 type="button"
                 onClick={() => setActiveCategory(cat)}
-                className={`px-6 py-2 rounded-sm text-[10px] uppercase tracking-widest font-bold transition-all cursor-pointer ${
+                className={`px-6 py-2 rounded-lg text-[10px] uppercase tracking-widest font-bold transition-all cursor-pointer ${
                   activeCategory === cat
                     ? "bg-brand-navy text-white shadow-md"
                     : "bg-white text-brand-navy/60 hover:text-brand-navy border border-brand-navy/5"
@@ -186,7 +186,7 @@ export default function Blog() {
         )}
 
         {/* Newsletter */}
-        <div className="mt-32 bg-brand-navy p-12 md:p-24 rounded-sm text-center relative overflow-hidden">
+        <div className="mt-32 bg-brand-navy p-12 md:p-24 rounded-xl text-center relative overflow-hidden">
           <div className="absolute top-0 right-0 w-1/2 h-full bg-brand-gold/5 skew-x-12 translate-x-1/4" />
           <div className="relative z-10 max-w-2xl mx-auto">
             <span className="text-brand-gold text-[10px] uppercase tracking-[0.4em] font-bold mb-6 block">Stay Informed</span>
@@ -195,14 +195,16 @@ export default function Blog() {
               Receive curated insights on climate care and modern home management directly in your inbox.
             </p>
             <form className="flex flex-col md:flex-row gap-4">
+              <label htmlFor="newsletter-email" className="sr-only">Email address</label>
               <input
+                id="newsletter-email"
                 type="email"
                 placeholder="Your email address"
-                className="flex-grow bg-white/5 border border-white/10 rounded-sm px-6 py-4 text-white text-sm focus:outline-none focus:border-brand-gold transition-colors"
+                className="flex-grow bg-white/5 border border-white/10 rounded-lg px-6 py-4 text-white text-sm focus:outline-none focus:border-brand-gold focus-visible:ring-2 focus-visible:ring-brand-gold/60 transition-colors"
               />
               <button
                 type="submit"
-                className="bg-brand-gold text-brand-navy px-10 py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-white transition-all"
+                className="bg-brand-gold text-brand-navy px-10 py-4 rounded-lg text-[10px] uppercase tracking-widest font-bold hover:bg-white transition-all"
               >
                 Subscribe
               </button>

@@ -123,7 +123,7 @@ export default function TicketDetail() {
           {ticket.canClose && !isResolved && (
             <button
               onClick={handleClose}
-              className="px-4 sm:px-6 py-2 border border-green-100 rounded-sm text-[8px] sm:text-[9px] uppercase tracking-widest font-bold text-green-600 hover:bg-green-600 hover:text-white transition-all whitespace-nowrap"
+              className="px-4 sm:px-6 py-2 border border-green-100 rounded-lg text-[8px] sm:text-[9px] uppercase tracking-widest font-bold text-green-600 hover:bg-green-600 hover:text-white transition-all whitespace-nowrap"
             >
               Mark Resolved
             </button>
@@ -131,7 +131,7 @@ export default function TicketDetail() {
           {ticket.canReopen && isResolved && (
             <button
               onClick={async () => { await TicketService.reopenTicket(ticketId); await loadTicket(); }}
-              className="px-4 sm:px-6 py-2 border border-amber-100 rounded-sm text-[8px] sm:text-[9px] uppercase tracking-widest font-bold text-amber-600 hover:bg-amber-600 hover:text-white transition-all whitespace-nowrap"
+              className="px-4 sm:px-6 py-2 border border-amber-100 rounded-lg text-[8px] sm:text-[9px] uppercase tracking-widest font-bold text-amber-600 hover:bg-amber-600 hover:text-white transition-all whitespace-nowrap"
             >
               Reopen
             </button>
@@ -143,7 +143,7 @@ export default function TicketDetail() {
       </div>
 
       {/* Ticket Info Bar */}
-      <div className="bg-white p-5 sm:p-6 rounded-sm border border-brand-navy/5 shadow-sm mb-6 shrink-0 flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="bg-white p-5 sm:p-6 rounded-xl border border-brand-navy/5 shadow-sm mb-6 shrink-0 flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-4 sm:gap-6">
           <div>
             <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 mb-1">
@@ -181,14 +181,14 @@ export default function TicketDetail() {
       </div>
 
       {/* Chat Area */}
-      <div className="flex-grow bg-white border border-brand-navy/5 rounded-sm shadow-sm flex flex-col overflow-hidden relative mb-6">
+      <div className="flex-grow bg-white border border-brand-navy/5 rounded-xl shadow-sm flex flex-col overflow-hidden relative mb-6">
         {showRating && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="absolute inset-0 z-50 bg-brand-navy/90 backdrop-blur-sm flex items-center justify-center p-6"
           >
-            <div className="bg-white p-8 sm:p-12 rounded-sm max-w-sm w-full text-center shadow-2xl relative">
+            <div className="bg-white p-8 sm:p-12 rounded-xl max-w-sm w-full text-center shadow-2xl relative">
               <button
                 onClick={() => setShowRating(false)}
                 className="absolute top-4 right-4 text-brand-navy/20 hover:text-brand-navy transition-colors"
@@ -218,7 +218,7 @@ export default function TicketDetail() {
               </div>
               <button
                 onClick={() => setShowRating(false)}
-                className="w-full bg-brand-navy text-white py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl"
+                className="w-full bg-brand-navy text-white py-4 rounded-lg text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl"
               >
                 Submit Feedback
               </button>
@@ -233,7 +233,7 @@ export default function TicketDetail() {
         >
           {/* Original description as first message */}
           <div className="flex flex-col items-end">
-            <div className="max-w-[95%] sm:max-w-[85%] lg:max-w-[70%] p-5 sm:p-8 rounded-sm shadow-sm bg-brand-navy text-white">
+            <div className="max-w-[95%] sm:max-w-[85%] lg:max-w-[70%] p-5 sm:p-8 rounded-xl shadow-sm bg-brand-navy text-white">
               <p className="text-sm leading-relaxed">{ticket.description}</p>
             </div>
             <p className="mt-2 text-[8px] uppercase tracking-widest font-bold text-brand-navy/20 font-mono">
@@ -246,7 +246,7 @@ export default function TicketDetail() {
               key={reply.replyId}
               className={`flex flex-col ${reply.isStaff ? 'items-start' : 'items-end'}`}
             >
-              <div className={`max-w-[95%] sm:max-w-[85%] lg:max-w-[70%] p-5 sm:p-8 rounded-sm shadow-sm ${
+              <div className={`max-w-[95%] sm:max-w-[85%] lg:max-w-[70%] p-5 sm:p-8 rounded-xl shadow-sm ${
                 reply.isStaff
                   ? 'bg-white border border-brand-navy/5 text-brand-navy shadow-lg shadow-brand-navy/5'
                   : 'bg-brand-navy text-white'
@@ -273,21 +273,23 @@ export default function TicketDetail() {
               onChange={(e) => setMessage(e.target.value)}
               placeholder={isResolved ? "This ticket is resolved" : "Type your reply..."}
               disabled={isResolved || sending}
-              className="w-full bg-brand-navy/5 border border-transparent rounded-sm px-4 sm:px-6 py-4 pr-24 sm:pr-32 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors resize-none h-20 sm:h-24 disabled:opacity-50"
+              className="w-full bg-brand-navy/5 border border-transparent rounded-lg px-4 sm:px-6 py-4 pr-24 sm:pr-32 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors resize-none h-20 sm:h-24 disabled:opacity-50"
             />
             <div className="absolute right-2 sm:right-4 bottom-2 sm:bottom-4 flex items-center">
               <button
                 type="button"
+                aria-label="Attach file"
                 className="p-2 sm:p-3 text-brand-navy/30 hover:text-brand-gold transition-colors hidden sm:block"
               >
-                <Paperclip size={18} />
+                <Paperclip size={18} aria-hidden="true" />
               </button>
               <button
                 type="submit"
+                aria-label="Send message"
                 disabled={isResolved || !message.trim() || sending}
-                className="bg-brand-navy text-white p-3 rounded-sm hover:bg-brand-gold hover:text-brand-navy transition-all shadow-lg ml-2 disabled:opacity-50"
+                className="bg-brand-navy text-white p-3 rounded-lg hover:bg-brand-gold hover:text-brand-navy transition-all shadow-lg ml-2 disabled:opacity-50"
               >
-                {sending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+                {sending ? <Loader2 size={18} className="animate-spin" aria-hidden="true" /> : <Send size={18} aria-hidden="true" />}
               </button>
             </div>
           </form>
@@ -296,7 +298,7 @@ export default function TicketDetail() {
 
       {/* Escalation Note */}
       {ticket.assignedTo && (
-        <div className="p-4 sm:p-6 bg-blue-50/50 border border-blue-100 rounded-sm flex items-start gap-4 shrink-0">
+        <div className="p-4 sm:p-6 bg-blue-50/50 border border-blue-100 rounded-xl flex items-start gap-4 shrink-0">
           <AlertCircle size={18} className="text-blue-600 shrink-0 mt-0.5" />
           <p className="text-[10px] uppercase tracking-widest font-bold text-blue-700/60 leading-relaxed md:leading-normal">
             Assigned to {ticket.assignedTo} • {ticket.categoryName ?? 'Support Team'}

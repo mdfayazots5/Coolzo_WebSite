@@ -133,14 +133,14 @@ export default function NotificationPreferences() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
-          className="fixed bottom-4 left-4 right-4 sm:bottom-12 sm:left-auto sm:right-12 z-50 bg-brand-navy text-white px-6 sm:px-8 py-4 rounded-sm shadow-2xl flex items-center justify-center sm:justify-start gap-4"
+          className="fixed bottom-4 left-4 right-4 sm:bottom-12 sm:left-auto sm:right-12 z-50 bg-brand-navy text-white px-6 sm:px-8 py-4 rounded-xl shadow-2xl flex items-center justify-center sm:justify-start gap-4"
         >
           <CheckCircle2 size={20} className="text-brand-gold" />
           <span className="text-[10px] uppercase tracking-widest font-bold">Preferences Saved Successfully</span>
         </motion.div>
       )}
 
-      <div className="bg-white rounded-sm border border-brand-navy/5 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-xl border border-brand-navy/5 shadow-sm overflow-hidden">
         {/* Desktop Header */}
         <div className="hidden md:grid p-8 bg-brand-navy/5 border-b border-brand-navy/5 grid-cols-12 gap-4 items-center">
           <div className="col-span-6">
@@ -179,7 +179,7 @@ export default function NotificationPreferences() {
                 {CHANNELS.map((chan) => (
                   <div
                     key={chan.id}
-                    className="flex flex-col md:flex-row items-center justify-between md:justify-center gap-2 bg-brand-navy/[0.02] md:bg-transparent p-3 md:p-0 rounded-sm"
+                    className="flex flex-col md:flex-row items-center justify-between md:justify-center gap-2 bg-brand-navy/[0.02] md:bg-transparent p-3 md:p-0 rounded-xl"
                   >
                     <span className="md:hidden text-[8px] uppercase tracking-widest font-bold text-brand-navy/40 flex items-center gap-2">
                       {chan.icon} {chan.label}
@@ -217,7 +217,7 @@ export default function NotificationPreferences() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="w-full md:w-auto bg-brand-navy text-white px-12 py-5 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl disabled:opacity-70 flex items-center justify-center gap-3"
+            className="w-full md:w-auto bg-brand-navy text-white px-12 py-5 rounded-lg text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl disabled:opacity-70 flex items-center justify-center gap-3"
           >
             {saving ? (
               <>
@@ -230,7 +230,7 @@ export default function NotificationPreferences() {
         </div>
       </div>
 
-      <div className="mt-12 p-8 bg-white rounded-sm border border-brand-navy/5 shadow-sm flex gap-6">
+      <div className="mt-12 p-8 bg-white rounded-xl border border-brand-navy/5 shadow-sm flex gap-6">
         <Info size={24} className="text-brand-gold shrink-0" />
         <p className="text-xs text-brand-navy/60 leading-relaxed">
           Note: Certain critical communications such as security OTPs, account recovery links, and legal notices are

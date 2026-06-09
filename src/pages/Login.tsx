@@ -34,8 +34,8 @@ export default function Login() {
   };
 
   const handleSendOtp = async () => {
-    if (!mobile.trim()) {
-      setError("Please enter your mobile number.");
+    if (mobile.length !== 10) {
+      setError("Please enter a valid 10-digit mobile number.");
       return;
     }
     setError(null);
@@ -104,16 +104,16 @@ export default function Login() {
         </div>
 
         {/* Login Card */}
-        <div className="bg-white p-6 sm:p-10 md:p-12 rounded-sm border border-brand-gold/20 shadow-2xl">
-          <h2 className="text-2xl sm:text-3xl font-serif text-brand-navy mb-2 text-center">
+        <div className="bg-white p-6 sm:p-10 md:p-12 rounded-xl border border-brand-gold/20 shadow-2xl">
+          <h1 className="text-2xl sm:text-3xl font-serif text-brand-navy mb-2 text-center">
             Welcome Back.
-          </h2>
+          </h1>
           <p className="text-center text-brand-navy/40 text-xs mb-10">
             Enter your mobile number to receive a one-time code.
           </p>
 
           {error && (
-            <div className="bg-red-50 border border-red-200 p-4 rounded-sm mb-6 flex items-start gap-3">
+            <div className="bg-red-50 border border-red-200 p-4 rounded-lg mb-6 flex items-start gap-3">
               <AlertCircle size={16} className="text-red-500 mt-0.5 shrink-0" />
               <p className="text-xs text-red-600 font-medium">{error}</p>
             </div>
@@ -122,33 +122,37 @@ export default function Login() {
           <form className="space-y-6" onSubmit={handleVerifyAndLogin}>
             {/* Mobile Number */}
             <div className="space-y-2">
-              <label className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">
+              <label htmlFor="login-mobile" className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">
                 Mobile Number
               </label>
               <div className="flex gap-2">
                 <div className="relative flex-grow">
-                  <Phone size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-brand-navy/30" />
+                  <Phone size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-brand-navy/30" aria-hidden="true" />
                   <input
+                    id="login-mobile"
                     required
                     type="tel"
+                    inputMode="numeric"
+                    maxLength={10}
                     value={mobile}
                     onChange={(e) => {
-                      setMobile(e.target.value);
+                      const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+                      setMobile(digits);
                       setError(null);
                       if (otpSent) {
                         setOtpSent(false);
                         setOtp("");
                       }
                     }}
-                    placeholder="+91 98765 43210"
-                    className="w-full bg-brand-navy/5 border border-brand-navy/5 rounded-sm pl-14 pr-6 py-4 text-brand-navy text-sm focus:outline-none focus:border-brand-gold transition-colors"
+                    placeholder="10-digit mobile number"
+                    className="w-full bg-brand-navy/5 border border-brand-navy/5 rounded-lg pl-14 pr-6 py-4 text-brand-navy text-sm focus:outline-none focus:border-brand-gold focus-visible:ring-2 focus-visible:ring-brand-gold/60 transition-colors"
                   />
                 </div>
                 <button
                   type="button"
                   onClick={handleSendOtp}
-                  disabled={(otpSent && timer > 0) || isSendingOtp || !mobile.trim()}
-                  className="px-5 bg-brand-gold text-brand-navy rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-navy hover:text-white transition-all disabled:opacity-40 whitespace-nowrap"
+                  disabled={(otpSent && timer > 0) || isSendingOtp || mobile.length !== 10}
+                  className="px-5 bg-brand-gold text-brand-navy rounded-lg text-[10px] uppercase tracking-widest font-bold hover:bg-brand-navy hover:text-white transition-all disabled:opacity-40 whitespace-nowrap"
                 >
                   {isSendingOtp
                     ? "Sending..."
@@ -173,7 +177,7 @@ export default function Login() {
                 >
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
-                      <label className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">
+                      <label htmlFor="login-otp" className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">
                         Enter 6-Digit OTP
                       </label>
                       <span className="text-[9px] text-brand-navy/30 uppercase tracking-widest font-bold">
@@ -181,6 +185,7 @@ export default function Login() {
                       </span>
                     </div>
                     <input
+                      id="login-otp"
                       autoFocus
                       required
                       type="text"
@@ -192,7 +197,7 @@ export default function Login() {
                         setError(null);
                       }}
                       placeholder="000000"
-                      className="w-full bg-brand-navy/5 border border-brand-navy/5 rounded-sm px-6 py-4 text-brand-navy text-center text-2xl font-serif tracking-[0.5em] focus:outline-none focus:border-brand-gold transition-colors"
+                      className="w-full bg-brand-navy/5 border border-brand-navy/5 rounded-lg px-6 py-4 text-brand-navy text-center text-2xl font-serif tracking-[0.5em] focus:outline-none focus:border-brand-gold focus-visible:ring-2 focus-visible:ring-brand-gold/60 transition-colors"
                     />
                   </div>
                 </motion.div>
@@ -202,7 +207,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={!otpSent || otp.length < 6 || isSubmitting}
-              className="w-full bg-brand-navy text-white py-5 rounded-sm text-xs uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl flex items-center justify-center gap-3 disabled:opacity-40"
+              className="w-full bg-brand-navy text-white py-5 rounded-lg text-xs uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl flex items-center justify-center gap-3 disabled:opacity-40"
             >
               {isSubmitting ? "Verifying..." : "Verify & Sign In"}
               <ArrowRight size={16} />
