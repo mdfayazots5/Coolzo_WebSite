@@ -69,9 +69,9 @@ export default function Addresses() {
       pinTimerRef.current = setTimeout(async () => {
         try {
           const zone = await AddressService.getZoneByPincode(val);
-          setIsZoneValid(zone.isServiceable);
+          setIsZoneValid(true);
           setZoneName(zone.zoneName ?? '');
-          setForm((f) => ({ ...f, zoneId: zone.isServiceable ? zone.zoneId : undefined }));
+          setForm((f) => ({ ...f, zoneId: zone.zoneId }));
         } catch {
           setIsZoneValid(false);
           setZoneName('');
@@ -158,7 +158,7 @@ export default function Addresses() {
         </div>
         <button
           onClick={(e) => { e.stopPropagation(); openAdd(); }}
-          className="w-full sm:w-auto flex items-center justify-center gap-3 bg-brand-navy text-white px-8 py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all shadow-xl"
+          className="w-full sm:w-auto flex items-center justify-center gap-3 bg-brand-navy text-white px-8 py-4 rounded-lg text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all shadow-xl"
         >
           <Plus size={16} /> Add New Address
         </button>
@@ -173,11 +173,11 @@ export default function Addresses() {
           {addresses.map((addr) => (
             <motion.div
               key={addr.addressId}
-              className="bg-white rounded-sm border border-brand-navy/5 shadow-sm hover:shadow-xl transition-all group overflow-hidden"
+              className="bg-white rounded-xl border border-brand-navy/5 shadow-sm hover:shadow-xl transition-all group overflow-hidden"
             >
               <div className="p-8">
                 <div className="flex justify-between items-start mb-8">
-                  <div className="w-12 h-12 bg-brand-navy/5 rounded-sm flex items-center justify-center text-brand-gold">
+                  <div className="w-12 h-12 bg-brand-navy/5 rounded-xl flex items-center justify-center text-brand-gold">
                     {addr.addressLabel === 'Home' ? (
                       <Home size={24} />
                     ) : addr.addressLabel === 'Office' ? (
@@ -194,12 +194,13 @@ export default function Addresses() {
                     )}
                     <button
                       onClick={() => setMenuOpenId(menuOpenId === addr.addressId ? null : addr.addressId)}
+                      aria-label="Address options"
                       className="p-2 text-brand-navy/20 hover:text-brand-navy transition-colors"
                     >
-                      <MoreVertical size={18} />
+                      <MoreVertical size={18} aria-hidden="true" />
                     </button>
                     {menuOpenId === addr.addressId && (
-                      <div className="absolute right-0 top-8 bg-white border border-brand-navy/10 rounded-sm shadow-xl z-10 min-w-[140px]">
+                      <div className="absolute right-0 top-8 bg-white border border-brand-navy/10 rounded-xl shadow-xl z-10 min-w-[140px]">
                         <button
                           onClick={() => openEdit(addr)}
                           className="w-full text-left px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-brand-navy hover:bg-brand-navy/5 transition-colors"
@@ -238,14 +239,14 @@ export default function Addresses() {
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={() => openEdit(addr)}
-                    className="text-center py-3 border border-brand-navy/10 rounded-sm text-[9px] uppercase tracking-widest font-bold text-brand-navy hover:bg-brand-navy hover:text-white transition-all"
+                    className="text-center py-3 border border-brand-navy/10 rounded-lg text-[9px] uppercase tracking-widest font-bold text-brand-navy hover:bg-brand-navy hover:text-white transition-all"
                   >
                     Edit
                   </button>
                   {!addr.isDefault && (
                     <button
                       onClick={() => handleSetDefault(addr.addressId)}
-                      className="text-center py-3 bg-brand-navy/5 rounded-sm text-[9px] uppercase tracking-widest font-bold text-brand-navy hover:bg-brand-gold transition-all"
+                      className="text-center py-3 bg-brand-navy/5 rounded-lg text-[9px] uppercase tracking-widest font-bold text-brand-navy hover:bg-brand-gold transition-all"
                     >
                       Set Default
                     </button>
@@ -258,7 +259,7 @@ export default function Addresses() {
           {/* Add New Placeholder */}
           <button
             onClick={openAdd}
-            className="bg-brand-navy/5 border-2 border-dashed border-brand-navy/10 rounded-sm p-8 flex flex-col items-center justify-center text-center group hover:border-brand-gold transition-all"
+            className="bg-brand-navy/5 border-2 border-dashed border-brand-navy/10 rounded-lg p-8 flex flex-col items-center justify-center text-center group hover:border-brand-gold transition-all"
           >
             <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center text-brand-navy/20 group-hover:text-brand-gold transition-colors mb-4 shadow-sm">
               <Plus size={32} />
@@ -296,9 +297,10 @@ export default function Addresses() {
                 </h2>
                 <button
                   onClick={() => setIsModalOpen(false)}
+                  aria-label="Close"
                   className="text-brand-navy/40 hover:text-brand-navy transition-colors"
                 >
-                  <X size={24} />
+                  <X size={24} aria-hidden="true" />
                 </button>
               </div>
 
@@ -313,7 +315,7 @@ export default function Addresses() {
                         key={lbl}
                         type="button"
                         onClick={() => setForm((f) => ({ ...f, label: lbl }))}
-                        className={`py-3 border rounded-sm text-[9px] uppercase tracking-widest font-bold transition-all ${
+                        className={`py-3 border rounded-lg text-[9px] uppercase tracking-widest font-bold transition-all ${
                           form.label === lbl
                             ? 'bg-brand-navy text-white border-brand-navy'
                             : 'border-brand-navy/10 text-brand-navy hover:bg-brand-navy hover:text-white'
@@ -326,53 +328,57 @@ export default function Addresses() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">
+                  <label htmlFor="addr-line1" className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">
                     Address Line 1
                   </label>
                   <input
+                    id="addr-line1"
                     type="text"
                     required
                     placeholder="House / Flat No., Building Name"
                     value={form.line1}
                     onChange={(e) => setForm((f) => ({ ...f, line1: e.target.value }))}
-                    className="w-full bg-brand-navy/5 border border-transparent rounded-sm px-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors"
+                    className="w-full bg-brand-navy/5 border border-transparent rounded-lg px-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">
+                  <label htmlFor="addr-line2" className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">
                     Address Line 2
                   </label>
                   <input
+                    id="addr-line2"
                     type="text"
                     placeholder="Street, Area, Landmark"
                     value={form.line2}
                     onChange={(e) => setForm((f) => ({ ...f, line2: e.target.value }))}
-                    className="w-full bg-brand-navy/5 border border-transparent rounded-sm px-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors"
+                    className="w-full bg-brand-navy/5 border border-transparent rounded-lg px-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">City</label>
+                    <label htmlFor="addr-city" className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">City</label>
                     <input
+                      id="addr-city"
                       type="text"
                       value={form.city}
                       onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
-                      className="w-full bg-brand-navy/5 border border-transparent rounded-sm px-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors"
+                      className="w-full bg-brand-navy/5 border border-transparent rounded-lg px-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">
+                    <label htmlFor="addr-pin" className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">
                       PIN Code
                     </label>
                     <input
+                      id="addr-pin"
                       type="text"
                       maxLength={6}
                       value={form.pin}
                       onChange={handlePinChange}
                       placeholder="500033"
-                      className="w-full bg-brand-navy/5 border border-transparent rounded-sm px-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors"
+                      className="w-full bg-brand-navy/5 border border-transparent rounded-lg px-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors"
                     />
                   </div>
                 </div>
@@ -381,7 +387,7 @@ export default function Addresses() {
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className={`p-4 rounded-sm flex items-center gap-3 ${
+                    className={`p-4 rounded-xl flex items-center gap-3 ${
                       isZoneValid
                         ? 'bg-green-50 text-green-600 border border-green-100'
                         : 'bg-red-50 text-red-500 border border-red-100'
@@ -400,7 +406,7 @@ export default function Addresses() {
                   <button
                     type="submit"
                     disabled={saving}
-                    className="w-full bg-brand-navy text-white py-5 rounded-sm text-xs uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl flex items-center justify-center gap-3 disabled:opacity-60"
+                    className="w-full bg-brand-navy text-white py-5 rounded-lg text-xs uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl flex items-center justify-center gap-3 disabled:opacity-60"
                   >
                     {saving ? (
                       <Loader2 size={16} className="animate-spin" />

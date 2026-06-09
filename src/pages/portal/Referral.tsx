@@ -109,11 +109,11 @@ export default function Referral() {
       <div className="grid lg:grid-cols-3 gap-12">
         {/* Main Referral Card */}
         <div className="lg:col-span-2 space-y-8">
-          <div className="bg-brand-navy rounded-sm p-8 sm:p-12 lg:p-20 text-white relative overflow-hidden shadow-2xl mb-12">
+          <div className="bg-brand-navy rounded-xl p-8 sm:p-12 lg:p-20 text-white relative overflow-hidden shadow-2xl mb-12">
             <div className="absolute top-0 right-0 w-1/3 h-full bg-white/5 -skew-x-12 translate-x-1/2" />
             <div className="relative z-10 text-center lg:text-left">
               <div className="flex flex-col lg:flex-row items-center gap-6 mb-10">
-                <div className="p-4 bg-brand-gold rounded-sm shrink-0">
+                <div className="p-4 bg-brand-gold rounded-xl shrink-0">
                   <Gift className="text-brand-navy" size={28} />
                 </div>
                 <p className="text-[10px] uppercase tracking-[0.4em] font-bold text-brand-gold animate-pulse tracking-wide">
@@ -129,12 +129,12 @@ export default function Referral() {
                 and you earn credits for your next professional service visit.
               </p>
 
-              <div className="bg-white/5 p-6 sm:p-10 rounded-sm border border-white/10 max-w-2xl mx-auto lg:mx-0">
+              <div className="bg-white/5 p-6 sm:p-10 rounded-xl border border-white/10 max-w-2xl mx-auto lg:mx-0">
                 <p className="text-[10px] uppercase tracking-widest font-bold text-white/40 mb-4">
                   Your Professional Referral Code
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <div className="flex-grow bg-white/10 border border-white/20 px-6 py-4 rounded-sm text-lg sm:text-xl font-serif tracking-widest flex items-center justify-between overflow-hidden">
+                  <div className="flex-grow bg-white/10 border border-white/20 px-6 py-4 rounded-xl text-lg sm:text-xl font-serif tracking-widest flex items-center justify-between overflow-hidden">
                     <span className="truncate">{referralCode}</span>
                     {copied && (
                       <span className="text-brand-gold text-[8px] uppercase animate-in fade-in shrink-0 ml-4">
@@ -146,7 +146,7 @@ export default function Referral() {
                     <button
                       onClick={handleCopy}
                       disabled={referralCode === "—"}
-                      className="flex-grow sm:flex-none bg-brand-gold text-brand-navy px-8 py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-white transition-all whitespace-nowrap flex items-center justify-center gap-3 shadow-lg disabled:opacity-50"
+                      className="flex-grow sm:flex-none bg-brand-gold text-brand-navy px-8 py-4 rounded-lg text-[10px] uppercase tracking-widest font-bold hover:bg-white transition-all whitespace-nowrap flex items-center justify-center gap-3 shadow-lg disabled:opacity-50"
                     >
                       {copied ? <CheckCircle2 size={16} /> : <Copy size={16} />}
                       {copied ? "Copied" : "Copy"}
@@ -154,7 +154,7 @@ export default function Referral() {
                     <button
                       onClick={handleWhatsApp}
                       disabled={referralCode === "—"}
-                      className="p-4 bg-green-600 text-white rounded-sm hover:bg-green-700 transition-all flex items-center justify-center shadow-lg disabled:opacity-50"
+                      className="p-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all flex items-center justify-center shadow-lg disabled:opacity-50"
                     >
                       <MessageSquare size={20} />
                     </button>
@@ -165,7 +165,7 @@ export default function Referral() {
           </div>
 
           {/* How it works */}
-          <div className="bg-white p-6 sm:p-10 rounded-sm border border-brand-navy/5 shadow-sm">
+          <div className="bg-white p-6 sm:p-10 rounded-xl border border-brand-navy/5 shadow-sm">
             <h3 className="text-lg sm:text-xl font-serif text-brand-navy mb-8 sm:mb-10">How it works</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10 md:gap-12">
               {[
@@ -187,7 +187,7 @@ export default function Referral() {
           </div>
 
           {/* Referral List */}
-          <div className="bg-white p-6 sm:p-10 rounded-sm border border-brand-navy/5 shadow-sm">
+          <div className="bg-white p-6 sm:p-10 rounded-xl border border-brand-navy/5 shadow-sm">
             <h3 className="text-lg sm:text-xl font-serif text-brand-navy mb-8">My Referrals</h3>
             {referrals.length === 0 ? (
               <div className="py-12 text-center">
@@ -201,7 +201,7 @@ export default function Referral() {
                   return (
                     <div
                       key={i}
-                      className="flex flex-col sm:flex-row sm:items-center justify-between p-5 sm:p-6 rounded-sm border border-brand-navy/5 hover:bg-brand-navy/5 transition-colors gap-4"
+                      className="flex flex-col sm:flex-row sm:items-center justify-between p-5 sm:p-6 rounded-xl border border-brand-navy/5 hover:bg-brand-navy/5 transition-colors gap-4"
                     >
                       <div className="flex items-center gap-4 sm:gap-6">
                         <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-brand-navy/5 flex items-center justify-center text-brand-navy/40 shrink-0">
@@ -234,7 +234,7 @@ export default function Referral() {
 
         {/* Sidebar Stats */}
         <div className="space-y-8">
-          <div className="bg-white p-8 rounded-sm border border-brand-navy/5 shadow-sm">
+          <div className="bg-white p-8 rounded-xl border border-brand-navy/5 shadow-sm">
             <TrendingUp className="text-brand-gold mb-6" size={24} />
             <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 mb-1">Total Credits Earned</p>
             <h3 className="text-4xl font-serif text-brand-navy mb-8">
@@ -271,12 +271,12 @@ export default function Referral() {
               )}
             </div>
 
-            <button className="w-full mt-8 bg-brand-navy text-white py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all">
+            <button className="w-full mt-8 bg-brand-navy text-white py-4 rounded-lg text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all">
               Redeem Credits
             </button>
           </div>
 
-          <div className="bg-brand-gold/10 p-8 rounded-sm border border-brand-gold/20">
+          <div className="bg-brand-gold/10 p-8 rounded-xl border border-brand-gold/20">
             <Award className="text-brand-gold mb-4" size={24} />
             <h4 className="text-sm font-bold text-brand-navy mb-2">Elite Ambassador</h4>
             <p className="text-xs text-brand-navy/60 leading-relaxed mb-6">
@@ -296,7 +296,7 @@ export default function Referral() {
             </p>
           </div>
 
-          <div className="bg-white p-8 rounded-sm border border-brand-navy/5 shadow-sm">
+          <div className="bg-white p-8 rounded-xl border border-brand-navy/5 shadow-sm">
             <div className="flex items-center gap-3 mb-6">
               <Sparkles className="text-brand-gold" size={20} />
               <h4 className="text-sm font-bold text-brand-navy">Current Offers</h4>
@@ -309,7 +309,7 @@ export default function Referral() {
             ) : (
               <div className="space-y-4">
                 {featuredOffers.map((offer) => (
-                  <div key={offer.offerId} className="rounded-sm border border-brand-navy/5 p-4">
+                  <div key={offer.offerId} className="rounded-xl border border-brand-navy/5 p-4">
                     <p className="text-sm font-bold text-brand-navy">{offer.title}</p>
                     {offer.description && (
                       <p className="mt-2 text-xs leading-relaxed text-brand-navy/50">

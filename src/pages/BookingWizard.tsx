@@ -4,7 +4,6 @@ import {
   ChevronLeft,
   Check,
   Plus,
-  Minus,
   MapPin,
   Calendar,
   Clock,
@@ -21,23 +20,19 @@ import {
   Droplets,
   HelpCircle,
   CheckCircle2,
-  Tag,
-  X,
   Flame,
   Building2,
   Home,
   ChevronDown,
   ChevronRight,
+  LocateFixed,
 } from "lucide-react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
-import apiClient from "../services/apiClient";
 import { BookingService } from "../services/bookingService";
 import { CatalogService } from "../services/catalogService";
 import { EquipmentService } from "../services/equipmentService";
 import { AddressService } from "../services/addressService";
 import { ProfileService } from "../services/profileService";
-import { MarketingService } from "../services/marketingService";
-import { AuthService } from "../services/authService";
 import { useAuth } from "../contexts/AuthContext";
 import type {
   ServiceCategoryLookupResponse,
@@ -47,8 +42,8 @@ import type {
 } from "../types/catalog";
 import type { CustomerEquipmentResponse } from "../types/equipment";
 import type { CustomerAddressResponse } from "../types/address";
-import type { PromotionalOffer } from "../services/marketingService";
 import type {
+  BookingPublicSettings,
   CustomerBookingCreateRequest,
   GuestBookingCreateRequest,
 } from "../types/booking";
@@ -63,7 +58,6 @@ interface WizardData {
   serviceSubTypeName: string;
   acTypeId: number | null;
   acTypeName: string;
-  unitCount: number;
   serviceBasePrice: number | null;
   otherNote: string;                 // free text when "Other" category selected
   // Journey B — registered equipment (Step 1)
@@ -77,6 +71,8 @@ interface WizardData {
   addressLine1: string;
   addressLine2: string;
   cityName: string;
+  latitude: number | null;
+  longitude: number | null;
   // Journey B — saved address (Step 2)
   selectedAddressId: number | null;
 
@@ -92,9 +88,6 @@ interface WizardData {
   guestMobile: string;
   mobileVerified: boolean;
   specialInstructions: string;
-  couponCode: string;
-  appliedCoupon: string;
-  discountAmount: number;
 
   // Step 5 — Confirm
   termsAccepted: boolean;
@@ -102,13 +95,13 @@ interface WizardData {
 
 const INITIAL_DATA: WizardData = {
   serviceTypeId: null, serviceTypeName: "", serviceSubTypeId: null, serviceSubTypeName: "",
-  acTypeId: null, acTypeName: "", unitCount: 1, serviceBasePrice: null, otherNote: "",
+  acTypeId: null, acTypeName: "", serviceBasePrice: null, otherNote: "",
   selectedEquipmentId: null, selectedEquipmentName: "",
   pincode: "", zoneId: null, zoneName: "", addressLine1: "", addressLine2: "", cityName: "",
+  latitude: null, longitude: null,
   selectedAddressId: null,
   slotDate: "", slotAvailabilityId: null, slotWindow: null, isEmergency: false, emergencySurcharge: 0,
   guestName: "", guestMobile: "", mobileVerified: false, specialInstructions: "",
-  couponCode: "", appliedCoupon: "", discountAmount: 0,
   termsAccepted: false,
 };
 
@@ -137,10 +130,6 @@ function getCategoryIcon(name: string): React.ReactNode {
 
 function isAmc(name: string)   { return name.toLowerCase().includes("amc") || name.toLowerCase().includes("mainten"); }
 function isOther(name: string) { return name.toLowerCase().includes("other"); }
-function needsUnits(name: string) {
-  const n = name.toLowerCase();
-  return n.includes("clean") || n.includes("install") || n.includes("gas");
-}
 
 // ─── Mask mobile for display ──────────────────────────────────────────────────
 
@@ -164,10 +153,18 @@ export default function BookingWizard() {
   const [data, setData]                 = useState<WizardData>(INITIAL_DATA);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError]   = useState("");
+  const isSubmittingRef  = useRef(false);
+  const isNavigatingRef  = useRef(false);
   const navigate  = useNavigate();
   const location  = useLocation();
   const { user }  = useAuth();
   const isLoggedIn = !!user;
+
+  // ── Booking feature flags ───────────────────────────────────────────────────
+  const [bookingSettings, setBookingSettings] = useState<BookingPublicSettings>({
+    openBookingMode: false,
+    enforceSlotCapacity: true,
+  });
 
   // ── Catalog (both journeys) ─────────────────────────────────────────────────
   const [lookups, setLookups] = useState<{
@@ -181,24 +178,53 @@ export default function BookingWizard() {
   const [myEquipment, setMyEquipment]     = useState<CustomerEquipmentResponse[]>([]);
   const [myAddresses, setMyAddresses]     = useState<CustomerAddressResponse[]>([]);
   const [myMobile, setMyMobile]           = useState("");
-  const [loyaltyOffers, setLoyaltyOffers] = useState<PromotionalOffer[]>([]);
 
   useEffect(() => {
-    // Load catalog (shared by both journeys)
+    // Load catalog + booking settings in parallel
     Promise.allSettled([
       CatalogService.getServiceCategories(),
       CatalogService.getServices(),
       CatalogService.getAcTypes(),
-    ]).then(([catRes, svcRes, acRes]) => {
+      BookingService.getPublicSettings(),
+    ]).then(([catRes, svcRes, acRes, settingsRes]) => {
       const cats = catRes.status === "fulfilled" ? catRes.value ?? [] : [];
       const svcs = svcRes.status === "fulfilled" ? svcRes.value ?? [] : [];
       const acs  = acRes.status  === "fulfilled" ? acRes.value  ?? [] : [];
+      if (settingsRes.status === "fulfilled") setBookingSettings(settingsRes.value);
       const grouped = svcs.reduce<Record<number, ServiceLookupResponse[]>>((acc, s) => {
         if (!acc[s.serviceCategoryId]) acc[s.serviceCategoryId] = [];
         acc[s.serviceCategoryId].push(s);
         return acc;
       }, {});
       setLookups({ categories: cats, servicesByCategory: grouped, acTypes: acs });
+
+      // Deep-link pre-select (resolved here, where the catalog is available).
+      // Catalog pages pass { serviceId } ("Book this service"); a category-only link may pass
+      // { serviceCategoryId, serviceCategoryName }. A specific serviceId wins and also seeds its category.
+      const deepLink = location.state as
+        | { serviceId?: number; serviceCategoryId?: number; serviceCategoryName?: string }
+        | null;
+
+      if (deepLink?.serviceId) {
+        const service = svcs.find((s) => s.serviceId === deepLink.serviceId);
+        if (service) {
+          const category = cats.find((c) => c.serviceCategoryId === service.serviceCategoryId);
+          setData((prev) => ({
+            ...prev,
+            serviceTypeId:      service.serviceCategoryId,
+            serviceTypeName:    category?.categoryName ?? prev.serviceTypeName,
+            serviceSubTypeId:   service.serviceId,
+            serviceSubTypeName: service.serviceName,
+            serviceBasePrice:   service.basePrice ?? null,
+          }));
+        }
+      } else if (deepLink?.serviceCategoryId) {
+        setData((prev) => ({
+          ...prev,
+          serviceTypeId:   deepLink.serviceCategoryId!,
+          serviceTypeName: deepLink.serviceCategoryName ?? "",
+        }));
+      }
     }).finally(() => setLookupsLoading(false));
 
     // Load Journey B data (logged-in only)
@@ -229,27 +255,32 @@ export default function BookingWizard() {
       ProfileService.getMyProfile()
         .then((p) => setMyMobile(p.mobileNumber || ""))
         .catch(() => setMyMobile(""));
-
-      // Loyalty / promo offers for B-S4 coupon chip
-      MarketingService.getOffers()
-        .then((offers) => setLoyaltyOffers(offers.filter((o) => !!o.couponCode)))
-        .catch(() => setLoyaltyOffers([]));
-    }
-
-    // Deep-link pre-select
-    const state = location.state as { serviceCategoryId?: number; serviceCategoryName?: string } | null;
-    if (state?.serviceCategoryId) {
-      setData((prev) => ({
-        ...prev,
-        serviceTypeId: state.serviceCategoryId!,
-        serviceTypeName: state.serviceCategoryName ?? "",
-      }));
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const { openBookingMode } = bookingSettings;
+
   const update   = (updates: Partial<WizardData>) => setData((prev) => ({ ...prev, ...updates }));
-  const nextStep = () => { setStep((s) => Math.min(s + 1, TOTAL_STEPS)); window.scrollTo({ top: 0, behavior: "smooth" }); };
-  const prevStep = () => { setStep((s) => Math.max(s - 1, 1)); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  const nextStep = () => {
+    if (isNavigatingRef.current) return;
+    isNavigatingRef.current = true;
+    setStep((s) => {
+      if (openBookingMode && s === 2) return isLoggedIn ? 5 : 4;  // skip slot step
+      if (!openBookingMode && isLoggedIn && s === 3) return 5;     // skip contact step for auth user
+      return Math.min(s + 1, TOTAL_STEPS);
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setTimeout(() => { isNavigatingRef.current = false; }, 500);
+  };
+  const prevStep = () => {
+    setStep((s) => {
+      if (openBookingMode && isLoggedIn && s === 5) return 2;  // skip slot + contact
+      if (openBookingMode && s === 4) return 2;                // skip slot step
+      if (!openBookingMode && isLoggedIn && s === 5) return 3; // skip contact step for auth user
+      return Math.max(s - 1, 1);
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const isStepValid = (): boolean => {
     switch (step) {
@@ -259,17 +290,24 @@ export default function BookingWizard() {
         return skipSubType ? true : data.serviceSubTypeId !== null;
       }
       case 2: return data.pincode.length === 6 && data.zoneId !== null && data.addressLine1.trim().length >= 5;
-      case 3: return !!data.slotDate && (data.slotAvailabilityId !== null || data.isEmergency);
+      case 3: return openBookingMode || (!!data.slotDate && (data.slotAvailabilityId !== null || data.isEmergency));
       case 4: return isLoggedIn
         ? true
-        : data.guestName.trim().length >= 2 && data.mobileVerified;
+        : data.guestName.trim().length >= 2 && /^[2-9]\d{9}$/.test(data.guestMobile.replace(/\D/g, ""));
       case 5: return data.termsAccepted;
       default: return true;
     }
   };
 
+  // ── Visible step sequence → drives progress display ─────────────────────────
+  const visibleSteps = [1, 2, ...(openBookingMode ? [] : [3]), ...(!isLoggedIn ? [4] : []), 5];
+  const effectiveStep  = Math.max(visibleSteps.indexOf(step) + 1, 1);
+  const effectiveTotal = visibleSteps.length;
+
   // ── Booking submit ──────────────────────────────────────────────────────────
   const handleConfirm = async () => {
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
     setIsSubmitting(true);
     setSubmitError("");
     try {
@@ -282,34 +320,37 @@ export default function BookingWizard() {
       const basePayload: CustomerBookingCreateRequest = {
         serviceId: data.serviceSubTypeId ?? data.serviceTypeId!,
         acTypeId:  data.acTypeId ?? undefined,
-        slotAvailabilityId: data.slotAvailabilityId!,
+        // Emergency bookings have no pre-selected slot; backend dispatches within SLA.
+        slotAvailabilityId: data.slotAvailabilityId ?? undefined,
         addressLine1: data.addressLine1,
         addressLine2: data.addressLine2 || undefined,
         cityName: data.cityName,
         pincode: data.pincode,
         issueNotes: noteParts.join(" | ") || undefined,
         isEmergency: data.isEmergency,
+        emergencySurchargeAmount: data.isEmergency ? data.emergencySurcharge : undefined,
         sourceChannel: "web",
+        latitude:  data.latitude  ?? undefined,
+        longitude: data.longitude ?? undefined,
       };
 
+      const idempotencyKey = crypto.randomUUID();
       const result = isLoggedIn
-        ? await BookingService.createCustomerBooking(basePayload)
+        ? await BookingService.createCustomerBooking({
+            ...basePayload,
+            customerName: data.guestName || user?.fullName || "",
+            mobileNumber: myMobile,
+          }, idempotencyKey)
         : await BookingService.createGuestBooking({
             ...basePayload,
             customerName: data.guestName,
             mobileNumber: data.guestMobile,
-          } as GuestBookingCreateRequest);
+          } as GuestBookingCreateRequest, idempotencyKey);
 
-      navigate("/booking-confirmation", {
-        state: {
-          booking: result,
-          addressLine: data.addressLine1,
-          cityName: data.cityName,
-          pincode: data.pincode,
-        },
-      });
+      navigate(isLoggedIn ? "/portal/booking-confirmation" : "/booking-confirmation", { state: { booking: result } });
     } catch {
       setSubmitError("Something went wrong. Please try again.");
+      isSubmittingRef.current = false;
     } finally {
       setIsSubmitting(false);
     }
@@ -318,43 +359,48 @@ export default function BookingWizard() {
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-slate-50 pt-20 pb-16">
+      <h1 className="sr-only">Book a Service</h1>
       <div className="container mx-auto px-4 sm:px-6 max-w-2xl">
 
         {/* Page header */}
         <div className="mb-6">
-          <div className="flex items-center justify-between mb-5">
-            <button
-              onClick={() => (step === 1 ? navigate("/") : prevStep())}
-              className="flex items-center gap-1.5 text-xs font-semibold text-brand-navy/40 hover:text-brand-navy transition-colors"
-            >
-              <ChevronLeft size={14} />
-              {step === 1 ? "Back to Home" : "Back"}
-            </button>
-            <div className="text-right">
-              <p className="text-[11px] font-semibold text-brand-gold uppercase tracking-widest">
-                Step {step} of {TOTAL_STEPS}
-              </p>
-              <p className="text-sm font-semibold text-brand-navy mt-0.5">{STEP_LABELS[step]}</p>
-            </div>
-          </div>
-
-          {/* Progress bar */}
-          <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden">
-            <motion.div
-              className="h-full bg-brand-gold rounded-full"
-              initial={{ width: "0%" }}
-              animate={{ width: `${(step / TOTAL_STEPS) * 100}%` }}
-              transition={{ duration: 0.4, ease: "easeInOut" }}
-            />
-          </div>
-          <div className="flex justify-between mt-2 px-0.5">
-            {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map((s) => (
-              <div
-                key={s}
-                className={`w-1.5 h-1.5 rounded-full transition-colors duration-300 ${s <= step ? "bg-brand-gold" : "bg-slate-300"}`}
-              />
-            ))}
-          </div>
+          {(() => {
+            return (
+              <>
+                <div className="flex items-center justify-between mb-5">
+                  <button
+                    onClick={() => (step === 1 ? navigate(isLoggedIn ? "/portal" : "/") : prevStep())}
+                    className="flex items-center gap-1.5 text-xs font-semibold text-brand-navy/40 hover:text-brand-navy transition-colors"
+                  >
+                    <ChevronLeft size={14} />
+                    {step === 1 ? "Back" : "Back"}
+                  </button>
+                  <div className="text-right">
+                    <p className="text-[11px] font-semibold text-brand-gold uppercase tracking-widest">
+                      Step {effectiveStep} of {effectiveTotal}
+                    </p>
+                    <p className="text-sm font-semibold text-brand-navy mt-0.5">{STEP_LABELS[step]}</p>
+                  </div>
+                </div>
+                <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-brand-gold rounded-full"
+                    initial={{ width: "0%" }}
+                    animate={{ width: `${(effectiveStep / effectiveTotal) * 100}%` }}
+                    transition={{ duration: 0.4, ease: "easeInOut" }}
+                  />
+                </div>
+                <div className="flex justify-between mt-2 px-0.5">
+                  {Array.from({ length: effectiveTotal }, (_, i) => i + 1).map((s) => (
+                    <div
+                      key={s}
+                      className={`w-1.5 h-1.5 rounded-full transition-colors duration-300 ${s <= effectiveStep ? "bg-brand-gold" : "bg-slate-300"}`}
+                    />
+                  ))}
+                </div>
+              </>
+            );
+          })()}
         </div>
 
         {/* Main card */}
@@ -390,7 +436,7 @@ export default function BookingWizard() {
                     onUpdate={update}
                   />
                 )}
-                {step === 3 && (
+                {step === 3 && !openBookingMode && (
                   <Step3 key="step3" data={data} onUpdate={update} />
                 )}
                 {step === 4 && (
@@ -399,7 +445,6 @@ export default function BookingWizard() {
                     data={data}
                     isLoggedIn={isLoggedIn}
                     myMobile={myMobile}
-                    loyaltyOffers={loyaltyOffers}
                     onUpdate={update}
                   />
                 )}
@@ -408,6 +453,7 @@ export default function BookingWizard() {
                     key="step5"
                     data={data}
                     isLoggedIn={isLoggedIn}
+                    myMobile={myMobile}
                     onUpdate={update}
                     onEdit={setStep}
                     isSubmitting={isSubmitting}
@@ -497,7 +543,6 @@ interface Step1Props {
 function Step1({ data, categories, servicesByCategory, acTypes, isLoggedIn, myEquipment, onUpdate }: Step1Props) {
   const subTypes      = data.serviceTypeId ? (servicesByCategory[data.serviceTypeId] ?? []) : [];
   const showSubTypeRow = data.serviceTypeId !== null && !isAmc(data.serviceTypeName) && !isOther(data.serviceTypeName);
-  const showUnitsRow   = data.serviceTypeId !== null && needsUnits(data.serviceTypeName);
 
   const showEquipmentSection = isLoggedIn && myEquipment.length > 0;
 
@@ -698,7 +743,7 @@ function Step1({ data, categories, servicesByCategory, acTypes, isLoggedIn, myEq
           >
             <div className="pt-2">
               <label className={labelBase}>
-                Select service type <span className="text-red-400">*</span>
+                Select service option <span className="text-red-400">*</span>
               </label>
               <div className="flex flex-wrap gap-2 mt-1">
                 {subTypes.map((svc) => {
@@ -755,46 +800,13 @@ function Step1({ data, categories, servicesByCategory, acTypes, isLoggedIn, myEq
         </div>
       </div>
 
-      {/* ── Number of Units (conditional) ─────────────────────────────────── */}
-      <AnimatePresence>
-        {showUnitsRow && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
-            className="overflow-hidden"
-          >
-            <div>
-              <label className={labelBase}>Number of Units</label>
-              <div className="flex items-center gap-4 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 w-fit">
-                <button
-                  onClick={() => onUpdate({ unitCount: Math.max(1, data.unitCount - 1) })}
-                  className="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center text-brand-navy hover:bg-brand-navy hover:text-white hover:border-brand-navy transition-all"
-                >
-                  <Minus size={14} />
-                </button>
-                <span className="text-lg font-bold text-brand-navy w-8 text-center tabular-nums">
-                  {data.unitCount}
-                </span>
-                <button
-                  onClick={() => onUpdate({ unitCount: Math.min(20, data.unitCount + 1) })}
-                  className="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center text-brand-navy hover:bg-brand-navy hover:text-white hover:border-brand-navy transition-all"
-                >
-                  <Plus size={14} />
-                </button>
-              </div>
-              <p className="mt-1.5 text-[11px] text-brand-navy/30">Min 1 · Max 20</p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </motion.div>
   );
 }
 
 // ─── Step 2: Service Location ──────────────────────────────────────────────────
-// Journey A: PIN → zone validation → address fields revealed on serviceable PIN
+// Journey A: all address fields shown upfront; GPS auto-fill button available;
+//            PIN triggers zone validation silently
 // Journey B [B-S2]: + Saved Address Quick-Select at very top
 // API (B-S2): GET /api/customers/me/addresses (loaded in parent, passed as prop)
 
@@ -805,39 +817,115 @@ interface Step2Props {
   onUpdate: (updates: Partial<WizardData>) => void;
 }
 
+type LocationStatus = "idle" | "locating" | "geocoding" | "success" | "error";
+
 function Step2({ data, isLoggedIn, myAddresses, onUpdate }: Step2Props) {
-  const [pinStatus, setPinStatus]       = useState<"valid" | "invalid" | null>(
+  const [pinStatus, setPinStatus]           = useState<"valid" | "invalid" | null>(
     data.zoneId ? "valid" : null,
   );
-  const [isValidating, setIsValidating] = useState(false);
-  // B-S2: show manual form (true = visible, false = collapsed when saved address selected)
-  const [showManualForm, setShowManualForm] = useState(!data.selectedAddressId);
+  const [isValidating, setIsValidating]     = useState(false);
+  const [showManualForm, setShowManualForm] = useState(
+    // For logged-in users with saved addresses, start with address cards visible (not manual form)
+    !(isLoggedIn && myAddresses.length > 0) && !data.selectedAddressId,
+  );
+  const [locationStatus, setLocationStatus] = useState<LocationStatus>("idle");
+  const [locationError, setLocationError]   = useState("");
+  const autoFillDone                        = useRef(false);
+  const autoSelectDone                      = useRef(false);
 
   const showAddressCards = isLoggedIn && myAddresses.length > 0;
-  const isServiceable    = pinStatus === "valid" && data.zoneId !== null;
 
-  // ── PIN validation (manual entry) ────────────────────────────────────────
+  // ── Auto-select default saved address on mount (logged-in, addresses available) ──
   useEffect(() => {
-    if (!showManualForm) return;           // skip while saved address is selected
+    if (!autoSelectDone.current && isLoggedIn && myAddresses.length > 0 && !data.selectedAddressId) {
+      autoSelectDone.current = true;
+      handleAddressSelect(myAddresses[0]);
+    }
+  }, [myAddresses.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── PIN validation — fires reactively when PIN reaches 6 digits ──────────
+  useEffect(() => {
+    if (!showManualForm) return;
     if (data.pincode.length !== 6) { setPinStatus(null); return; }
     setIsValidating(true);
     CatalogService.getZoneByPincode(data.pincode)
       .then((zone) => {
-        if (zone.isServiceable) {
-          onUpdate({ zoneId: zone.zoneId, zoneName: zone.zoneName });
-          setPinStatus("valid");
-        } else {
-          onUpdate({ zoneId: null, zoneName: "" });
-          setPinStatus("invalid");
-        }
+        onUpdate({ zoneId: zone.zoneId, zoneName: zone.zoneName });
+        setPinStatus("valid");
       })
       .catch(() => { onUpdate({ zoneId: null, zoneName: "" }); setPinStatus("invalid"); })
       .finally(() => setIsValidating(false));
   }, [data.pincode, showManualForm]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Select a saved address ────────────────────────────────────────────────
+  // ── GPS + reverse geocode ─────────────────────────────────────────────────
+  const handleLocationDetect = () => {
+    if (!navigator.geolocation) {
+      setLocationStatus("error");
+      setLocationError("GPS is not supported in this browser. Please enter your address manually.");
+      return;
+    }
+    setLocationStatus("locating");
+    setLocationError("");
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        setLocationStatus("geocoding");
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`,
+            { headers: { "Accept-Language": "en" } },
+          );
+          if (!res.ok) throw new Error("geocode_failed");
+          const geo  = await res.json();
+          const addr = geo.address ?? {};
+
+          const roadParts    = [addr.house_number, addr.road].filter(Boolean);
+          const localityName = addr.neighbourhood || addr.quarter || addr.hamlet || "";
+          const areaName     = addr.suburb || addr.city_district || "";
+
+          // Build address like Zepto/Swiggy: line1 = road + locality (full locatable description);
+          // line2 = broader ward/area so the landmark field is pre-filled.
+          let addressLine1: string;
+          let addressLine2: string;
+          if (roadParts.length > 0) {
+            addressLine1 = [roadParts.join(", "), localityName].filter(Boolean).join(", ");
+            addressLine2 = areaName;
+          } else if (localityName) {
+            addressLine1 = localityName;
+            addressLine2 = areaName;
+          } else {
+            addressLine1 = areaName;
+            addressLine2 = "";
+          }
+
+          const cityName = addr.city || addr.town || addr.village || addr.county || "";
+          const pincode  = (addr.postcode ?? "").replace(/\D/g, "").slice(0, 6);
+
+          autoFillDone.current = true;
+          onUpdate({ addressLine1, addressLine2, cityName, pincode, zoneId: null, zoneName: "", latitude, longitude });
+          setLocationStatus("success");
+        } catch {
+          setLocationStatus("error");
+          setLocationError("Your address couldn't be read automatically. Please type it in.");
+        }
+      },
+      (err) => {
+        setLocationStatus("error");
+        if (err.code === err.PERMISSION_DENIED) {
+          setLocationError("Location access was blocked. Please enter your address manually.");
+        } else if (err.code === err.TIMEOUT) {
+          setLocationError("Couldn't reach GPS. Please enter manually.");
+        } else {
+          setLocationError("Location unavailable. Please enter your address manually.");
+        }
+      },
+      { timeout: 10000, maximumAge: 30000, enableHighAccuracy: false },
+    );
+  };
+
+  // ── Saved address select ──────────────────────────────────────────────────
   const handleAddressSelect = (addr: CustomerAddressResponse) => {
-    // If the saved address already has zone data (validated when saved), use it directly
     if (addr.zoneId && addr.zoneName) {
       onUpdate({
         selectedAddressId: addr.addressId,
@@ -847,29 +935,27 @@ function Step2({ data, isLoggedIn, myAddresses, onUpdate }: Step2Props) {
         addressLine1: addr.addressLine1,
         addressLine2: addr.addressLine2 ?? "",
         cityName:     addr.cityName,
+        latitude:     addr.latitude ?? null,
+        longitude:    addr.longitude ?? null,
       });
       setPinStatus("valid");
     } else {
-      // Fallback: run zone validation via API
       onUpdate({
         selectedAddressId: addr.addressId,
         pincode:      addr.pincode,
         addressLine1: addr.addressLine1,
         addressLine2: addr.addressLine2 ?? "",
         cityName:     addr.cityName,
-        zoneId: null,
-        zoneName: "",
+        zoneId: null, zoneName: "",
+        latitude:     addr.latitude ?? null,
+        longitude:    addr.longitude ?? null,
       });
       setPinStatus(null);
       setIsValidating(true);
       CatalogService.getZoneByPincode(addr.pincode)
         .then((zone) => {
-          if (zone.isServiceable) {
-            onUpdate({ zoneId: zone.zoneId, zoneName: zone.zoneName });
-            setPinStatus("valid");
-          } else {
-            setPinStatus("invalid");
-          }
+          onUpdate({ zoneId: zone.zoneId, zoneName: zone.zoneName });
+          setPinStatus("valid");
         })
         .catch(() => setPinStatus("invalid"))
         .finally(() => setIsValidating(false));
@@ -878,16 +964,14 @@ function Step2({ data, isLoggedIn, myAddresses, onUpdate }: Step2Props) {
   };
 
   const handleEnterDifferentAddress = () => {
-    onUpdate({
-      selectedAddressId: null,
-      pincode: "", zoneId: null, zoneName: "",
-      addressLine1: "", addressLine2: "", cityName: "",
-    });
+    onUpdate({ selectedAddressId: null, pincode: "", zoneId: null, zoneName: "", addressLine1: "", addressLine2: "", cityName: "", latitude: null, longitude: null });
     setPinStatus(null);
     setShowManualForm(true);
+    setLocationStatus("idle");
+    setLocationError("");
+    autoFillDone.current = false;
   };
 
-  // ── Address label icon ────────────────────────────────────────────────────
   const addrIcon = (label: string) => {
     const l = label.toLowerCase();
     if (l.includes("home"))   return <Home size={13} className="shrink-0" />;
@@ -906,9 +990,7 @@ function Step2({ data, isLoggedIn, myAddresses, onUpdate }: Step2Props) {
       <div>
         <h2 className="text-xl font-bold text-brand-navy">Where should we arrive?</h2>
         <p className="text-sm text-brand-navy/40 mt-1">
-          {showAddressCards
-            ? "Select a saved address or enter a new one"
-            : "We'll confirm service coverage by your PIN code first"}
+          {showAddressCards ? "Select a saved address or enter a new one" : "Enter your service address below"}
         </p>
       </div>
 
@@ -952,9 +1034,7 @@ function Step2({ data, isLoggedIn, myAddresses, onUpdate }: Step2Props) {
                       )}
                     </div>
                     <p className="text-xs text-brand-navy/60 mt-0.5 truncate">{addr.addressLine1}</p>
-                    <p className="text-[11px] text-brand-navy/40 mt-0.5">
-                      {addr.cityName} · {addr.pincode}
-                    </p>
+                    <p className="text-[11px] text-brand-navy/40 mt-0.5">{addr.cityName} · {addr.pincode}</p>
                     {isSelected && isValidating && (
                       <p className="text-[11px] text-brand-gold flex items-center gap-1 mt-1">
                         <Loader2 size={10} className="animate-spin" /> Verifying coverage…
@@ -971,28 +1051,22 @@ function Step2({ data, isLoggedIn, myAddresses, onUpdate }: Step2Props) {
                       </p>
                     )}
                   </div>
-                  {isSelected && (
-                    <Check size={16} className="text-brand-gold shrink-0 mt-1" strokeWidth={2.5} />
-                  )}
+                  {isSelected && <Check size={16} className="text-brand-gold shrink-0 mt-1" strokeWidth={2.5} />}
                 </button>
               );
             })}
           </div>
 
-          {/* "Enter a different address" toggle */}
           {!showManualForm ? (
             <button
               onClick={handleEnterDifferentAddress}
               className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-brand-gold hover:underline"
             >
-              <ChevronDown size={13} /> Enter a different address
+              <ChevronDown size={13} /> Use a different address
             </button>
           ) : (
             <button
-              onClick={() => {
-                // Re-collapse if there's a valid saved address still selected
-                if (data.selectedAddressId) setShowManualForm(false);
-              }}
+              onClick={() => { if (data.selectedAddressId) setShowManualForm(false); }}
               className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-brand-navy/40 hover:text-brand-navy"
             >
               <ChevronRight size={13} /> Use a saved address
@@ -1002,7 +1076,6 @@ function Step2({ data, isLoggedIn, myAddresses, onUpdate }: Step2Props) {
       )}
 
       {/* ── Manual Entry Form ──────────────────────────────────────────────── */}
-      {/* Guest: always shown. Logged-in: shown when showManualForm=true */}
       <AnimatePresence>
         {(!showAddressCards || showManualForm) && (
           <motion.div
@@ -1010,15 +1083,138 @@ function Step2({ data, isLoggedIn, myAddresses, onUpdate }: Step2Props) {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.25, ease: "easeInOut" }}
-            className="overflow-hidden space-y-5"
+            className="overflow-hidden space-y-4"
           >
-            {/* PIN Code */}
+            {/* ── GPS auto-fill button ─────────────────────────────────────── */}
+            {locationStatus !== "success" && (
+              <div>
+                <button
+                  type="button"
+                  onClick={handleLocationDetect}
+                  disabled={locationStatus === "locating" || locationStatus === "geocoding"}
+                  className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 transition-all ${
+                    locationStatus === "locating" || locationStatus === "geocoding"
+                      ? "border-brand-gold/40 bg-brand-gold/5 cursor-not-allowed"
+                      : "border-brand-gold/30 bg-white hover:border-brand-gold hover:bg-brand-gold/5 hover:shadow-sm"
+                  }`}
+                >
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                    locationStatus === "locating" || locationStatus === "geocoding"
+                      ? "bg-brand-gold/20"
+                      : "bg-brand-gold/10"
+                  }`}>
+                    {locationStatus === "locating" || locationStatus === "geocoding"
+                      ? <Loader2 size={15} className="animate-spin text-brand-gold" />
+                      : <LocateFixed size={15} className="text-brand-gold" />
+                    }
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-semibold text-brand-navy">
+                      {locationStatus === "locating"  && "Getting your location…"}
+                      {locationStatus === "geocoding" && "Reading your address…"}
+                      {(locationStatus === "idle" || locationStatus === "error") && "Use my current location"}
+                    </p>
+                    <p className="text-[11px] text-brand-navy/40 mt-0.5">
+                      {locationStatus === "locating"  && "Please allow location access if prompted"}
+                      {locationStatus === "geocoding" && "Almost there…"}
+                      {(locationStatus === "idle" || locationStatus === "error") && "Tap to auto-fill your address"}
+                    </p>
+                  </div>
+                </button>
+
+                {/* Location error */}
+                {locationStatus === "error" && locationError && (
+                  <div className="mt-2 flex items-start gap-2 p-3 bg-red-50 border border-red-100 rounded-xl">
+                    <AlertCircle size={13} className="text-red-400 shrink-0 mt-0.5" />
+                    <p className="text-xs text-red-600">{locationError}</p>
+                  </div>
+                )}
+
+                {/* Divider */}
+                <div className="flex items-center gap-3 mt-4">
+                  <div className="h-px bg-slate-200 flex-1" />
+                  <span className="text-[11px] font-semibold text-brand-navy/30 uppercase tracking-wide">
+                    or enter manually
+                  </span>
+                  <div className="h-px bg-slate-200 flex-1" />
+                </div>
+              </div>
+            )}
+
+            {/* Auto-fill success badge */}
+            {locationStatus === "success" && (
+              <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-xl">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 size={15} className="text-green-600 shrink-0" />
+                  <p className="text-xs font-semibold text-green-700">Address filled from your location</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setLocationStatus("idle"); autoFillDone.current = false; }}
+                  className="text-[11px] font-semibold text-brand-navy/40 hover:text-brand-navy"
+                >
+                  Change
+                </button>
+              </div>
+            )}
+
+            {/* ── Address Line 1 ─────────────────────────────────────────────── */}
             <div>
-              <label className={labelBase}>
+              <label htmlFor="bw-address1" className={labelBase}>
+                Street / Road <span className="text-red-400">*</span>
+              </label>
+              <input
+                id="bw-address1"
+                type="text"
+                maxLength={128}
+                placeholder="Road name, street, locality"
+                className={inputBase}
+                value={data.addressLine1}
+                onChange={(e) => onUpdate({ addressLine1: e.target.value })}
+              />
+            </div>
+
+            {/* ── Address Line 2 ─────────────────────────────────────────────── */}
+            <div>
+              <label htmlFor="bw-address2" className={labelBase}>
+                Flat / House No., Area{" "}
+                <span className="normal-case tracking-normal font-normal text-brand-navy/30">(optional)</span>
+              </label>
+              <input
+                id="bw-address2"
+                type="text"
+                maxLength={128}
+                placeholder="Flat no., building name, nearest landmark"
+                className={inputBase}
+                value={data.addressLine2}
+                onChange={(e) => onUpdate({ addressLine2: e.target.value })}
+              />
+            </div>
+
+            {/* ── City ───────────────────────────────────────────────────────── */}
+            <div>
+              <label htmlFor="bw-city" className={labelBase}>
+                City <span className="text-red-400">*</span>
+              </label>
+              <input
+                id="bw-city"
+                type="text"
+                maxLength={64}
+                placeholder="City"
+                className={inputBase}
+                value={data.cityName}
+                onChange={(e) => onUpdate({ cityName: e.target.value })}
+              />
+            </div>
+
+            {/* ── PIN Code ───────────────────────────────────────────────────── */}
+            <div>
+              <label htmlFor="bw-pincode" className={labelBase}>
                 PIN / Postal Code <span className="text-red-400">*</span>
               </label>
               <div className="relative">
                 <input
+                  id="bw-pincode"
                   type="text"
                   inputMode="numeric"
                   maxLength={6}
@@ -1033,7 +1229,7 @@ function Step2({ data, isLoggedIn, myAddresses, onUpdate }: Step2Props) {
                   }`}
                 />
                 <div className="absolute right-3.5 top-1/2 -translate-y-1/2">
-                  {isValidating && <Loader2 size={14} className="animate-spin text-brand-gold" />}
+                  {isValidating                           && <Loader2 size={14} className="animate-spin text-brand-gold" />}
                   {!isValidating && pinStatus === "valid"   && <Check size={14} className="text-green-500" />}
                   {!isValidating && pinStatus === "invalid" && <AlertCircle size={14} className="text-red-400" />}
                 </div>
@@ -1064,58 +1260,6 @@ function Step2({ data, isLoggedIn, myAddresses, onUpdate }: Step2Props) {
               )}
             </div>
 
-            {/* Address fields — revealed after serviceable PIN */}
-            <AnimatePresence>
-              {isServiceable && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.25, ease: "easeInOut" }}
-                  className="overflow-hidden space-y-4"
-                >
-                  <div>
-                    <label className={labelBase}>
-                      Address Line 1 <span className="text-red-400">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      maxLength={128}
-                      placeholder="House / flat number and street name"
-                      className={inputBase}
-                      value={data.addressLine1}
-                      onChange={(e) => onUpdate({ addressLine1: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <label className={labelBase}>
-                      Address Line 2{" "}
-                      <span className="normal-case tracking-normal font-normal text-brand-navy/30">
-                        (optional)
-                      </span>
-                    </label>
-                    <input
-                      type="text"
-                      maxLength={128}
-                      placeholder="Apartment name, floor, landmark (optional)"
-                      className={inputBase}
-                      value={data.addressLine2}
-                      onChange={(e) => onUpdate({ addressLine2: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <label className={labelBase}>City</label>
-                    <input
-                      type="text"
-                      placeholder="City"
-                      className={inputBase}
-                      value={data.cityName}
-                      onChange={(e) => onUpdate({ cityName: e.target.value })}
-                    />
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
           </motion.div>
         )}
       </AnimatePresence>
@@ -1155,11 +1299,21 @@ function buildCalendarDays() {
 }
 
 function Step3({ data, onUpdate }: Step3Props) {
-  const [slots, setSlots]               = useState<SlotAvailabilityResponse[]>([]);
-  const [slotsLoading, setSlotsLoading] = useState(false);
-  const calendarDays                    = buildCalendarDays();
-  const now                             = new Date();
-  const todayAvailable                  = now.getHours() < 4;
+  const [slots, setSlots]                       = useState<SlotAvailabilityResponse[]>([]);
+  const [slotsLoading, setSlotsLoading]         = useState(false);
+  const [calendarExpanded, setCalendarExpanded] = useState(false);
+  const calendarDays                            = buildCalendarDays();
+  const now                                     = new Date();
+  const todayAvailable                          = now.getHours() < 4;
+
+  // Auto-select first available date on mount
+  useEffect(() => {
+    if (!data.slotDate) {
+      const d = new Date();
+      if (!todayAvailable) d.setDate(d.getDate() + 1);
+      onUpdate({ slotDate: d.toISOString().split("T")[0], slotAvailabilityId: null, slotWindow: null, isEmergency: false, emergencySurcharge: 0 });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!data.slotDate || !data.zoneId) { setSlots([]); return; }
@@ -1181,6 +1335,7 @@ function Step3({ data, onUpdate }: Step3Props) {
 
   const handleDateSelect = (dateStr: string) => {
     onUpdate({ slotDate: dateStr, slotAvailabilityId: null, slotWindow: null, isEmergency: false, emergencySurcharge: 0 });
+    setCalendarExpanded(false);
   };
 
   const handleWindowSelect = (win: TimeWindow) => {
@@ -1188,13 +1343,7 @@ function Step3({ data, onUpdate }: Step3Props) {
     onUpdate({ slotWindow: win, slotAvailabilityId: avail.firstSlot?.slotAvailabilityId ?? null, isEmergency: false, emergencySurcharge: 0 });
   };
 
-  const handleEmergency = () => {
-    onUpdate({ isEmergency: true, slotDate: new Date().toISOString().split("T")[0], slotWindow: "Emergency", slotAvailabilityId: null, emergencySurcharge: 499 });
-  };
-
-  const deSelectEmergency = () => {
-    onUpdate({ isEmergency: false, slotWindow: null, emergencySurcharge: 0 });
-  };
+  const selectedDay = calendarDays.find((d) => d.full === data.slotDate);
 
   return (
     <motion.div
@@ -1209,48 +1358,89 @@ function Step3({ data, onUpdate }: Step3Props) {
         <p className="text-sm text-brand-navy/40 mt-1">Select a date and preferred time window</p>
       </div>
 
-      {/* 14-day calendar grid */}
+      {/* Collapsed date pill — expands on click */}
       <div>
         <label className={labelBase}>Select Date</label>
-        <div className="grid grid-cols-7 gap-1.5">
-          {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
-            <div key={d} className="text-center text-[10px] font-bold text-brand-navy/30 uppercase pb-1">
-              {d}
+        <button
+          type="button"
+          onClick={() => setCalendarExpanded((e) => !e)}
+          className="w-full flex items-center justify-between p-4 rounded-xl border-2 border-brand-gold/40 bg-brand-gold/5 text-left transition-all hover:border-brand-gold hover:shadow-sm"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-brand-navy rounded-xl flex items-center justify-center shrink-0">
+              <Calendar size={16} className="text-brand-gold" />
             </div>
-          ))}
-          {(() => {
-            const firstDate  = new Date(calendarDays[0].full);
-            const offset     = (firstDate.getDay() + 6) % 7;
-            return Array.from({ length: offset }, (_, i) => <div key={`off-${i}`} />);
-          })()}
-          {calendarDays.map((day) => {
-            const isSelected = data.slotDate === day.full;
-            const isDisabled = day.isToday && !todayAvailable;
-            return (
-              <button
-                key={day.full}
-                disabled={isDisabled}
-                onClick={() => handleDateSelect(day.full)}
-                className={`flex flex-col items-center py-2 rounded-xl text-center transition-all ${
-                  isSelected
-                    ? "bg-brand-navy text-white ring-2 ring-brand-gold ring-offset-1 shadow-md"
-                    : isDisabled
-                    ? "opacity-30 cursor-not-allowed"
-                    : "hover:bg-brand-gold/10 text-brand-navy"
-                }`}
-              >
-                <span className={`text-[10px] font-bold uppercase ${isSelected ? "text-white/60" : "text-brand-navy/40"}`}>{day.day}</span>
-                <span className={`text-base font-bold leading-tight ${isSelected ? "text-white" : "text-brand-navy"}`}>{day.date}</span>
-                <span className={`text-[9px] font-semibold ${isSelected ? "text-white/60" : "text-brand-navy/30"}`}>{day.month}</span>
-              </button>
-            );
-          })}
-        </div>
+            {selectedDay ? (
+              <div>
+                <p className="text-sm font-bold text-brand-navy">
+                  {selectedDay.day}, {selectedDay.date} {selectedDay.month}
+                </p>
+                <p className="text-[11px] text-brand-navy/40 mt-0.5">Tap to change date</p>
+              </div>
+            ) : (
+              <p className="text-sm font-semibold text-brand-navy/40">Select a date</p>
+            )}
+          </div>
+          <ChevronDown
+            size={16}
+            className={`text-brand-navy/40 transition-transform duration-200 ${calendarExpanded ? "rotate-180" : ""}`}
+          />
+        </button>
+
+        {/* Expandable calendar grid */}
+        <AnimatePresence>
+          {calendarExpanded && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2, ease: "easeInOut" }}
+              className="overflow-hidden"
+            >
+              <div className="pt-3">
+                <div className="grid grid-cols-7 gap-1.5">
+                  {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
+                    <div key={d} className="text-center text-[10px] font-bold text-brand-navy/30 uppercase pb-1">
+                      {d}
+                    </div>
+                  ))}
+                  {(() => {
+                    const firstDate = new Date(calendarDays[0].full);
+                    const offset    = (firstDate.getDay() + 6) % 7;
+                    return Array.from({ length: offset }, (_, i) => <div key={`off-${i}`} />);
+                  })()}
+                  {calendarDays.map((day) => {
+                    const isSelected = data.slotDate === day.full;
+                    const isDisabled = day.isToday && !todayAvailable;
+                    return (
+                      <button
+                        key={day.full}
+                        disabled={isDisabled}
+                        onClick={() => handleDateSelect(day.full)}
+                        className={`flex flex-col items-center py-2 rounded-xl text-center transition-all ${
+                          isSelected
+                            ? "bg-brand-navy text-white ring-2 ring-brand-gold ring-offset-1 shadow-md"
+                            : isDisabled
+                            ? "opacity-30 cursor-not-allowed"
+                            : "hover:bg-brand-gold/10 text-brand-navy"
+                        }`}
+                      >
+                        <span className={`text-[10px] font-bold uppercase ${isSelected ? "text-white/60" : "text-brand-navy/40"}`}>{day.day}</span>
+                        <span className={`text-base font-bold leading-tight ${isSelected ? "text-white" : "text-brand-navy"}`}>{day.date}</span>
+                        <span className={`text-[9px] font-semibold ${isSelected ? "text-white/60" : "text-brand-navy/30"}`}>{day.month}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Time window cards */}
       <AnimatePresence>
-        {data.slotDate && !data.isEmergency && (
+        {data.slotDate && (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
             <label className={labelBase}>Preferred Time</label>
             {slotsLoading ? (
@@ -1263,7 +1453,6 @@ function Step3({ data, onUpdate }: Step3Props) {
                 {TIME_WINDOWS.map((win) => {
                   const avail      = windowAvailability(win);
                   const isFull     = avail.total > 0 && avail.available === 0;
-                  const isLimited  = avail.available === 1;
                   const isSelected = data.slotWindow === win.id;
                   const hasNoData  = avail.total === 0 && !slotsLoading;
                   return (
@@ -1281,12 +1470,11 @@ function Step3({ data, onUpdate }: Step3Props) {
                     >
                       <p className={`text-sm font-bold ${isSelected ? "text-white" : "text-brand-navy"}`}>{win.label}</p>
                       <p className={`text-[11px] mt-0.5 ${isSelected ? "text-white/60" : "text-brand-navy/40"}`}>{win.range}</p>
-                      <div className="mt-2">
-                        {isFull    ? <span className="text-[10px] font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-md">Full</span>
-                        : isLimited ? <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md">1 slot left</span>
-                        : hasNoData ? <span className="text-[10px] font-bold text-brand-navy/30">—</span>
-                        : <span className={`text-[10px] font-bold ${isSelected ? "text-white/50" : "text-green-600"}`}>{avail.available} slots</span>}
-                      </div>
+                      {isFull && (
+                        <div className="mt-2">
+                          <span className="text-[10px] font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-md">Full</span>
+                        </div>
+                      )}
                     </button>
                   );
                 })}
@@ -1295,158 +1483,25 @@ function Step3({ data, onUpdate }: Step3Props) {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Emergency card */}
-      {!data.isEmergency ? (
-        <button
-          onClick={handleEmergency}
-          className="w-full text-left p-4 rounded-xl border-2 border-amber-200 bg-amber-50 hover:border-amber-400 transition-all"
-          style={{ borderLeftWidth: "4px", borderLeftColor: "#F59E0B" }}
-        >
-          <div className="flex items-start gap-3">
-            <Flame size={18} className="text-amber-500 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="text-sm font-bold text-brand-navy">Need it urgently? Emergency service</p>
-              <p className="text-xs text-brand-navy/60 mt-0.5">Technician dispatched within 4 hours — available today only.</p>
-              <p className="text-xs font-semibold text-amber-600 mt-1.5">Priority charge: ₹499</p>
-            </div>
-          </div>
-        </button>
-      ) : (
-        <div className="p-4 rounded-xl border-2 border-amber-400 bg-amber-50" style={{ borderLeftWidth: "4px", borderLeftColor: "#F59E0B" }}>
-          <div className="flex items-start gap-3">
-            <Flame size={18} className="text-amber-500 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="text-sm font-bold text-green-700 flex items-center gap-2">
-                <CheckCircle2 size={15} /> Emergency service selected
-              </p>
-              <p className="text-xs text-brand-navy/60 mt-0.5">
-                A technician will be dispatched within 4 hours. Priority charge: ₹499.
-              </p>
-            </div>
-            <button onClick={deSelectEmergency} className="text-brand-navy/30 hover:text-brand-navy transition-colors shrink-0">
-              <X size={16} />
-            </button>
-          </div>
-        </div>
-      )}
     </motion.div>
   );
 }
 
 // ─── Step 4: Contact Details ───────────────────────────────────────────────────
-// Journey A [A-S4]: name + mobile + OTP + special instructions + coupon
-// Journey B [B-S4]: read-only name/mobile + special instructions + loyalty coupon chip + coupon
+// Journey A [A-S4]: name + mobile + OTP + special instructions
+// Journey B [B-S4]: read-only name/mobile + special instructions
 // API (B-S4): GET /api/customers/me/profile (parent loads myMobile)
-//             GET /api/offers (parent loads loyaltyOffers)
 
 interface Step4Props {
   data: WizardData;
   isLoggedIn: boolean;
   myMobile: string;
-  loyaltyOffers: PromotionalOffer[];
   onUpdate: (updates: Partial<WizardData>) => void;
 }
 
-function Step4({ data, isLoggedIn, myMobile, loyaltyOffers, onUpdate }: Step4Props) {
-  // OTP state (guest only — transient UI state, not in WizardData)
-  const [otpSent, setOtpSent]           = useState(false);
-  const [otpValue, setOtpValue]         = useState("");
-  const [otpCountdown, setOtpCountdown] = useState(0);
-  const [otpAttempts, setOtpAttempts]   = useState(0);
-  const [otpLocked, setOtpLocked]       = useState(false);
-  const [otpSending, setOtpSending]     = useState(false);
-  const [otpVerifying, setOtpVerifying] = useState(false);
-  const [otpError, setOtpError]         = useState("");
-
-  // Coupon state
-  const [couponInput, setCouponInput]     = useState(data.appliedCoupon);
-  const [couponOpen, setCouponOpen]       = useState(false);
-  const [couponLoading, setCouponLoading] = useState(false);
-  const [couponError, setCouponError]     = useState("");
-
-  const otpRefs = Array.from({ length: 6 }, () => useRef<HTMLInputElement>(null)); // eslint-disable-line react-hooks/rules-of-hooks
-
-  const mobileClean  = data.guestMobile.replace(/\D/g, "");
+function Step4({ data, isLoggedIn, myMobile, onUpdate }: Step4Props) {
+  const mobileClean   = data.guestMobile.replace(/\D/g, "");
   const isMobileValid = /^[2-9]\d{9}$/.test(mobileClean);
-
-  // Loyalty offer with a coupon code (first one wins)
-  const loyaltyCoupon = loyaltyOffers.find((o) => !!o.couponCode);
-
-  // OTP countdown
-  useEffect(() => {
-    if (otpCountdown <= 0) return;
-    const t = setTimeout(() => setOtpCountdown((c) => c - 1), 1000);
-    return () => clearTimeout(t);
-  }, [otpCountdown]);
-
-  const sendOtp = async () => {
-    setOtpSending(true); setOtpError("");
-    try {
-      await AuthService.sendOtp(mobileClean);
-      setOtpSent(true); setOtpCountdown(60); setOtpValue("");
-    } catch { setOtpError("Failed to send OTP. Please try again."); }
-    finally { setOtpSending(false); }
-  };
-
-  const verifyOtp = async (code: string) => {
-    if (code.length < 6) return;
-    if (otpAttempts >= 3) { setOtpLocked(true); setOtpError("Too many attempts. Please wait 10 minutes before requesting a new code."); return; }
-    setOtpVerifying(true); setOtpError("");
-    try {
-      await apiClient.post("/api/auth/otp/verify", { phone: mobileClean, otp: code });
-      onUpdate({ mobileVerified: true, guestMobile: mobileClean });
-    } catch {
-      const remaining = 2 - otpAttempts;
-      setOtpAttempts((a) => a + 1);
-      setOtpError(remaining > 0
-        ? `Incorrect code. ${remaining} attempt${remaining > 1 ? "s" : ""} remaining.`
-        : "Too many attempts. Please wait 10 minutes before requesting a new code."
-      );
-      setOtpValue(""); otpRefs[0].current?.focus();
-      if (remaining <= 0) setOtpLocked(true);
-    }
-    finally { setOtpVerifying(false); }
-  };
-
-  const handleOtpDigit = (index: number, value: string) => {
-    const digit   = value.replace(/\D/g, "").slice(-1);
-    const newOtp  = otpValue.split("").concat(Array(6).fill("")).slice(0, 6);
-    newOtp[index] = digit;
-    const combined = newOtp.join("").slice(0, 6);
-    setOtpValue(combined);
-    if (digit && index < 5) otpRefs[index + 1].current?.focus();
-    if (combined.length === 6) verifyOtp(combined);
-  };
-
-  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === "Backspace" && !otpValue[index] && index > 0) otpRefs[index - 1].current?.focus();
-  };
-
-  const applyLoyaltyCoupon = () => {
-    if (!loyaltyCoupon?.couponCode) return;
-    validateCoupon(loyaltyCoupon.couponCode);
-  };
-
-  const validateCoupon = async (code: string) => {
-    const codeToValidate = code || couponInput.trim();
-    if (!codeToValidate) return;
-    setCouponLoading(true); setCouponError("");
-    try {
-      const res = await apiClient.post<{ discountAmount: number; message: string }>(
-        "/api/customer-marketing/offers/validate-coupon",
-        { couponCode: codeToValidate, serviceTypeId: data.serviceTypeId },
-      );
-      onUpdate({ appliedCoupon: codeToValidate, discountAmount: res.discountAmount });
-      setCouponInput(codeToValidate);
-    } catch { setCouponError("This code is invalid or has expired."); }
-    finally { setCouponLoading(false); }
-  };
-
-  const removeCoupon = () => {
-    onUpdate({ appliedCoupon: "", discountAmount: 0 });
-    setCouponInput(""); setCouponError("");
-  };
 
   return (
     <motion.div
@@ -1487,12 +1542,13 @@ function Step4({ data, isLoggedIn, myMobile, loyaltyOffers, onUpdate }: Step4Pro
         <>
           {/* Full Name */}
           <div>
-            <label className={labelBase}>
+            <label htmlFor="bw-guest-name" className={labelBase}>
               Full Name <span className="text-red-400">*</span>
             </label>
             <div className="relative">
-              <User size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-navy/30 pointer-events-none" />
+              <User size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-navy/30 pointer-events-none" aria-hidden="true" />
               <input
+                id="bw-guest-name"
                 type="text"
                 maxLength={128}
                 placeholder="Your full name"
@@ -1505,112 +1561,46 @@ function Step4({ data, isLoggedIn, myMobile, loyaltyOffers, onUpdate }: Step4Pro
 
           {/* Mobile */}
           <div>
-            <label className={labelBase}>Mobile Number <span className="text-red-400">*</span></label>
+            <label htmlFor="bw-guest-mobile" className={labelBase}>Mobile Number <span className="text-red-400">*</span></label>
             <div className="flex gap-2">
               <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-3 text-sm font-semibold text-brand-navy/60 shrink-0">
                 +91
               </div>
               <div className="relative flex-1">
-                <Phone size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-navy/30 pointer-events-none" />
+                <Phone size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-navy/30 pointer-events-none" aria-hidden="true" />
                 <input
+                  id="bw-guest-mobile"
                   type="tel"
                   inputMode="numeric"
                   maxLength={10}
                   placeholder="10-digit mobile number"
-                  className={`${inputBase} pl-10 pr-24 ${data.mobileVerified ? "border-green-400" : ""}`}
+                  className={`${inputBase} pl-10 pr-10 ${isMobileValid ? "border-green-400" : ""}`}
                   value={data.guestMobile}
-                  disabled={data.mobileVerified}
                   onChange={(e) => {
                     const val = e.target.value.replace(/\D/g, "").slice(0, 10);
-                    onUpdate({ guestMobile: val, mobileVerified: false });
-                    setOtpSent(false); setOtpValue(""); setOtpError("");
+                    onUpdate({ guestMobile: val });
                   }}
                 />
-                {data.mobileVerified ? (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-green-600">
-                    <CheckCircle2 size={15} strokeWidth={2.5} />
-                    <span className="text-[11px] font-bold">Verified</span>
+                {isMobileValid && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <Check size={15} className="text-green-500" strokeWidth={2.5} />
                   </div>
-                ) : isMobileValid && !otpSent && (
-                  <button
-                    onClick={sendOtp}
-                    disabled={otpSending}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-brand-navy text-white text-[11px] font-bold px-3 py-1.5 rounded-lg hover:bg-brand-gold hover:text-brand-navy transition-all disabled:opacity-50"
-                  >
-                    {otpSending ? <Loader2 size={12} className="animate-spin" /> : "Verify"}
-                  </button>
                 )}
               </div>
             </div>
           </div>
 
-          {/* OTP input */}
-          <AnimatePresence>
-            {otpSent && !data.mobileVerified && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.2 }}
-                className="overflow-hidden"
-              >
-                <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
-                  <p className="text-xs font-semibold text-brand-navy/60">
-                    Enter the 6-digit code sent to +91 {data.guestMobile}
-                  </p>
-                  <div className="flex gap-2 justify-center">
-                    {Array.from({ length: 6 }, (_, i) => (
-                      <input
-                        key={i}
-                        ref={otpRefs[i]}
-                        type="text"
-                        inputMode="numeric"
-                        maxLength={1}
-                        disabled={otpLocked || otpVerifying}
-                        value={otpValue[i] ?? ""}
-                        onChange={(e) => handleOtpDigit(i, e.target.value)}
-                        onKeyDown={(e) => handleOtpKeyDown(i, e)}
-                        className={`w-11 h-12 text-center text-lg font-bold border-2 rounded-xl outline-none transition-all ${
-                          otpVerifying ? "border-brand-gold bg-brand-gold/10"
-                          : otpError    ? "border-red-300 bg-red-50"
-                          : "border-slate-200 bg-white focus:border-brand-gold"
-                        } disabled:opacity-50`}
-                      />
-                    ))}
-                  </div>
-                  {otpVerifying && (
-                    <p className="text-center text-xs text-brand-navy/40 flex items-center justify-center gap-1.5">
-                      <Loader2 size={12} className="animate-spin text-brand-gold" /> Verifying…
-                    </p>
-                  )}
-                  {otpError && (
-                    <p className="text-center text-xs font-semibold text-red-500 flex items-center justify-center gap-1">
-                      <AlertCircle size={11} /> {otpError}
-                    </p>
-                  )}
-                  <div className="text-center text-xs text-brand-navy/40">
-                    {otpCountdown > 0 ? (
-                      <span>Resend in <span className="font-bold text-brand-navy/60 tabular-nums">00:{String(otpCountdown).padStart(2, "0")}</span></span>
-                    ) : (
-                      <button onClick={sendOtp} disabled={otpLocked} className="font-semibold text-brand-gold hover:underline disabled:opacity-40">
-                        Resend OTP
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </>
       )}
 
       {/* Special Instructions (both journeys — always blank on entry) */}
       <div>
-        <label className={labelBase}>
+        <label htmlFor="bw-special-instructions" className={labelBase}>
           Special Instructions{" "}
           <span className="normal-case tracking-normal font-normal text-brand-navy/30">(optional)</span>
         </label>
         <textarea
+          id="bw-special-instructions"
           rows={3}
           maxLength={250}
           placeholder="Any instructions for the technician? (e.g. gate code, building name, floor, dog at home)"
@@ -1621,87 +1611,6 @@ function Step4({ data, isLoggedIn, myMobile, loyaltyOffers, onUpdate }: Step4Pro
         <p className="mt-1 text-right text-[11px] text-brand-navy/30">
           {data.specialInstructions.length} / 250
         </p>
-      </div>
-
-      {/* Coupon — [B-S4] includes loyalty coupon pre-apply chip */}
-      <div className="space-y-2">
-        {/* [B-S4] Loyalty coupon chip */}
-        {isLoggedIn && loyaltyCoupon && !data.appliedCoupon && (
-          <div className="flex items-center gap-3 p-3 bg-brand-gold/5 border border-brand-gold/30 rounded-xl">
-            <Tag size={14} className="text-brand-gold shrink-0" />
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-brand-navy">
-                You have a promo available: <span className="text-brand-gold">{loyaltyCoupon.couponCode}</span>
-              </p>
-              {loyaltyCoupon.title && (
-                <p className="text-[11px] text-brand-navy/50 mt-0.5 truncate">{loyaltyCoupon.title}</p>
-              )}
-            </div>
-            <button
-              onClick={applyLoyaltyCoupon}
-              disabled={couponLoading}
-              className="px-3 py-1.5 bg-brand-navy text-white text-[11px] font-bold rounded-lg hover:bg-brand-gold hover:text-brand-navy transition-all disabled:opacity-50 shrink-0"
-            >
-              {couponLoading ? <Loader2 size={11} className="animate-spin" /> : "Apply"}
-            </button>
-          </div>
-        )}
-
-        {/* Applied coupon display */}
-        {data.appliedCoupon ? (
-          <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-xl">
-            <Tag size={14} className="text-green-600 shrink-0" />
-            <div className="flex-1">
-              <p className="text-xs font-bold text-green-700">{data.appliedCoupon} applied</p>
-              <p className="text-xs text-green-600 mt-0.5">₹{data.discountAmount.toLocaleString()} off your service</p>
-            </div>
-            <button onClick={removeCoupon} className="text-xs font-semibold text-red-500 hover:underline shrink-0">
-              Remove
-            </button>
-          </div>
-        ) : !couponOpen ? (
-          <button
-            onClick={() => setCouponOpen(true)}
-            className="flex items-center gap-1.5 text-xs font-semibold text-brand-gold hover:underline"
-          >
-            <Tag size={13} /> Have a promo code? Apply it here.
-          </button>
-        ) : (
-          <AnimatePresence>
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.15 }}
-              className="overflow-hidden"
-            >
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <Tag size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-navy/30 pointer-events-none" />
-                  <input
-                    type="text"
-                    placeholder="Enter promo code"
-                    className={`${inputBase} pl-10 uppercase`}
-                    value={couponInput}
-                    onChange={(e) => { setCouponInput(e.target.value.toUpperCase()); setCouponError(""); }}
-                  />
-                </div>
-                <button
-                  onClick={() => validateCoupon(couponInput)}
-                  disabled={!couponInput.trim() || couponLoading}
-                  className="px-4 py-2.5 bg-brand-navy text-white text-sm font-semibold rounded-xl hover:bg-brand-gold hover:text-brand-navy transition-all disabled:opacity-40 shrink-0"
-                >
-                  {couponLoading ? <Loader2 size={14} className="animate-spin" /> : "Apply"}
-                </button>
-              </div>
-              {couponError && (
-                <p className="mt-1.5 text-xs font-semibold text-red-500 flex items-center gap-1">
-                  <AlertCircle size={11} /> {couponError}
-                </p>
-              )}
-            </motion.div>
-          </AnimatePresence>
-        )}
       </div>
     </motion.div>
   );
@@ -1715,18 +1624,19 @@ function Step4({ data, isLoggedIn, myMobile, loyaltyOffers, onUpdate }: Step4Pro
 interface Step5Props {
   data: WizardData;
   isLoggedIn: boolean;
+  myMobile: string;
   onUpdate: (updates: Partial<WizardData>) => void;
   onEdit: (step: number) => void;
   isSubmitting: boolean;
   submitError: string;
 }
 
-function Step5({ data, onUpdate, onEdit, isSubmitting, submitError }: Step5Props) {
+function Step5({ data, isLoggedIn, myMobile, onUpdate, onEdit, isSubmitting, submitError }: Step5Props) {
   const estimatedBase    = data.serviceBasePrice ?? 0;
-  const subtotal         = estimatedBase * data.unitCount;
-  const total            = subtotal + data.emergencySurcharge - data.discountAmount;
+  const subtotal         = estimatedBase;
+  const total            = subtotal + data.emergencySurcharge;
   const hasPrice         = estimatedBase > 0;
-  const showAdjustments  = data.discountAmount > 0 || data.emergencySurcharge > 0;
+  const showAdjustments  = data.emergencySurcharge > 0;
 
   const formattedDate = data.slotDate
     ? new Date(data.slotDate + "T12:00:00").toLocaleDateString("en-US", {
@@ -1768,7 +1678,6 @@ function Step5({ data, onUpdate, onEdit, isSubmitting, submitError }: Step5Props
             <p className="text-xs text-brand-navy/40 mt-0.5">
               {[
                 data.acTypeName,
-                data.unitCount > 1 ? `${data.unitCount} units` : null,
                 data.selectedEquipmentName ? `Equipment: ${data.selectedEquipmentName}` : null,
               ].filter(Boolean).join(" · ")}
             </p>
@@ -1809,17 +1718,47 @@ function Step5({ data, onUpdate, onEdit, isSubmitting, submitError }: Step5Props
       </SummaryCard>
 
       {/* Card 4 — Contact */}
-      <SummaryCard label="Contact" onEdit={() => onEdit(4)}>
+      <SummaryCard label="Contact" onEdit={isLoggedIn ? undefined : () => onEdit(4)}>
         <div className="flex items-center gap-2">
           <User size={14} className="text-brand-gold shrink-0" />
           <div>
             <p className="text-sm font-semibold text-brand-navy">{data.guestName || "—"}</p>
             <p className="text-xs text-brand-navy/50 mt-0.5 font-mono">
-              +91 {data.guestMobile ? maskMobile(data.guestMobile) : "••••••••••"}
+              +91 {isLoggedIn
+                ? (myMobile ? maskMobile(myMobile) : "••••••••••")
+                : (data.guestMobile ? maskMobile(data.guestMobile) : "••••••••••")}
             </p>
+            {isLoggedIn && (
+              <span className="inline-flex items-center gap-1 mt-1">
+                <ShieldCheck size={11} className="text-brand-gold" />
+                <span className="text-[11px] font-semibold text-brand-gold">Verified</span>
+              </span>
+            )}
           </div>
         </div>
       </SummaryCard>
+
+      {/* Special Instructions — logged-in users enter this here (Step 4 is skipped for them) */}
+      {isLoggedIn && (
+        <div>
+          <label htmlFor="s5-special-instructions" className={labelBase}>
+            Special Instructions{" "}
+            <span className="normal-case tracking-normal font-normal text-brand-navy/30">(optional)</span>
+          </label>
+          <textarea
+            id="s5-special-instructions"
+            rows={3}
+            maxLength={250}
+            placeholder="Any instructions for the technician? (e.g. gate code, building name, floor, dog at home)"
+            className={`${inputBase} resize-none`}
+            value={data.specialInstructions}
+            onChange={(e) => onUpdate({ specialInstructions: e.target.value })}
+          />
+          <p className="mt-1 text-right text-[11px] text-brand-navy/30">
+            {data.specialInstructions.length} / 250
+          </p>
+        </div>
+      )}
 
       {/* Pricing block */}
       <div className="bg-brand-navy rounded-xl p-5 space-y-2.5">
@@ -1827,7 +1766,7 @@ function Step5({ data, onUpdate, onEdit, isSubmitting, submitError }: Step5Props
         {hasPrice ? (
           <div className="flex justify-between text-sm">
             <span className="text-white/60">
-              {data.serviceSubTypeName || data.serviceTypeName}{data.unitCount > 1 ? ` × ${data.unitCount}` : ""}
+              {data.serviceSubTypeName || data.serviceTypeName}
             </span>
             <span className="text-white font-semibold">₹{subtotal.toLocaleString()}</span>
           </div>
@@ -1838,12 +1777,6 @@ function Step5({ data, onUpdate, onEdit, isSubmitting, submitError }: Step5Props
         )}
         {showAdjustments && (
           <>
-            {data.discountAmount > 0 && (
-              <div className="flex justify-between text-sm text-green-400">
-                <span>Coupon {data.appliedCoupon}</span>
-                <span>− ₹{data.discountAmount.toLocaleString()}</span>
-              </div>
-            )}
             {data.emergencySurcharge > 0 && (
               <div className="flex justify-between text-sm text-amber-400">
                 <span>Emergency priority charge</span>
@@ -1910,16 +1843,18 @@ function SummaryCard({
   label, onEdit, children,
 }: {
   label: string;
-  onEdit: () => void;
+  onEdit?: () => void;
   children: React.ReactNode;
 }) {
   return (
     <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
       <div className="flex items-center justify-between mb-2.5">
         <p className="text-[11px] font-semibold text-brand-navy/40 uppercase tracking-wide">{label}</p>
-        <button onClick={onEdit} className="text-xs font-semibold text-brand-gold hover:underline">
-          Edit
-        </button>
+        {onEdit && (
+          <button onClick={onEdit} className="text-xs font-semibold text-brand-gold hover:underline">
+            Edit
+          </button>
+        )}
       </div>
       {children}
     </div>

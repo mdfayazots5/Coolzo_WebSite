@@ -75,8 +75,8 @@ export default function Profile() {
   // ── Sign out ──────────────────────────────────────────────────────────────────
   const handleLogout = async () => {
     try {
+      navigate("/", { replace: true });
       await logout();
-      navigate("/");
     } catch { /* silent */ }
   };
 
@@ -177,15 +177,17 @@ export default function Profile() {
 
             {/* Full Name — only editable field */}
             <div className="space-y-1.5">
-              <label className="text-[11px] font-semibold text-brand-navy/50 uppercase tracking-wide">
+              <label htmlFor="profile-name" className="text-[11px] font-semibold text-brand-navy/50 uppercase tracking-wide">
                 Full Name
               </label>
               <div className="relative">
                 <User
                   size={14}
                   className="absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-navy/25 pointer-events-none"
+                  aria-hidden="true"
                 />
                 <input
+                  id="profile-name"
                   type="text"
                   value={formData.displayName}
                   onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
@@ -198,15 +200,17 @@ export default function Profile() {
 
             {/* Email — editable */}
             <div className="space-y-1.5">
-              <label className="text-[11px] font-semibold text-brand-navy/50 uppercase tracking-wide">
+              <label htmlFor="profile-email" className="text-[11px] font-semibold text-brand-navy/50 uppercase tracking-wide">
                 Email Address
               </label>
               <div className="relative">
                 <Mail
                   size={14}
                   className="absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-navy/25 pointer-events-none"
+                  aria-hidden="true"
                 />
                 <input
+                  id="profile-email"
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -219,15 +223,17 @@ export default function Profile() {
 
             {/* Mobile — read-only (OTP login anchor + technician coordination) */}
             <div className="space-y-1.5">
-              <label className="text-[11px] font-semibold text-brand-navy/50 uppercase tracking-wide">
+              <label htmlFor="profile-mobile" className="text-[11px] font-semibold text-brand-navy/50 uppercase tracking-wide">
                 Mobile Number
               </label>
               <div className="relative">
                 <Phone
                   size={14}
                   className="absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-navy/25 pointer-events-none"
+                  aria-hidden="true"
                 />
                 <input
+                  id="profile-mobile"
                   type="tel"
                   value={formData.mobile}
                   disabled

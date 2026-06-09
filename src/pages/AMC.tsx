@@ -43,7 +43,7 @@ export default function AMC() {
             Join a circle of smart property owners who demand zero downtime.
             Proactive care, priority response, and comprehensive health monitoring for your home.
           </p>
-          <div className="inline-flex items-center gap-2 bg-brand-gold/10 text-brand-gold px-6 py-2 rounded-sm text-[10px] uppercase tracking-widest font-bold">
+          <div className="inline-flex items-center gap-2 bg-brand-gold/10 text-brand-gold px-6 py-2 rounded-lg text-[10px] uppercase tracking-widest font-bold">
             <Star size={14} className="fill-brand-gold" />
             Limited Seasonal Offer: 15% Off All Annual Plans
           </div>
@@ -53,6 +53,14 @@ export default function AMC() {
         {loading ? (
           <div className="py-32 flex justify-center">
             <Loader2 className="animate-spin text-brand-gold" size={40} />
+          </div>
+        ) : plans.length === 0 ? (
+          <div className="py-32 text-center">
+            <ShieldCheck size={48} className="text-brand-navy/20 mx-auto mb-6" />
+            <h3 className="text-2xl font-serif text-brand-navy mb-4">Plans Coming Soon</h3>
+            <p className="text-brand-navy/40 text-sm max-w-sm mx-auto">
+              Our AMC plans are being updated. Please check back shortly or contact us for a personalised quote.
+            </p>
           </div>
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 mb-20 lg:mb-32">
@@ -65,14 +73,14 @@ export default function AMC() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1 }}
-                  className={`relative bg-white p-6 sm:p-10 rounded-sm border transition-all duration-500 flex flex-col h-full ${
+                  className={`relative bg-white p-6 sm:p-10 rounded-xl border transition-all duration-500 flex flex-col h-full ${
                     isPopular
                       ? "border-brand-gold shadow-2xl scale-100 lg:scale-105 z-10"
                       : "border-brand-navy/5 shadow-sm hover:shadow-xl"
                   }`}
                 >
                   {isPopular && (
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-brand-gold text-brand-navy px-4 py-1 rounded-sm text-[9px] uppercase tracking-widest font-bold">
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-brand-gold text-brand-navy px-4 py-1 rounded-lg text-[9px] uppercase tracking-widest font-bold">
                       Most Popular
                     </div>
                   )}
@@ -108,7 +116,7 @@ export default function AMC() {
                   <Link
                     to="/book"
                     state={{ amcPlanId: plan.planId, amcPlanName: plan.planName }}
-                    className={`w-full py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold transition-all text-center block ${
+                    className={`w-full py-4 rounded-lg text-[10px] uppercase tracking-widest font-bold transition-all text-center block ${
                       isPopular
                         ? "bg-brand-gold text-brand-navy hover:bg-brand-navy hover:text-white"
                         : "bg-brand-navy text-white hover:bg-brand-gold hover:text-brand-navy"
@@ -156,7 +164,7 @@ export default function AMC() {
         </div>
 
         {/* Testimonials */}
-        <div className="bg-brand-navy p-12 md:p-20 rounded-sm text-center">
+        <div className="bg-brand-navy p-12 md:p-20 rounded-xl text-center">
           <span className="text-brand-gold text-[10px] uppercase tracking-[0.5em] font-bold mb-8 block">Member Testimonials</span>
           <div className="max-w-4xl mx-auto">
             <p className="text-white/80 text-3xl font-serif italic leading-relaxed mb-12">

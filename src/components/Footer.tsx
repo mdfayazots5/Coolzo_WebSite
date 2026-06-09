@@ -12,9 +12,9 @@ export default function Footer() {
               The trusted destination for professional air conditioning services and modern climate solutions. Reliable service for modern homes.
             </p>
             <div className="flex gap-4">
-              <a href="#" className="p-2 border border-white/10 rounded-sm hover:border-brand-gold transition-colors"><Instagram size={18} /></a>
-              <a href="#" className="p-2 border border-white/10 rounded-sm hover:border-brand-gold transition-colors"><Twitter size={18} /></a>
-              <a href="#" className="p-2 border border-white/10 rounded-sm hover:border-brand-gold transition-colors"><Facebook size={18} /></a>
+              <a href="#" aria-label="Follow us on Instagram" className="w-11 h-11 flex items-center justify-center border border-white/10 rounded-lg hover:border-brand-gold transition-colors"><Instagram size={18} aria-hidden="true" /></a>
+              <a href="#" aria-label="Follow us on Twitter" className="w-11 h-11 flex items-center justify-center border border-white/10 rounded-lg hover:border-brand-gold transition-colors"><Twitter size={18} aria-hidden="true" /></a>
+              <a href="#" aria-label="Follow us on Facebook" className="w-11 h-11 flex items-center justify-center border border-white/10 rounded-lg hover:border-brand-gold transition-colors"><Facebook size={18} aria-hidden="true" /></a>
             </div>
           </div>
 

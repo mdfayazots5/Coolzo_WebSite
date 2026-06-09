@@ -123,12 +123,12 @@ export default function BookingDetail() {
         </Link>
         <div className="flex gap-4">
           {isActive && (
-            <button className="px-6 py-2 border border-brand-navy/10 rounded-sm text-[9px] uppercase tracking-widest font-bold text-brand-navy hover:bg-brand-navy hover:text-white transition-all">
+            <button className="px-6 py-2 border border-brand-navy/10 rounded-lg text-[9px] uppercase tracking-widest font-bold text-brand-navy hover:bg-brand-navy hover:text-white transition-all">
               Reschedule
             </button>
           )}
           {isActive && (
-            <button className="px-6 py-2 border border-red-100 rounded-sm text-[9px] uppercase tracking-widest font-bold text-red-500 hover:bg-red-500 hover:text-white transition-all">
+            <button className="px-6 py-2 border border-red-100 rounded-lg text-[9px] uppercase tracking-widest font-bold text-red-500 hover:bg-red-500 hover:text-white transition-all">
               Cancel Job
             </button>
           )}
@@ -136,7 +136,7 @@ export default function BookingDetail() {
       </div>
 
       {/* SR Summary */}
-      <div className="bg-white p-6 sm:p-8 md:p-12 rounded-sm border border-brand-navy/5 shadow-sm mb-8">
+      <div className="bg-white p-6 sm:p-8 md:p-12 rounded-xl border border-brand-navy/5 shadow-sm mb-8">
         <div className="flex flex-col md:flex-row justify-between items-start gap-6 sm:gap-8">
           <div>
             <div className="flex items-center gap-4 mb-4">
@@ -166,7 +166,7 @@ export default function BookingDetail() {
       </div>
 
       {/* Live Tracker */}
-      <div className="bg-brand-navy p-6 sm:p-10 rounded-sm text-white mb-8 shadow-2xl relative overflow-hidden">
+      <div className="bg-brand-navy p-6 sm:p-10 rounded-xl text-white mb-8 shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-1/3 h-full bg-brand-gold/5 skew-x-12 translate-x-1/4" />
         <div className="relative z-10">
           <h3 className="text-xl font-serif mb-10 flex items-center gap-3">
@@ -206,7 +206,7 @@ export default function BookingDetail() {
           </div>
 
           {booking.technicianName && (
-            <div className="mt-12 p-6 bg-white/5 rounded-sm border border-white/10 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="mt-12 p-6 bg-white/5 rounded-xl border border-white/10 flex flex-col md:flex-row items-center justify-between gap-6">
               <div className="flex items-center gap-6">
                 <div className="w-16 h-16 rounded-full border-2 border-brand-gold bg-brand-gold/20 flex items-center justify-center text-brand-gold font-bold text-2xl">
                   {booking.technicianName.charAt(0)}
@@ -236,10 +236,10 @@ export default function BookingDetail() {
               </div>
               {booking.technicianPhone && (
                 <div className="flex gap-3">
-                  <button className="p-4 bg-white/10 hover:bg-white/20 rounded-sm transition-all">
-                    <Phone size={20} />
+                  <button aria-label="Call technician" className="p-4 bg-white/10 hover:bg-white/20 rounded-lg transition-all">
+                    <Phone size={20} aria-hidden="true" />
                   </button>
-                  <button className="px-8 py-4 bg-brand-gold text-brand-navy rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-white transition-all">
+                  <button className="px-8 py-4 bg-brand-gold text-brand-navy rounded-lg text-[10px] uppercase tracking-widest font-bold hover:bg-white transition-all">
                     Contact Technician
                   </button>
                 </div>
@@ -255,7 +255,7 @@ export default function BookingDetail() {
 
           {/* Cancellation notice */}
           {booking.isCancelled && (
-            <div className="bg-red-50 p-6 rounded-sm border border-red-100 flex gap-4">
+            <div className="bg-red-50 p-6 rounded-xl border border-red-100 flex gap-4">
               <AlertCircle size={20} className="text-red-500 shrink-0" />
               <div>
                 <p className="text-sm font-bold text-red-700 mb-1">This booking was cancelled.</p>
@@ -268,7 +268,7 @@ export default function BookingDetail() {
 
           {/* Estimate Block — shown only when status suggests pending estimate */}
           {booking.currentStatus?.toLowerCase().includes('estimate') && (
-            <div className="bg-white p-8 rounded-sm border border-brand-navy/5 shadow-sm">
+            <div className="bg-white p-8 rounded-xl border border-brand-navy/5 shadow-sm">
               <div className="flex justify-between items-center mb-8">
                 <h3 className="text-xl font-serif text-brand-navy">Service Estimate</h3>
                 <span className={`text-[9px] uppercase tracking-widest font-bold px-4 py-1.5 rounded-full ${
@@ -291,13 +291,13 @@ export default function BookingDetail() {
                 <div className="flex gap-4">
                   <button
                     onClick={() => setEstimateStatus('approved')}
-                    className="flex-grow bg-brand-navy text-white py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all"
+                    className="flex-grow bg-brand-navy text-white py-4 rounded-lg text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all"
                   >
                     Approve & Start Work
                   </button>
                   <button
                     onClick={() => setEstimateStatus('declined')}
-                    className="px-8 border border-brand-navy/10 text-brand-navy/40 py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-all"
+                    className="px-8 border border-brand-navy/10 text-brand-navy/40 py-4 rounded-lg text-[10px] uppercase tracking-widest font-bold hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-all"
                   >
                     Decline
                   </button>
@@ -308,7 +308,7 @@ export default function BookingDetail() {
 
           {/* Equipment & Address */}
           <div className="grid md:grid-cols-2 gap-8">
-            <div className="bg-white p-8 rounded-sm border border-brand-navy/5 shadow-sm">
+            <div className="bg-white p-8 rounded-xl border border-brand-navy/5 shadow-sm">
               <Smartphone className="text-brand-gold mb-4" size={20} />
               <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 mb-2">
                 Equipment Info
@@ -320,7 +320,7 @@ export default function BookingDetail() {
                 <p className="text-xs text-brand-navy/60 mt-1">{booking.tonnageName}</p>
               )}
             </div>
-            <div className="bg-white p-8 rounded-sm border border-brand-navy/5 shadow-sm">
+            <div className="bg-white p-8 rounded-xl border border-brand-navy/5 shadow-sm">
               <MapPin className="text-brand-gold mb-4" size={20} />
               <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 mb-2">
                 Service Address
@@ -334,7 +334,7 @@ export default function BookingDetail() {
           </div>
 
           {/* Scheduled Date */}
-          <div className="bg-white p-8 rounded-sm border border-brand-navy/5 shadow-sm flex items-center gap-6">
+          <div className="bg-white p-8 rounded-xl border border-brand-navy/5 shadow-sm flex items-center gap-6">
             <Calendar className="text-brand-gold shrink-0" size={24} />
             <div>
               <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 mb-1">
@@ -350,17 +350,17 @@ export default function BookingDetail() {
 
         {/* Action Sidebar */}
         <div className="space-y-8">
-          <div className="bg-white p-8 rounded-sm border border-brand-navy/5 shadow-sm">
+          <div className="bg-white p-8 rounded-xl border border-brand-navy/5 shadow-sm">
             <h3 className="text-lg font-serif text-brand-navy mb-6">Support & Files</h3>
             <div className="space-y-3">
-              <button className="w-full flex items-center justify-between p-4 bg-brand-navy/5 rounded-sm group hover:bg-brand-navy hover:text-white transition-all">
+              <button className="w-full flex items-center justify-between p-4 bg-brand-navy/5 rounded-lg group hover:bg-brand-navy hover:text-white transition-all">
                 <div className="flex items-center gap-3">
                   <Download size={18} className="text-brand-gold" />
                   <span className="text-[10px] uppercase tracking-widest font-bold">Service Report</span>
                 </div>
                 <ChevronRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
               </button>
-              <button className="w-full flex items-center justify-between p-4 bg-brand-navy/5 rounded-sm group hover:bg-brand-navy hover:text-white transition-all">
+              <button className="w-full flex items-center justify-between p-4 bg-brand-navy/5 rounded-lg group hover:bg-brand-navy hover:text-white transition-all">
                 <div className="flex items-center gap-3">
                   <Info size={18} className="text-brand-gold" />
                   <span className="text-[10px] uppercase tracking-widest font-bold">Warranty Details</span>
@@ -369,7 +369,7 @@ export default function BookingDetail() {
               </button>
               <Link
                 to="/portal/support/new"
-                className="w-full flex items-center justify-between p-4 bg-brand-navy/5 rounded-sm group hover:bg-brand-navy hover:text-white transition-all"
+                className="w-full flex items-center justify-between p-4 bg-brand-navy/5 rounded-lg group hover:bg-brand-navy hover:text-white transition-all"
               >
                 <div className="flex items-center gap-3">
                   <AlertCircle size={18} className="text-brand-gold" />
@@ -380,7 +380,7 @@ export default function BookingDetail() {
             </div>
           </div>
 
-          <div className="bg-brand-gold/10 p-8 rounded-sm border border-brand-gold/20">
+          <div className="bg-brand-gold/10 p-8 rounded-xl border border-brand-gold/20">
             <ShieldCheck className="text-brand-gold mb-4" size={24} />
             <h4 className="text-sm font-bold text-brand-navy mb-2">Coolzo Protection</h4>
             <p className="text-xs text-brand-navy/60 leading-relaxed mb-6">
@@ -396,7 +396,7 @@ export default function BookingDetail() {
           </div>
 
           {booking.totalAmount != null && (
-            <div className="bg-white p-8 rounded-sm border border-brand-navy/5 shadow-sm">
+            <div className="bg-white p-8 rounded-xl border border-brand-navy/5 shadow-sm">
               <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 mb-2">
                 Total Amount
               </p>

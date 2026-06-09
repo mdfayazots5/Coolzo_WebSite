@@ -24,6 +24,12 @@ export default function Services() {
     }).finally(() => setLoading(false));
   }, []);
 
+  const categoryNameById = useMemo(() => {
+    const map = new Map<number, string>();
+    categories.forEach((cat) => map.set(cat.serviceCategoryId, cat.categoryName));
+    return map;
+  }, [categories]);
+
   const filteredServices = useMemo(() => {
     return services.filter((service) => {
       const matchesCategory =
@@ -62,25 +68,28 @@ export default function Services() {
                     <button
                       key={cat.serviceCategoryId}
                       onClick={() => setActiveCategory(cat.serviceCategoryId)}
-                      className={`px-6 py-2 rounded-sm text-[10px] uppercase tracking-widest font-bold transition-all duration-300 whitespace-nowrap ${activeCategory === cat.serviceCategoryId ? "bg-brand-navy text-white shadow-lg" : "bg-white text-brand-navy/60 hover:text-brand-navy border border-brand-navy/5"}`}
+                      className={`px-6 py-2 rounded-lg text-[10px] uppercase tracking-widest font-bold transition-all duration-300 whitespace-nowrap ${activeCategory === cat.serviceCategoryId ? "bg-brand-navy text-white shadow-lg" : "bg-white text-brand-navy/60 hover:text-brand-navy border border-brand-navy/5"}`}
                     >
-                      {cat.serviceCategoryName}
+                      {cat.categoryName}
                     </button>
                   ))}
                 </div>
                 <div className="relative w-full lg:w-80">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-navy/30" size={18} />
-                  <input 
-                    type="text" 
-                    placeholder="Search services..." 
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-navy/30" size={18} aria-hidden="true" />
+                  <label htmlFor="service-search" className="sr-only">Search services</label>
+                  <input
+                    id="service-search"
+                    type="text"
+                    placeholder="Search services..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-white border border-brand-navy/10 rounded-sm py-3 pl-12 pr-4 text-sm focus:outline-none focus:border-brand-gold transition-colors"
+                    className="w-full bg-white border border-brand-navy/10 rounded-lg py-3 pl-12 pr-4 text-sm focus:outline-none focus:border-brand-gold focus-visible:ring-2 focus-visible:ring-brand-gold/60 transition-colors"
                   />
                   {searchQuery && (
-                    <button 
+                    <button
                       onClick={() => setSearchQuery("")}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-brand-navy/30 hover:text-brand-navy"
+                      aria-label="Clear search"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-brand-navy/30 hover:text-brand-navy min-w-[44px] min-h-[44px] flex items-center justify-center -mr-4"
                     >
                       <X size={16} />
                     </button>
@@ -100,31 +109,22 @@ export default function Services() {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9 }}
                     transition={{ duration: 0.4, delay: i * 0.05 }}
-                    className="bg-white p-8 rounded-sm border border-brand-navy/5 hover:border-brand-gold/30 transition-all duration-500 group flex flex-col h-full shadow-sm hover:shadow-xl"
+                    className="bg-white p-8 rounded-xl border border-brand-navy/5 hover:border-brand-gold/30 transition-all duration-500 group flex flex-col h-full shadow-sm hover:shadow-xl"
                   >
                     <div className="flex justify-between items-start mb-8">
                       <div className="text-brand-gold group-hover:scale-110 transition-transform duration-500">
-                        {service.serviceCategoryName?.toLowerCase().includes("repair")
+                        {categoryNameById.get(service.serviceCategoryId)?.toLowerCase().includes("repair")
                           ? <ShieldCheck size={24} />
                           : <Clock size={24} />}
                       </div>
-                      <span className="text-[9px] uppercase tracking-widest font-bold px-3 py-1 bg-brand-cream text-brand-gold rounded-sm">
+                      <span className="text-[9px] uppercase tracking-widest font-bold px-3 py-1 bg-brand-cream text-brand-gold rounded-lg">
                         {service.basePrice != null ? `₹${service.basePrice.toLocaleString()}` : "Quote"}
                       </span>
                     </div>
                     <h3 className="text-xl font-serif text-brand-navy mb-3">{service.serviceName}</h3>
                     <p className="text-brand-navy/50 text-sm leading-relaxed mb-8 flex-grow line-clamp-3">
-                      {service.description ?? "Professional AC service by certified technicians."}
+                      {service.summary ?? "Professional AC service by certified technicians."}
                     </p>
-
-                    <div className="flex items-center gap-4 mb-8 text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">
-                      {service.estimatedDurationMinutes != null && (
-                        <div className="flex items-center gap-2">
-                          <Clock size={14} />
-                          {service.estimatedDurationMinutes} min
-                        </div>
-                      )}
-                    </div>
 
                     <div className="flex flex-col gap-3">
                       <Link
@@ -136,7 +136,7 @@ export default function Services() {
                       <Link
                         to="/book"
                         state={{ serviceId: service.serviceId, serviceName: service.serviceName, price: service.basePrice }}
-                        className="bg-brand-navy text-white text-center py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all"
+                        className="bg-brand-navy text-white text-center py-4 rounded-lg text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all"
                       >
                         Book Now
                       </Link>

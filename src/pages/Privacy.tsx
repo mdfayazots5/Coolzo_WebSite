@@ -52,7 +52,7 @@ export default function Privacy() {
         </section>
       </div>
 
-      <div className="mt-16 lg:mt-24 p-8 sm:p-12 bg-brand-navy/5 rounded-sm border border-brand-navy/5 text-center">
+      <div className="mt-16 lg:mt-24 p-8 sm:p-12 bg-brand-navy/5 rounded-xl border border-brand-navy/5 text-center">
         <h3 className="text-2xl font-serif text-brand-navy mb-6">Data Protection Officer</h3>
         <p className="text-brand-navy/40 text-sm mb-10 max-w-md mx-auto">
           For any privacy-related inquiries, please contact our Data Protection Officer at privacy@coolzo.com.

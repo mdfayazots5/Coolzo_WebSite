@@ -52,12 +52,12 @@ export default function Terms() {
         </section>
       </div>
 
-      <div className="mt-16 lg:mt-24 p-8 sm:p-12 bg-brand-navy text-white rounded-sm text-center">
+      <div className="mt-16 lg:mt-24 p-8 sm:p-12 bg-brand-navy text-white rounded-xl text-center">
         <h3 className="text-2xl font-serif mb-6">Questions about our terms?</h3>
         <p className="text-white/40 text-sm mb-10 max-w-md mx-auto">
           Our legal team is available to clarify any points regarding our service agreement.
         </p>
-        <Link to="/contact" className="inline-flex items-center gap-3 bg-brand-gold text-brand-navy px-10 py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-white transition-all">
+        <Link to="/contact" className="inline-flex items-center gap-3 bg-brand-gold text-brand-navy px-10 py-4 rounded-lg text-[10px] uppercase tracking-widest font-bold hover:bg-white transition-all">
           Contact Legal Team
         </Link>
       </div>

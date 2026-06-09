@@ -77,7 +77,7 @@ export default function NewTicket() {
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="bg-white p-8 sm:p-12 rounded-sm border border-brand-navy/5 shadow-2xl relative overflow-hidden"
+          className="bg-white p-8 sm:p-12 rounded-xl border border-brand-navy/5 shadow-2xl relative overflow-hidden"
         >
           <div className="absolute top-0 left-0 w-full h-2 bg-brand-gold" />
           <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-8">
@@ -94,7 +94,7 @@ export default function NewTicket() {
           <div className="space-y-4">
             <button
               onClick={() => navigate(`/portal/support/${createdTicketId}`)}
-              className="w-full bg-brand-navy text-white py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all flex items-center justify-center gap-3"
+              className="w-full bg-brand-navy text-white py-4 rounded-lg text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all flex items-center justify-center gap-3"
             >
               View Ticket Details <ArrowRight size={16} />
             </button>
@@ -125,28 +125,30 @@ export default function NewTicket() {
         </p>
       </div>
 
-      <div className="bg-white p-6 sm:p-10 md:p-12 rounded-sm border border-brand-navy/5 shadow-sm">
+      <div className="bg-white p-6 sm:p-10 md:p-12 rounded-xl border border-brand-navy/5 shadow-sm">
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">Subject</label>
+            <label htmlFor="ticket-subject" className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">Subject</label>
             <input
+              id="ticket-subject"
               required
               type="text"
               placeholder="Briefly describe the issue"
               value={form.subject}
               onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))}
-              className="w-full bg-brand-navy/5 border border-transparent rounded-sm px-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors"
+              className="w-full bg-brand-navy/5 border border-transparent rounded-lg px-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors"
             />
           </div>
 
           <div className="grid sm:grid-cols-2 gap-6 sm:gap-10">
             <div className="space-y-2">
-              <label className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">Category</label>
+              <label htmlFor="ticket-category" className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">Category</label>
               <div className="relative group">
                 <select
+                  id="ticket-category"
                   value={form.categoryId}
                   onChange={(e) => setForm((f) => ({ ...f, categoryId: Number(e.target.value) }))}
-                  className="w-full bg-brand-navy/5 border border-transparent rounded-sm px-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors appearance-none"
+                  className="w-full bg-brand-navy/5 border border-transparent rounded-lg px-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors appearance-none"
                 >
                   {categories.length === 0 ? (
                     <>
@@ -168,12 +170,13 @@ export default function NewTicket() {
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">Priority</label>
+              <label htmlFor="ticket-priority" className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">Priority</label>
               <div className="relative group">
                 <select
+                  id="ticket-priority"
                   value={form.priorityId}
                   onChange={(e) => setForm((f) => ({ ...f, priorityId: Number(e.target.value) }))}
-                  className="w-full bg-brand-navy/5 border border-transparent rounded-sm px-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors appearance-none"
+                  className="w-full bg-brand-navy/5 border border-transparent rounded-lg px-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors appearance-none"
                 >
                   {priorities.length === 0 ? (
                     <>
@@ -195,15 +198,16 @@ export default function NewTicket() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">
+            <label htmlFor="ticket-description" className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">
               Detailed Description
             </label>
             <textarea
+              id="ticket-description"
               required
               placeholder="Please provide as much detail as possible to help us resolve your issue faster."
               value={form.description}
               onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-              className="w-full bg-brand-navy/5 border border-transparent rounded-sm px-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors h-48 resize-none"
+              className="w-full bg-brand-navy/5 border border-transparent rounded-lg px-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors h-48 resize-none"
             />
           </div>
 
@@ -214,7 +218,7 @@ export default function NewTicket() {
             <div className="flex flex-wrap gap-4">
               <button
                 type="button"
-                className="w-24 h-24 border-2 border-dashed border-brand-navy/10 rounded-sm flex flex-col items-center justify-center text-brand-navy/20 hover:border-brand-gold hover:text-brand-gold transition-all"
+                className="w-24 h-24 border-2 border-dashed border-brand-navy/10 rounded-lg flex flex-col items-center justify-center text-brand-navy/20 hover:border-brand-gold hover:text-brand-gold transition-all"
               >
                 <Paperclip size={24} />
                 <span className="text-[8px] uppercase tracking-widest font-bold mt-2">Add File</span>
@@ -230,7 +234,7 @@ export default function NewTicket() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full md:w-auto bg-brand-navy text-white px-12 py-5 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl flex items-center justify-center gap-3"
+              className="w-full md:w-auto bg-brand-navy text-white px-12 py-5 rounded-lg text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl flex items-center justify-center gap-3"
             >
               {isSubmitting ? (
                 <>
@@ -245,7 +249,7 @@ export default function NewTicket() {
         </form>
       </div>
 
-      <div className="mt-12 p-8 bg-brand-navy/5 rounded-sm flex gap-6">
+      <div className="mt-12 p-8 bg-brand-navy/5 rounded-xl flex gap-6">
         <Info size={24} className="text-brand-gold shrink-0" />
         <div>
           <h4 className="text-sm font-bold text-brand-navy mb-2">Urgent Issue?</h4>

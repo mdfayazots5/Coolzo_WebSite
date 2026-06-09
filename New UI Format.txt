@@ -1,0 +1,268 @@
+===============================================================================
+ COOLZO — NEW UI FORMAT
+ Frontend UI/UX Constitution for the Customer Web Portal (Frontend/Web)
+ Version 1.0  |  Confidential  |  Authority level: equal to New_SQL_Format / New_API_Format
+===============================================================================
+
+SCOPE
+  Applies to: C:\Live\Coolzo\Frontend\Web  (React 18 + Vite + TypeScript + Tailwind
+  CSS v4 + lucide-react + motion/react + react-router-dom).
+  This is the single source of truth for UI structure, responsive behaviour,
+  component shape, accessibility, and visual QA for the web frontend. Every screen
+  and component MUST comply. Deviation requires an explicit, recorded reason.
+
+  These rules are mobile-first and device-adaptive. "Mobile-first" means base
+  (unprefixed) styles target the smallest screen; larger screens are progressive
+  enhancements via min-width breakpoints only. NEVER write desktop-first
+  (max-width) overrides as the primary strategy.
+
+-------------------------------------------------------------------------------
+ 0. NON-NEGOTIABLE LAWS
+-------------------------------------------------------------------------------
+  L1. Mobile-first only. Unprefixed Tailwind classes are the mobile baseline.
+      Scale UP with sm: md: lg: xl: 2xl:. Do not scale down with max-* utilities
+      except for genuine one-off exceptions (documented inline).
+  L2. No horizontal page scroll at any width from 320px to 1920px+. The only
+      permitted horizontal scroll is an explicitly-scrollable inner region
+      (tabs, data table) wrapped in overflow-x-auto with a visible affordance.
+  L3. Every interactive element has a >=44x44px touch target (WCAG 2.5.5).
+  L4. One layout system per surface. Marketing pages use <Layout> (Navbar +
+      Footer). Authenticated pages use <PortalLayout>. Never hand-roll a header,
+      footer, or nav inside a page.
+  L5. Use design tokens, never raw hex. Tokens are defined in src/index.css
+      @theme and consumed as brand-navy / brand-gold / brand-cream / brand-black.
+  L6. No tooltip-dependent UI. If an element needs a tooltip to be understood,
+      redesign it (carries over from the master design system).
+  L7. Tokens, breakpoints, and shared components defined here are immutable
+      contracts. Changing a token value is a project-wide visual change and
+      requires sign-off, never a per-page override.
+
+-------------------------------------------------------------------------------
+ 1. DESIGN TOKENS (CANONICAL — implemented in src/index.css @theme)
+-------------------------------------------------------------------------------
+  Colors (use the Tailwind token name, never the hex literal in JSX):
+    brand-navy   #0A192F   Primary surface, headers, primary text, CTAs
+    brand-gold   #D4AF37   Accent, active state, highlights, focus ring
+    brand-cream  #FDFCFB   Page background
+    brand-black  #050505   Deepest contrast / overlays
+    Neutrals: use Tailwind slate-* scale (slate-50..slate-900) for borders,
+              muted text, dividers, and surfaces. Do not introduce gray-*, zinc-*,
+              or stone-* — slate only, for consistency.
+
+    Semantic status colors (use Tailwind defaults, applied consistently):
+      success  emerald-600    warning  amber-500
+      error    red-600        info     sky-600
+
+  [DRIFT NOTE / VERIFY] The master design system (CLAUDE.md) lists navy #1B2A4A
+    and gold #C9A84C. The live implementation uses #0A192F / #D4AF37 consistently
+    across all 40 screens. Decision (recorded): the live tokens are canonical for
+    the web portal. CLAUDE.md design-system section should be reconciled to match.
+
+  Typography:
+    font-serif = "Cormorant Garamond"  -> display headings only (h1/h2/h3)
+    font-sans  = "Inter"               -> all body, UI, labels, buttons
+    Root font-size scales fluidly: 16px base / 17px >=640px / 18px >=1024px.
+    Heading scale is global (index.css @layer base): do not re-declare h1/h2/h3
+    sizes per page. Body copy: text-sm on mobile, md:text-base.
+    MAX two font weights visible per screen (master design-system rule).
+
+  Spacing & shape:
+    8px base grid. Use Tailwind spacing multiples: 1,2,3,4,6,8,10,12,16,20,24.
+    Radius: rounded-xl (cards/panels), rounded-lg (buttons/inputs),
+            rounded-md (chips/badges), rounded-full (avatars/pills).
+    Elevation: shadow-sm (resting cards), shadow-md (raised), shadow-xl (modals).
+    Do NOT use heavy borders for elevation — prefer shadow + slate-100/200 border.
+
+-------------------------------------------------------------------------------
+ 2. RESPONSIVE BREAKPOINT CONTRACT (Tailwind defaults — do not customise)
+-------------------------------------------------------------------------------
+  Device class      Tailwind prefix   Min width   Design intent
+  ----------------  ----------------  ----------  -----------------------------
+  Mobile            (none, base)      0px         Single column. Bottom nav.
+  Large mobile      sm:               640px       Tighter padding, 2-col grids.
+  Tablet            md:               768px       2-col, side-by-side forms.
+  Laptop            lg:               1024px       Multi-col, desktop nav, sidebars.
+  Desktop           xl:               1280px       Max content width reached.
+  Large screen      2xl:              1536px       Center content; pad, never stretch.
+
+  RULES:
+    R1. Content max width: wrap page content in `container mx-auto` or
+        `max-w-screen-xl mx-auto` (1280px). On 2xl+ screens, add horizontal
+        padding — NEVER let line length or cards stretch edge-to-edge.
+    R2. Navigation MUST adapt by breakpoint:
+          < lg : bottom tab bar (portal) / hamburger drawer (marketing).
+          >= lg: persistent horizontal/side navigation with full labels.
+        A mobile bottom tab bar MUST be hidden (lg:hidden) on laptop+.
+        A desktop nav MUST be hidden (hidden lg:flex) on mobile.
+    R3. Grids: base grid-cols-1 -> sm:grid-cols-2 -> lg:grid-cols-3/4. Never
+        start above grid-cols-1 at the base breakpoint.
+    R4. Tap-vs-pointer: hover-only affordances must have a tap/focus equivalent.
+    R5. Fixed/sticky bars must reserve space: content gets matching padding
+        (e.g. pb-28 when a bottom bar exists) and that padding is removed at the
+        breakpoint where the bar disappears (lg:pb-8).
+    R6. Use min(viewport) safe values: respect iOS safe areas with the
+        `safe-area-pb` utility on any fixed bottom bar.
+    R7. Images/media: w-full h-auto, object-cover for crops, explicit aspect
+        ratio (aspect-video / aspect-square) to prevent layout shift.
+    R8. No fixed pixel widths on layout containers. Use %, fr, max-w-*, or flex.
+
+-------------------------------------------------------------------------------
+ 3. PAGE STRUCTURE STANDARD (every route)
+-------------------------------------------------------------------------------
+  Marketing (public) page:
+    <Layout>  (renders Navbar fixed-top + Footer)
+      <section>...</section>   // semantic sections, each with vertical rhythm
+        - First section accounts for fixed navbar height (top padding).
+        - Content in `container mx-auto px-4 sm:px-6`.
+
+  Portal (authenticated) page:
+    <PortalLayout> provides header + nav + <main>. A page renders ONLY its
+    content (no header/footer/nav). Page root pattern:
+      <div className="max-w-screen-xl mx-auto space-y-6">
+        <PageHeader title=... subtitle=... action=... />   // standard, see 4
+        ...content...
+      </div>
+
+  Mandatory per-page states (no exceptions for any data-driven page):
+    - Loading state  (skeleton or centered spinner — never blank screen)
+    - Empty state    (icon + message + primary action)
+    - Error state    (message + retry action; reuse ErrorState pattern)
+    - Success/normal state
+  A page that fetches data and lacks loading + empty + error states FAILS QA.
+
+-------------------------------------------------------------------------------
+ 4. STANDARD COMPONENTS (shape contract)
+-------------------------------------------------------------------------------
+  All shared UI must converge on these. If a primitive does not yet exist as a
+  reusable component, it MUST be extracted to src/components/ui/ before being
+  reused a 3rd time (Rule of Three). No copy-pasted Tailwind blocks across pages.
+
+  Header / PageHeader (portal):
+    h1 (font-serif), optional subtitle (text-secondary), optional right-aligned
+    primary action. Stacks vertically < sm, row >= sm.
+
+  Buttons:
+    Variants: primary (bg-brand-navy text-white, hover bg-brand-gold/navy text),
+              secondary (border slate-200, text-brand-navy),
+              ghost (text only), danger (red-600).
+    Sizes: sm (h-9), md (h-11 = 44px touch default), lg (h-12).
+    Always rounded-lg. Min target 44px. Disabled = opacity-50 + cursor-not-allowed.
+    Icon-only buttons: w-11 h-11 + aria-label (mandatory).
+
+  Forms & inputs:
+    Label above input (never placeholder-as-label). Input h-11, rounded-lg,
+    border-slate-200, focus:ring-2 focus:ring-brand-gold/60. Error text red-600
+    below field + aria-invalid + aria-describedby. Required marked visibly.
+    Multi-column forms: grid-cols-1 -> md:grid-cols-2. Single column on mobile.
+
+  Cards:
+    bg-white rounded-xl border border-slate-100 shadow-sm p-4 sm:p-6.
+    Consistent internal spacing (space-y-4). No nested cards more than 1 deep.
+
+  Tables (data):
+    Desktop: real <table>. Mobile (< md): transform to stacked cards OR wrap in
+    overflow-x-auto with a scroll hint. NEVER let a table cause page-level
+    horizontal scroll. Right-align numeric/currency; use `money`-style formatting.
+
+  Modals / dialogs:
+    Centered, max-w-lg, rounded-xl, shadow-xl, backdrop bg-black/50. Trap focus,
+    close on Esc + backdrop click + explicit X (aria-label). Body scroll locked
+    while open. Full-width sheet style acceptable on mobile (rounded-t-2xl).
+
+  Tabs:
+    Horizontal, overflow-x-auto + no-scrollbar on mobile, aria-selected, keyboard
+    arrow support. Active = brand-gold underline/indicator.
+
+  Loaders:
+    One spinner/skeleton style app-wide. Inline button loader = spinner replaces
+    label, button stays same width (no layout shift). Lists = skeleton rows.
+
+  Toasts/alerts:
+    Top-right (desktop) / top-center (mobile). Auto-dismiss success; persist
+    errors until dismissed. Semantic color + icon. Never block the UI.
+
+  Navigation:
+    PortalLayout: sticky top header (logo + actions) on all sizes; bottom tab bar
+    < lg; persistent horizontal/side nav with labels >= lg.
+    Marketing Navbar: inline links >= lg; hamburger drawer < lg.
+
+-------------------------------------------------------------------------------
+ 5. ACCESSIBILITY REQUIREMENTS (WCAG 2.1 AA — mandatory)
+-------------------------------------------------------------------------------
+  A1. Semantic HTML: header/nav/main/section/footer/button/a used for their
+      real purpose. A clickable div without role/keyboard handling FAILS.
+  A2. One <main> per page. One logical h1. Headings nest without skipping.
+  A3. All interactive elements keyboard-operable; visible focus ring
+      (focus-visible:ring-2 ring-brand-gold/60). Never remove focus outline
+      without replacing it.
+  A4. Icon-only controls have aria-label. Decorative icons aria-hidden.
+  A5. Color contrast >= 4.5:1 for text, 3:1 for large text/UI. Gold (#D4AF37)
+      on white FAILS for normal text — use brand-navy text on gold, or gold only
+      for large/decorative elements.
+  A6. Forms: every input has an associated <label for>. Errors announced via
+      aria-live / aria-describedby.
+  A7. Images have alt (empty alt="" for decorative). No information by color
+      alone — pair with icon/text.
+  A8. Respect prefers-reduced-motion: gate motion/react animations.
+  A9. Touch targets >= 44px; spacing >= 8px between adjacent targets.
+
+-------------------------------------------------------------------------------
+ 6. CONSISTENCY & ANTI-PATTERNS (forbidden — zero exceptions)
+-------------------------------------------------------------------------------
+  Forbidden (carried from master design system + web-specific):
+    - Auto-playing carousels/video; pop-ups on first visit or mid-content
+    - Flashing/marquee; more than 2 font weights per screen
+    - Neon / oversaturated colors; dark mode on customer surfaces
+    - Any element requiring a tooltip to be understood
+    - Raw hex colors in JSX (use tokens)
+    - Inline header/footer/nav inside a page (use the layout)
+    - Desktop-first max-width overrides as primary responsive strategy
+    - Page-level horizontal scroll
+    - Placeholder used instead of a label
+    - Fixed px widths on layout containers
+    - Copy-pasted component markup duplicated across >=3 pages without extraction
+    - Dead controls (a visible button/icon that does nothing) — wire it or remove it
+    - Blank screen during data fetch (must show loading state)
+
+-------------------------------------------------------------------------------
+ 7. QUALITY VALIDATION GATES (must pass before a screen is marked stable)
+-------------------------------------------------------------------------------
+  Run/verify at these widths: 320, 375, 414, 768, 1024, 1280, 1440, 1920.
+
+  RESPONSIVE GATE
+    [ ] No horizontal page scroll at any tested width
+    [ ] Navigation correct per breakpoint (bottom bar < lg, desktop nav >= lg)
+    [ ] Content respects max-w container; centered + padded on 2xl
+    [ ] Grids collapse to 1 column on mobile; no clipped/overlapping content
+    [ ] Fixed bars don't obscure content (matching padding present/removed)
+    [ ] No unnecessary vertical scroll (content fits viewport where designed to)
+
+  COMPONENT/CONSISTENCY GATE
+    [ ] Buttons, inputs, cards, modals match section 4 shapes
+    [ ] Tokens used (no raw hex); <=2 font weights; correct radius/elevation
+    [ ] Loading + empty + error + normal states all present for data pages
+
+  ACCESSIBILITY GATE
+    [ ] Semantic landmarks; single h1; logical heading order
+    [ ] All controls keyboard-reachable with visible focus
+    [ ] Icon buttons have aria-label; images have alt
+    [ ] Contrast >= AA (esp. no gold text on white for body copy)
+    [ ] Touch targets >= 44px
+
+  A screen is 🟢 STABLE only when all three gates pass. Record status in
+  UI_RESPONSIVENESS_TRACKER.md. A 🟢 claim that fails any gate is a doc failure
+  (same severity as stale ProjectOverview.md).
+
+-------------------------------------------------------------------------------
+ 8. CHANGE / EXTENSION RULES
+-------------------------------------------------------------------------------
+  - New screen: must use a layout (sec 3), standard components (sec 4), pass all
+    gates (sec 7) before merge, and be added to the tracker.
+  - New shared pattern used 3rd time: extract to src/components/ui/.
+  - Token change: project-wide visual decision — update index.css @theme ONLY,
+    never override per page; re-run gates on representative screens.
+  - This file is updated whenever a UI standard is added, clarified, or corrected.
+
+===============================================================================
+ END — COOLZO NEW UI FORMAT v1.0
+===============================================================================

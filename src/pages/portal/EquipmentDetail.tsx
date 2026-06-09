@@ -156,7 +156,7 @@ export default function EquipmentDetail() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white p-8 sm:p-10 rounded-sm shadow-2xl w-full max-w-lg"
+              className="bg-white p-8 sm:p-10 rounded-xl shadow-2xl w-full max-w-lg"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-8">
@@ -181,7 +181,7 @@ export default function EquipmentDetail() {
                       value={editForm[field.key]}
                       placeholder={field.placeholder}
                       onChange={(e) => setEditForm((f) => ({ ...f, [field.key]: e.target.value }))}
-                      className="w-full bg-brand-navy/5 border border-transparent rounded-sm px-4 py-3 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors"
+                      className="w-full bg-brand-navy/5 border border-transparent rounded-lg px-4 py-3 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors"
                     />
                   </div>
                 ))}
@@ -189,14 +189,14 @@ export default function EquipmentDetail() {
               <div className="flex gap-4 mt-8">
                 <button
                   onClick={() => setShowEdit(false)}
-                  className="flex-1 py-4 border border-brand-navy/10 rounded-sm text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 hover:text-brand-navy transition-colors"
+                  className="flex-1 py-4 border border-brand-navy/10 rounded-lg text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 hover:text-brand-navy transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSave}
                   disabled={saving || !editForm.name.trim()}
-                  className="flex-1 bg-brand-navy text-white py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 bg-brand-navy text-white py-4 rounded-lg text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {saving ? <><Loader2 size={14} className="animate-spin" /> Saving...</> : "Save Changes"}
                 </button>
@@ -220,7 +220,7 @@ export default function EquipmentDetail() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white p-8 sm:p-10 rounded-sm shadow-2xl w-full max-w-sm text-center"
+              className="bg-white p-8 sm:p-10 rounded-xl shadow-2xl w-full max-w-sm text-center"
               onClick={(e) => e.stopPropagation()}
             >
               <Trash2 size={40} className="text-red-400 mx-auto mb-6" />
@@ -231,14 +231,14 @@ export default function EquipmentDetail() {
               <div className="flex gap-4">
                 <button
                   onClick={() => setShowDeleteConfirm(false)}
-                  className="flex-1 py-4 border border-brand-navy/10 rounded-sm text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 hover:text-brand-navy transition-colors"
+                  className="flex-1 py-4 border border-brand-navy/10 rounded-lg text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 hover:text-brand-navy transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleDelete}
                   disabled={deleting}
-                  className="flex-1 bg-red-500 text-white py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-red-600 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 bg-red-500 text-white py-4 rounded-lg text-[10px] uppercase tracking-widest font-bold hover:bg-red-600 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {deleting ? <Loader2 size={14} className="animate-spin" /> : "Remove"}
                 </button>
@@ -259,13 +259,13 @@ export default function EquipmentDetail() {
         <div className="flex gap-3">
           <button
             onClick={() => openEdit(equipment)}
-            className="flex items-center gap-2 px-5 py-2 border border-brand-navy/10 rounded-sm text-[9px] uppercase tracking-widest font-bold text-brand-navy hover:bg-brand-navy hover:text-white transition-all"
+            className="flex items-center gap-2 px-5 py-2 border border-brand-navy/10 rounded-lg text-[9px] uppercase tracking-widest font-bold text-brand-navy hover:bg-brand-navy hover:text-white transition-all"
           >
             <Settings size={14} /> Edit Details
           </button>
           <button
             onClick={() => setShowDeleteConfirm(true)}
-            className="p-2 border border-red-100 rounded-sm text-red-400 hover:bg-red-50 transition-colors"
+            className="p-2 border border-red-100 rounded-lg text-red-400 hover:bg-red-50 transition-colors"
           >
             <Trash2 size={16} />
           </button>
@@ -273,10 +273,10 @@ export default function EquipmentDetail() {
       </div>
 
       {/* Equipment Identity */}
-      <div className="bg-white p-6 sm:p-10 md:p-12 rounded-sm border border-brand-navy/5 shadow-sm mb-8">
+      <div className="bg-white p-6 sm:p-10 md:p-12 rounded-xl border border-brand-navy/5 shadow-sm mb-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-8">
-            <div className="w-20 h-20 bg-brand-navy text-white rounded-sm flex items-center justify-center text-4xl font-serif grayscale-0 shrink-0">
+            <div className="w-20 h-20 bg-brand-navy text-white rounded-xl flex items-center justify-center text-4xl font-serif grayscale-0 shrink-0">
               {equipment.brand[0]}
             </div>
             <div className="text-center sm:text-left">
@@ -304,7 +304,7 @@ export default function EquipmentDetail() {
           </div>
           <Link
             to="/book"
-            className="w-full md:w-auto text-center bg-brand-gold text-brand-navy px-10 py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-navy hover:text-white transition-all shadow-xl"
+            className="w-full md:w-auto text-center bg-brand-gold text-brand-navy px-10 py-4 rounded-lg text-[10px] uppercase tracking-widest font-bold hover:bg-brand-navy hover:text-white transition-all shadow-xl"
           >
             Book Service
           </Link>
@@ -333,7 +333,7 @@ export default function EquipmentDetail() {
       <div className="grid lg:grid-cols-3 gap-8">
         {/* History Column */}
         <div className="lg:col-span-2 space-y-8">
-          <div className="bg-white p-6 sm:p-8 rounded-sm border border-brand-navy/5 shadow-sm">
+          <div className="bg-white p-6 sm:p-8 rounded-xl border border-brand-navy/5 shadow-sm">
             <h3 className="text-xl font-serif text-brand-navy mb-8">Service History Timeline</h3>
             {/* Service history not available from equipment endpoint — link to bookings */}
             <div className="py-12 text-center">
@@ -353,7 +353,7 @@ export default function EquipmentDetail() {
 
         {/* Warranty & Health Column */}
         <div className="space-y-8">
-          <div className="bg-white p-8 rounded-sm border border-brand-navy/5 shadow-sm">
+          <div className="bg-white p-8 rounded-xl border border-brand-navy/5 shadow-sm">
             <div className="flex items-center gap-3 mb-8">
               <ShieldCheck className="text-brand-gold" size={24} />
               <h3 className="text-lg font-serif text-brand-navy">Warranty Status</h3>
@@ -374,7 +374,7 @@ export default function EquipmentDetail() {
             </div>
           </div>
 
-          <div className="bg-brand-navy p-8 rounded-sm text-white">
+          <div className="bg-brand-navy p-8 rounded-xl text-white">
             <h4 className="text-sm font-bold mb-4">System Health</h4>
             <div className="flex items-center gap-4 mb-6">
               <div className="w-12 h-12 rounded-full border-4 border-brand-gold flex items-center justify-center text-brand-gold font-serif">

@@ -68,7 +68,7 @@ export default function About() {
         </div>
 
         {/* Promise */}
-        <div className="bg-brand-navy p-12 md:p-24 rounded-sm relative overflow-hidden mb-32">
+        <div className="bg-brand-navy p-12 md:p-24 rounded-xl relative overflow-hidden mb-32">
           <div className="absolute top-0 left-0 w-full h-full bg-brand-gold/5 -skew-y-6 translate-y-1/2" />
           <div className="relative z-10 max-w-4xl mx-auto text-center">
             <span className="text-brand-gold text-[10px] uppercase tracking-[0.4em] font-bold mb-8 block">The Coolzo Promise</span>
@@ -100,7 +100,7 @@ export default function About() {
                 transition={{ delay: i * 0.1 }}
                 className="group"
               >
-                <div className="aspect-[4/5] overflow-hidden rounded-sm mb-6 grayscale hover:grayscale-0 transition-all duration-700">
+                <div className="aspect-[4/5] overflow-hidden rounded-xl mb-6 grayscale hover:grayscale-0 transition-all duration-700">
                   <img src={person.img} alt={person.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" referrerPolicy="no-referrer" />
                 </div>
                 <h4 className="text-xl font-serif text-brand-navy mb-1">{person.name}</h4>

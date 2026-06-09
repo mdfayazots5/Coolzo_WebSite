@@ -27,10 +27,10 @@ export default function NotFound() {
         </motion.div>
 
         <div className="grid md:grid-cols-2 gap-6 max-w-lg mx-auto">
-          <Link to="/" className="flex items-center justify-center gap-3 bg-brand-navy text-white px-8 py-5 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all shadow-xl">
+          <Link to="/" className="flex items-center justify-center gap-3 bg-brand-navy text-white px-8 py-5 rounded-lg text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all shadow-xl">
             <Home size={16} /> Return Home
           </Link>
-          <Link to="/contact" className="flex items-center justify-center gap-3 border border-brand-navy/10 text-brand-navy px-8 py-5 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-navy/5 transition-all">
+          <Link to="/contact" className="flex items-center justify-center gap-3 border border-brand-navy/10 text-brand-navy px-8 py-5 rounded-lg text-[10px] uppercase tracking-widest font-bold hover:bg-brand-navy/5 transition-all">
             <HelpCircle size={16} /> Get Support
           </Link>
         </div>

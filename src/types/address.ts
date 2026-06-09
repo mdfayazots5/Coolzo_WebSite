@@ -34,10 +34,11 @@ export interface CreateCustomerAddressRequest {
 
 export type UpdateCustomerAddressRequest = Partial<CreateCustomerAddressRequest>;
 
-/** Zone lookup — GET /api/booking-lookups/zones/by-pincode/{pincode} */
+/** Zone lookup — GET /api/booking-lookups/zones/by-pincode/{pincode}
+ *  200 = zone found and serviceable; 404 = not served (thrown as error by apiClient) */
 export interface ZoneLookupResponse {
   zoneId: number;
   zoneName: string;
-  isServiceable: boolean;
-  estimatedArival?: string;
+  cityName: string;
+  pincode: string;
 }

@@ -23,11 +23,11 @@ export default function ErrorPage() {
         <div className="flex flex-col md:flex-row justify-center gap-6 max-w-lg mx-auto">
           <button 
             onClick={() => window.location.reload()}
-            className="flex items-center justify-center gap-3 bg-brand-navy text-white px-10 py-5 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all shadow-xl"
+            className="flex items-center justify-center gap-3 bg-brand-navy text-white px-10 py-5 rounded-lg text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all shadow-xl"
           >
             <RefreshCw size={16} /> Retry Connection
           </button>
-          <Link to="/contact" className="flex items-center justify-center gap-3 border border-brand-navy/10 text-brand-navy px-10 py-5 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-navy/5 transition-all">
+          <Link to="/contact" className="flex items-center justify-center gap-3 border border-brand-navy/10 text-brand-navy px-10 py-5 rounded-lg text-[10px] uppercase tracking-widest font-bold hover:bg-brand-navy/5 transition-all">
             <HelpCircle size={16} /> Contact Support
           </Link>
         </div>

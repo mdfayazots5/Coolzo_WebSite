@@ -103,20 +103,20 @@ export default function EquipmentList() {
         </div>
         <button
           onClick={openAdd}
-          className="w-full sm:w-auto flex items-center justify-center gap-3 bg-brand-navy text-white px-8 py-4 rounded-sm text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all shadow-xl"
+          className="w-full sm:w-auto flex items-center justify-center gap-3 bg-brand-navy text-white px-8 py-4 rounded-lg text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all shadow-xl"
         >
           <Plus size={16} /> Add New Equipment
         </button>
       </div>
 
       {/* Search */}
-      <div className="bg-white p-6 rounded-sm border border-brand-navy/5 shadow-sm mb-12 max-w-md">
+      <div className="bg-white p-6 rounded-xl border border-brand-navy/5 shadow-sm mb-12 max-w-md">
         <div className="relative">
           <Search size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-brand-navy/30" />
           <input
             type="text"
             placeholder="Search by brand or location..."
-            className="w-full bg-brand-navy/5 border border-transparent rounded-sm pl-14 pr-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors"
+            className="w-full bg-brand-navy/5 border border-transparent rounded-lg pl-14 pr-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -141,11 +141,11 @@ export default function EquipmentList() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
-                className="bg-white rounded-sm border border-brand-navy/5 shadow-sm hover:shadow-xl transition-all group overflow-hidden"
+                className="bg-white rounded-xl border border-brand-navy/5 shadow-sm hover:shadow-xl transition-all group overflow-hidden"
               >
                 <div className="p-8">
                   <div className="flex justify-between items-start mb-8">
-                    <div className="w-14 h-14 bg-brand-navy text-white rounded-sm flex items-center justify-center text-2xl font-serif">
+                    <div className="w-14 h-14 bg-brand-navy text-white rounded-xl flex items-center justify-center text-2xl font-serif">
                       {eq.brand?.charAt(0) ?? 'A'}
                     </div>
                     <span className="bg-brand-navy/5 text-brand-navy/40 px-3 py-1 rounded-full text-[8px] uppercase tracking-widest font-bold">
@@ -172,13 +172,13 @@ export default function EquipmentList() {
                   <div className="grid grid-cols-2 gap-3">
                     <Link
                       to={`/portal/equipment/${eq.equipmentId}`}
-                      className="text-center py-3 border border-brand-navy/10 rounded-sm text-[9px] uppercase tracking-widest font-bold text-brand-navy hover:bg-brand-navy hover:text-white transition-all"
+                      className="text-center py-3 border border-brand-navy/10 rounded-lg text-[9px] uppercase tracking-widest font-bold text-brand-navy hover:bg-brand-navy hover:text-white transition-all"
                     >
                       View History
                     </Link>
                     <Link
                       to="/book"
-                      className="text-center py-3 bg-brand-navy/5 rounded-sm text-[9px] uppercase tracking-widest font-bold text-brand-navy hover:bg-brand-gold transition-all"
+                      className="text-center py-3 bg-brand-navy/5 rounded-lg text-[9px] uppercase tracking-widest font-bold text-brand-navy hover:bg-brand-gold transition-all"
                     >
                       Book Service
                     </Link>
@@ -192,7 +192,7 @@ export default function EquipmentList() {
           {/* Add New Placeholder */}
           <button
             onClick={openAdd}
-            className="bg-brand-navy/5 border-2 border-dashed border-brand-navy/10 rounded-sm p-8 flex flex-col items-center justify-center text-center group hover:border-brand-gold transition-all"
+            className="bg-brand-navy/5 border-2 border-dashed border-brand-navy/10 rounded-lg p-8 flex flex-col items-center justify-center text-center group hover:border-brand-gold transition-all"
           >
             <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center text-brand-navy/20 group-hover:text-brand-gold transition-colors mb-4 shadow-sm">
               <Plus size={32} />
@@ -240,7 +240,7 @@ export default function EquipmentList() {
                   <select
                     value={form.brand}
                     onChange={(e) => setForm((f) => ({ ...f, brand: e.target.value }))}
-                    className="w-full bg-brand-navy/5 border border-transparent rounded-sm px-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors appearance-none"
+                    className="w-full bg-brand-navy/5 border border-transparent rounded-lg px-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors appearance-none"
                   >
                     {['Samsung', 'Daikin', 'LG', 'Mitsubishi', 'Voltas', 'Blue Star', 'Carrier', 'Other'].map((b) => (
                       <option key={b}>{b}</option>
@@ -258,7 +258,7 @@ export default function EquipmentList() {
                     placeholder="e.g. WindFree Pro"
                     value={form.name}
                     onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                    className="w-full bg-brand-navy/5 border border-transparent rounded-sm px-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors"
+                    className="w-full bg-brand-navy/5 border border-transparent rounded-lg px-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors"
                   />
                 </div>
 
@@ -268,7 +268,7 @@ export default function EquipmentList() {
                     <select
                       value={form.type}
                       onChange={(e) => setForm((f) => ({ ...f, type: e.target.value }))}
-                      className="w-full bg-brand-navy/5 border border-transparent rounded-sm px-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors appearance-none"
+                      className="w-full bg-brand-navy/5 border border-transparent rounded-lg px-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors appearance-none"
                     >
                       {['Split', 'Window', 'Cassette', 'Centralized'].map((t) => (
                         <option key={t}>{t}</option>
@@ -280,7 +280,7 @@ export default function EquipmentList() {
                     <select
                       value={form.capacity}
                       onChange={(e) => setForm((f) => ({ ...f, capacity: e.target.value }))}
-                      className="w-full bg-brand-navy/5 border border-transparent rounded-sm px-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors appearance-none"
+                      className="w-full bg-brand-navy/5 border border-transparent rounded-lg px-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors appearance-none"
                     >
                       {['1.0 Ton', '1.5 Ton', '2.0 Ton', '3.0 Ton+'].map((c) => (
                         <option key={c}>{c}</option>
@@ -298,7 +298,7 @@ export default function EquipmentList() {
                     placeholder="2024"
                     value={form.installYear}
                     onChange={(e) => setForm((f) => ({ ...f, installYear: e.target.value }))}
-                    className="w-full bg-brand-navy/5 border border-transparent rounded-sm px-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors"
+                    className="w-full bg-brand-navy/5 border border-transparent rounded-lg px-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors"
                   />
                 </div>
 
@@ -311,7 +311,7 @@ export default function EquipmentList() {
                     placeholder="e.g. Living Room"
                     value={form.location}
                     onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
-                    className="w-full bg-brand-navy/5 border border-transparent rounded-sm px-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors"
+                    className="w-full bg-brand-navy/5 border border-transparent rounded-lg px-6 py-4 text-sm text-brand-navy focus:outline-none focus:border-brand-gold transition-colors"
                   />
                 </div>
 
@@ -319,7 +319,7 @@ export default function EquipmentList() {
                   <button
                     type="submit"
                     disabled={saving}
-                    className="w-full bg-brand-navy text-white py-5 rounded-sm text-xs uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl flex items-center justify-center gap-3 disabled:opacity-60"
+                    className="w-full bg-brand-navy text-white py-5 rounded-lg text-xs uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all shadow-xl flex items-center justify-center gap-3 disabled:opacity-60"
                   >
                     {saving ? (
                       <Loader2 size={16} className="animate-spin" />
@@ -330,7 +330,7 @@ export default function EquipmentList() {
                 </div>
               </form>
 
-              <div className="mt-12 p-6 bg-brand-gold/10 rounded-sm border border-brand-gold/20 flex gap-4">
+              <div className="mt-12 p-6 bg-brand-gold/10 rounded-xl border border-brand-gold/20 flex gap-4">
                 <Info size={20} className="text-brand-gold shrink-0" />
                 <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/60 leading-relaxed">
                   Registering your equipment allows our technicians to arrive with the correct spare parts and tools for your specific model.

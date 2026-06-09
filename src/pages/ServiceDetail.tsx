@@ -104,7 +104,7 @@ export default function ServiceDetail() {
         </p>
         <Link
           to="/services"
-          className="bg-brand-navy text-white px-10 py-4 rounded-sm text-xs uppercase tracking-widest font-bold hover:bg-brand-gold transition-all"
+          className="bg-brand-navy text-white px-10 py-4 rounded-lg text-xs uppercase tracking-widest font-bold hover:bg-brand-gold transition-all"
         >
           Back to Catalog
         </Link>
@@ -112,7 +112,7 @@ export default function ServiceDetail() {
     );
   }
 
-  const isRepair = service.serviceCategoryName?.toLowerCase().includes("repair");
+  const isRepair = service.serviceName.toLowerCase().includes("repair");
   const displayPrice = service.basePrice != null ? `₹${service.basePrice.toLocaleString()}` : "Quote";
   const activeFaqs = faqs.length > 0
     ? faqs.map((f) => ({ q: f.question, a: f.answer }))
@@ -140,7 +140,7 @@ export default function ServiceDetail() {
               {service.serviceName}
             </h1>
             <p className="text-brand-navy/60 text-xl font-light leading-relaxed mb-10 max-w-lg italic">
-              "{service.description ?? "Professional AC service by certified technicians."}"
+              "{service.summary ?? "Professional AC service by certified technicians."}"
             </p>
             <div className="flex flex-wrap gap-8 mb-12">
               <div className="flex items-center gap-3">
@@ -148,7 +148,7 @@ export default function ServiceDetail() {
                 <div>
                   <p className="text-[9px] uppercase tracking-widest font-bold text-brand-navy/40">Duration</p>
                   <p className="text-sm font-bold text-brand-navy">
-                    {formatDuration(service.estimatedDurationMinutes)}
+                    {formatDuration()}
                   </p>
                 </div>
               </div>
@@ -163,7 +163,7 @@ export default function ServiceDetail() {
             <Link
               to="/book"
               state={{ serviceId: service.serviceId, serviceName: service.serviceName, price: service.basePrice }}
-              className="bg-brand-navy text-white px-10 py-5 rounded-sm text-xs uppercase tracking-widest font-bold hover:bg-brand-gold transition-all shadow-xl inline-block"
+              className="bg-brand-navy text-white px-10 py-5 rounded-lg text-xs uppercase tracking-widest font-bold hover:bg-brand-gold transition-all shadow-xl inline-block"
             >
               Book This Service
             </Link>
@@ -171,7 +171,7 @@ export default function ServiceDetail() {
           <div className="relative">
             <div className="absolute inset-0 bg-brand-gold/10 blur-3xl rounded-full" />
             <img
-              src={service.imageUrl ?? FALLBACK_IMG}
+              src={FALLBACK_IMG}
               alt={service.serviceName}
               className="rounded-sm shadow-2xl relative z-10 grayscale hover:grayscale-0 transition-all duration-1000 w-full aspect-video object-cover"
               referrerPolicy="no-referrer"
@@ -271,7 +271,7 @@ export default function ServiceDetail() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-12 bg-white/50 rounded-sm border border-dashed border-brand-navy/10">
+            <div className="text-center py-12 bg-white/50 rounded-xl border border-dashed border-brand-navy/10">
               <p className="text-brand-navy/40 text-sm">
                 No reviews yet for this service. Be the first to share your experience!
               </p>
@@ -287,9 +287,10 @@ export default function ServiceDetail() {
           </div>
           <div className="space-y-4">
             {activeFaqs.map((faq, i) => (
-              <div key={i} className="bg-white border border-brand-navy/5 rounded-sm overflow-hidden">
+              <div key={i} className="bg-white border border-brand-navy/5 rounded-xl overflow-hidden">
                 <button
                   onClick={() => setActiveFaq(activeFaq === i ? null : i)}
+                  aria-expanded={activeFaq === i}
                   className="w-full px-8 py-6 flex justify-between items-center text-left hover:bg-brand-cream/50 transition-colors"
                 >
                   <span className="font-serif text-lg text-brand-navy">{faq.q}</span>
@@ -334,7 +335,7 @@ export default function ServiceDetail() {
             ].map((s, i) => (
               <div
                 key={i}
-                className="bg-white p-8 rounded-sm border border-brand-navy/5 hover:border-brand-gold/30 transition-all duration-500 group"
+                className="bg-white p-8 rounded-xl border border-brand-navy/5 hover:border-brand-gold/30 transition-all duration-500 group"
               >
                 <div className="text-brand-gold mb-6 group-hover:scale-110 transition-transform duration-500">
                   {s.icon}
@@ -358,7 +359,7 @@ export default function ServiceDetail() {
         <Link
           to="/book"
           state={{ serviceId: service.serviceId, serviceName: service.serviceName, price: service.basePrice }}
-          className="block w-full bg-brand-navy text-white text-center py-4 rounded-sm text-xs uppercase tracking-widest font-bold shadow-xl"
+          className="block w-full bg-brand-navy text-white text-center py-4 rounded-lg text-xs uppercase tracking-widest font-bold shadow-xl"
         >
           Book Now{service.basePrice != null ? ` — ₹${service.basePrice.toLocaleString()}` : ""}
         </Link>
