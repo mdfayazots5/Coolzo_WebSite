@@ -47,11 +47,13 @@ import ErrorPage from "./pages/ErrorPage";
 import SessionExpired from "./pages/SessionExpired";
 import Maintenance from "./pages/Maintenance";
 import { AuthProvider } from "./contexts/AuthContext";
+import { ContentProvider } from "./contexts/ContentContext";
 import ErrorBoundary from "./components/ErrorBoundary";
 
 export default function App() {
   return (
     <ErrorBoundary>
+      <ContentProvider>
       <AuthProvider>
         <BrowserRouter>
           <ScrollToTop />
@@ -113,6 +115,7 @@ export default function App() {
       </Routes>
       </BrowserRouter>
       </AuthProvider>
+      </ContentProvider>
     </ErrorBoundary>
   );
 }

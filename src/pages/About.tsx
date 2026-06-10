@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import { ShieldCheck, Clock, Gem, Award, Users, MapPin } from "lucide-react";
+import SnapshotImage from "../components/SnapshotImage";
 
 export default function About() {
   return (
@@ -36,11 +37,11 @@ export default function About() {
           </motion.div>
           <div className="relative">
             <div className="absolute -top-10 -right-10 w-64 h-64 bg-brand-gold/10 rounded-full blur-3xl" />
-            <img 
-              src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069&auto=format&fit=crop" 
-              alt="Coolzo Office" 
+            <SnapshotImage
+              slotKey="about.hero"
+              fallbackSrc="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069&auto=format&fit=crop"
+              alt="Coolzo Office"
               className="rounded-sm shadow-2xl relative z-10 grayscale hover:grayscale-0 transition-all duration-1000"
-              referrerPolicy="no-referrer"
             />
           </div>
         </div>

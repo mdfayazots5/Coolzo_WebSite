@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { CatalogService } from "../services/catalogService";
 import type { ServiceCategoryLookupResponse } from "../types/catalog";
 import { useAuth } from "../contexts/AuthContext";
+import SnapshotImage from "../components/SnapshotImage";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -65,11 +66,12 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative h-screen flex items-center overflow-hidden bg-brand-navy">
         <div className="absolute inset-0 z-0">
-          <img 
-            src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?q=80&w=2070&auto=format&fit=crop" 
-            alt="Modern Interior" 
+          <SnapshotImage
+            slotKey="home.hero"
+            fallbackSrc="https://images.unsplash.com/photo-1581094794329-c8112a89af12?q=80&w=2070&auto=format&fit=crop"
+            alt="Modern Interior"
             className="w-full h-full object-cover opacity-30 grayscale"
-            referrerPolicy="no-referrer"
+            loading="eager"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-brand-navy via-brand-navy/80 to-transparent" />
         </div>

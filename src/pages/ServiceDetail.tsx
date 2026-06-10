@@ -171,7 +171,7 @@ export default function ServiceDetail() {
           <div className="relative">
             <div className="absolute inset-0 bg-brand-gold/10 blur-3xl rounded-full" />
             <img
-              src={FALLBACK_IMG}
+              src={service.imageUrl || FALLBACK_IMG}
               alt={service.serviceName}
               className="rounded-sm shadow-2xl relative z-10 grayscale hover:grayscale-0 transition-all duration-1000 w-full aspect-video object-cover"
               referrerPolicy="no-referrer"

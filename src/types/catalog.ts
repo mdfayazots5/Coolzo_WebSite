@@ -13,6 +13,7 @@ export interface ServiceLookupResponse {
   summary?: string;
   basePrice?: number;
   pricingModelName?: string;
+  imageUrl?: string;
 }
 
 /** AC type lookup */

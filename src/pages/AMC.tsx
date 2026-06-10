@@ -4,6 +4,7 @@ import { Check, Star, ShieldCheck, Clock, ArrowRight, Loader2 } from "lucide-rea
 import { Link } from "react-router-dom";
 import { AmcService } from "../services/amcService";
 import type { AmcPlanResponse } from "../types/amc";
+import SnapshotImage from "../components/SnapshotImage";
 
 function formatPrice(plan: AmcPlanResponse): string {
   if (!plan.price) return "Custom";
@@ -134,11 +135,11 @@ export default function AMC() {
         <div className="grid lg:grid-cols-2 gap-20 items-center mb-32">
           <div className="relative">
             <div className="absolute inset-0 bg-brand-gold/10 blur-3xl rounded-full" />
-            <img
-              src="https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=2069&auto=format&fit=crop"
+            <SnapshotImage
+              slotKey="amc.banner"
+              fallbackSrc="https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=2069&auto=format&fit=crop"
               alt="Professional Maintenance"
               className="rounded-sm shadow-2xl relative z-10 grayscale hover:grayscale-0 transition-all duration-1000"
-              referrerPolicy="no-referrer"
             />
           </div>
           <div>

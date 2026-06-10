@@ -1,0 +1,113 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import { apiConfig } from '../config/apiConfig';
+
+export interface SnapshotImage {
+  url: string;
+  alt: string;
+  variants: Record<string, string>;
+}
+
+export interface SnapshotBlock {
+  key: string;
+  title: string;
+  summary: string;
+  content: string;
+  previewImageUrl: string;
+  sortOrder: number;
+}
+
+export interface ContentSnapshot {
+  version: number;
+  publishedAtUtc: string;
+  checksum: string;
+  theme: Record<string, string>;
+  masters: { brands: Array<{ code: string; name: string }> };
+  content: { blocks: SnapshotBlock[]; banners: unknown[]; faqs: unknown[] };
+  images: Record<string, SnapshotImage>;
+}
+
+const CACHE_KEY = 'coolzo.cms.snapshot';
+const SNAPSHOT_PATH = '/cms/snapshot-latest.json';
+
+/** Relative object URLs (dev, no CDN base) are resolved against the API origin. */
+export function resolveAssetUrl(url: string): string {
+  if (!url) {
+    return url;
+  }
+  return /^https?:\/\//i.test(url) ? url : `${apiConfig.BASE_URL}${url}`;
+}
+
+export function readCachedSnapshot(): ContentSnapshot | null {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    return raw ? (JSON.parse(raw) as ContentSnapshot) : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Bucket-down fallback: when the static snapshot file is unreachable, resolve the active version
+ * via the cached manifest API and read the snapshot through the API (served from IMemoryCache /
+ * tblPublishedSnapshot). Returns the envelope-unwrapped snapshot.
+ */
+async function fetchSnapshotViaApi(): Promise<ContentSnapshot | null> {
+  try {
+    const manifestResponse = await fetch(`${apiConfig.BASE_URL}/api/cms/snapshot/manifest`, { cache: 'no-cache' });
+    if (!manifestResponse.ok) {
+      return null;
+    }
+    const manifestEnvelope = await manifestResponse.json();
+    const version: number | undefined = manifestEnvelope?.data?.version;
+    if (!version) {
+      return null;
+    }
+    const snapshotResponse = await fetch(`${apiConfig.BASE_URL}/api/cms/snapshot/${version}`, { cache: 'no-cache' });
+    if (!snapshotResponse.ok) {
+      return null;
+    }
+    const snapshotEnvelope = await snapshotResponse.json();
+    return (snapshotEnvelope?.data as ContentSnapshot) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Fetches the published snapshot directly from object storage (static file — no DB / no per-request
+ * API). Cache-busted so a freshly published version is picked up; result cached in localStorage for
+ * instant subsequent paints. Falls back to the API (Redis-less IMemoryCache + DB) if the static
+ * file is unreachable, so the portal degrades gracefully when the bucket/CDN is unavailable.
+ */
+export async function fetchSnapshot(): Promise<ContentSnapshot | null> {
+  let snapshot: ContentSnapshot | null = null;
+
+  try {
+    const response = await fetch(`${apiConfig.SNAPSHOT_BASE_URL}${SNAPSHOT_PATH}?t=${Date.now()}`, {
+      cache: 'no-cache',
+    });
+    if (response.ok) {
+      snapshot = (await response.json()) as ContentSnapshot;
+    }
+  } catch {
+    snapshot = null;
+  }
+
+  if (!snapshot) {
+    snapshot = await fetchSnapshotViaApi();
+  }
+
+  if (snapshot) {
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify(snapshot));
+    } catch {
+      // Ignore quota/serialization failures; in-memory snapshot still works.
+    }
+  }
+
+  return snapshot;
+}

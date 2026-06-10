@@ -111,6 +111,14 @@ export default function Services() {
                     transition={{ duration: 0.4, delay: i * 0.05 }}
                     className="bg-white p-8 rounded-xl border border-brand-navy/5 hover:border-brand-gold/30 transition-all duration-500 group flex flex-col h-full shadow-sm hover:shadow-xl"
                   >
+                    {service.imageUrl && (
+                      <img
+                        src={service.imageUrl}
+                        alt={service.serviceName}
+                        className="w-full h-32 object-cover rounded-lg mb-6"
+                        referrerPolicy="no-referrer"
+                      />
+                    )}
                     <div className="flex justify-between items-start mb-8">
                       <div className="text-brand-gold group-hover:scale-110 transition-transform duration-500">
                         {categoryNameById.get(service.serviceCategoryId)?.toLowerCase().includes("repair")
