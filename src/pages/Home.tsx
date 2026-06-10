@@ -1,302 +1,323 @@
 import { motion } from "motion/react";
-import { useState, useEffect } from "react";
-import { ChevronRight, ShieldCheck, Clock, CheckCircle2, Star, ArrowRight, MapPin, Gem } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import {
+  ChevronRight,
+  ShieldCheck,
+  Clock,
+  CheckCircle2,
+  Star,
+  ArrowRight,
+  Wrench,
+  Wind,
+  Zap,
+  Droplets,
+  Loader2,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { CatalogService } from "../services/catalogService";
-import type { ServiceCategoryLookupResponse } from "../types/catalog";
+import type { ServiceCategoryLookupResponse, ServiceLookupResponse } from "../types/catalog";
 import { useAuth } from "../contexts/AuthContext";
+import Section from "../components/Section";
+import Container from "../components/Container";
 import SnapshotImage from "../components/SnapshotImage";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
   whileInView: { opacity: 1, y: 0 },
   viewport: { once: true },
-  transition: { duration: 0.6, ease: "easeOut" }
+  transition: { duration: 0.5, ease: "easeOut" },
 };
 
-const STATIC_CATEGORIES = [
-  { title: "Repair", icon: <ShieldCheck size={32} />, desc: "Diagnostic excellence for all systems." },
-  { title: "Cleaning", icon: <Clock size={32} />, desc: "Deep jet-wash for pure air." },
-  { title: "Gas Refill", icon: <Gem size={32} />, desc: "Precision pressure restoration." },
-  { title: "Installation", icon: <MapPin size={32} />, desc: "Smart system placement." },
-  { title: "AMC Plans", icon: <Star size={32} />, desc: "Proactive total care maintenance." },
-];
-
-const ICONS = [
-  <ShieldCheck size={32} />,
-  <Clock size={32} />,
-  <CheckCircle2 size={32} />,
-  <MapPin size={32} />,
-  <Star size={32} />,
-  <Gem size={32} />,
-];
-
-function categoryIcon(name: string | undefined | null, idx: number) {
+// AC-relevant icon resolved from the category name.
+function categoryIcon(name: string | undefined | null) {
   const n = (name ?? "").toLowerCase();
-  if (n.includes("repair")) return <ShieldCheck size={32} />;
-  if (n.includes("clean") || n.includes("wash")) return <Clock size={32} />;
-  if (n.includes("install")) return <MapPin size={32} />;
-  if (n.includes("gas")) return <Gem size={32} />;
-  if (n.includes("amc") || n.includes("maint")) return <Star size={32} />;
-  return ICONS[idx % ICONS.length];
+  if (n.includes("repair")) return <Wrench size={26} />;
+  if (n.includes("clean") || n.includes("wash") || n.includes("service")) return <Wind size={26} />;
+  if (n.includes("install")) return <Zap size={26} />;
+  if (n.includes("gas") || n.includes("refill")) return <Droplets size={26} />;
+  if (n.includes("amc") || n.includes("maint")) return <ShieldCheck size={26} />;
+  return <Wind size={26} />;
 }
+
+// Graceful fallback shown only if the live catalog can't be loaded.
+const STATIC_CATEGORIES: { title: string; desc: string }[] = [
+  { title: "AC Repair", desc: "Fast diagnosis and fix for any cooling fault." },
+  { title: "Service & Cleaning", desc: "Deep jet-wash for cleaner, healthier air." },
+  { title: "Gas Refill", desc: "Pressure check and top-up for full cooling." },
+  { title: "Installation", desc: "Safe, correct fitting for new units." },
+];
 
 export default function Home() {
   const { user } = useAuth();
   const bookingPath = user ? "/portal/book" : "/book";
   const [categories, setCategories] = useState<ServiceCategoryLookupResponse[]>([]);
+  const [services, setServices] = useState<ServiceLookupResponse[]>([]);
+  const [loadingCats, setLoadingCats] = useState(true);
 
   useEffect(() => {
-    CatalogService.getServiceCategories()
-      .then((data) => { if (data?.length) setCategories(data); })
-      .catch(() => {/* keep static fallback */});
+    Promise.allSettled([CatalogService.getServiceCategories(), CatalogService.getServices()])
+      .then(([cat, svc]) => {
+        if (cat.status === "fulfilled" && cat.value?.length) setCategories(cat.value);
+        if (svc.status === "fulfilled" && svc.value?.length) setServices(svc.value);
+      })
+      .catch(() => {/* graceful: fall back to static list */})
+      .finally(() => setLoadingCats(false));
   }, []);
 
-  const displayCategories = categories.length > 0
-    ? categories.slice(0, 6).map((cat, i) => ({
-        categoryId: cat.serviceCategoryId,
-        title: cat.categoryName ?? "Service",
-        icon: categoryIcon(cat.categoryName, i),
-        desc: cat.description ?? "Professional AC services by certified technicians.",
-      }))
-    : STATIC_CATEGORIES.map((cat) => ({ categoryId: undefined as number | undefined, ...cat }));
+  // Lowest base price per category → "From ₹X" on each card. Categories with no
+  // priced service simply omit the price (we never invent one).
+  const fromPriceByCategory = useMemo(() => {
+    const map: Record<number, number> = {};
+    for (const s of services) {
+      if (s.basePrice == null) continue;
+      const current = map[s.serviceCategoryId];
+      if (current == null || s.basePrice < current) map[s.serviceCategoryId] = s.basePrice;
+    }
+    return map;
+  }, [services]);
+
+  const displayCategories =
+    categories.length > 0
+      ? categories.slice(0, 6).map((cat) => ({
+          categoryId: cat.serviceCategoryId as number | undefined,
+          title: cat.categoryName ?? "Service",
+          desc: cat.description ?? "Professional AC service by certified technicians.",
+          fromPrice: fromPriceByCategory[cat.serviceCategoryId] ?? null,
+        }))
+      : STATIC_CATEGORIES.map((c) => ({ categoryId: undefined as number | undefined, fromPrice: null as number | null, ...c }));
 
   return (
     <div className="bg-brand-cream">
-      {/* Hero Section */}
-      <section className="relative h-screen flex items-center overflow-hidden bg-brand-navy">
+      {/* ── Hero ───────────────────────────────────────────────────────────── */}
+      <section className="relative flex items-center min-h-[88vh] overflow-hidden bg-brand-navy">
         <div className="absolute inset-0 z-0">
           <SnapshotImage
             slotKey="home.hero"
             fallbackSrc="https://images.unsplash.com/photo-1581094794329-c8112a89af12?q=80&w=2070&auto=format&fit=crop"
-            alt="Modern Interior"
-            className="w-full h-full object-cover opacity-30 grayscale"
+            alt="Air conditioning service"
+            className="w-full h-full object-cover opacity-25"
             loading="eager"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-brand-navy via-brand-navy/80 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-brand-navy via-brand-navy/85 to-brand-navy/40" />
         </div>
 
-        <div className="container mx-auto px-6 relative z-10">
-          <motion.div 
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
+        <Container className="relative z-10 pt-28 pb-16">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: "easeOut" }}
             className="max-w-3xl"
           >
-            <span className="text-brand-gold text-xs uppercase tracking-[0.4em] font-bold mb-6 block">
-              Modern Climate Solutions
+            <span className="text-brand-gold text-[11px] uppercase tracking-[0.3em] font-bold mb-5 block">
+              AC Repair · Service · Installation · Gas Refill
             </span>
-            <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-serif text-white leading-tight md:leading-[0.85] mb-8">
-              Cooling <br />
-              <span className="italic">Perfected.</span>
+            <h1 className="font-serif text-white leading-[1.05] mb-6">
+              Cool, clean air —<br />
+              <span className="italic">booked in 60 seconds.</span>
             </h1>
-            <p className="text-white/60 text-lg sm:text-xl mb-10 max-w-xl leading-relaxed font-light">
-              Experience the smart way to manage your indoor environment. 
-              Professional, reliable, and flawlessly executed AC services across Hyderabad.
+            <p className="text-white/70 text-base sm:text-lg mb-9 max-w-xl leading-relaxed font-light">
+              Certified AC technicians across Hyderabad. Transparent pricing, on-time arrival,
+              and a digital service report after every visit.
             </p>
-            <div className="flex flex-wrap gap-6">
-              <Link to={bookingPath} className="bg-brand-gold text-brand-navy px-10 py-5 rounded-lg text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-white transition-all flex items-center gap-2 shadow-xl">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+              <Link
+                to={bookingPath}
+                className="inline-flex items-center justify-center gap-2 bg-brand-gold text-brand-navy px-8 py-4 rounded-lg text-xs uppercase tracking-[0.15em] font-bold hover:bg-white transition-all shadow-xl min-h-[44px]"
+              >
                 Book a Service <ChevronRight size={16} />
               </Link>
-              <Link to="/amc" className="border border-white/20 text-white px-10 py-5 rounded-lg text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-white/10 transition-all">
-                Explore AMC Plans
+              <Link
+                to="/services"
+                className="inline-flex items-center justify-center border border-white/25 text-white px-8 py-4 rounded-lg text-xs uppercase tracking-[0.15em] font-bold hover:bg-white/10 transition-all min-h-[44px]"
+              >
+                View All Services
               </Link>
             </div>
           </motion.div>
-        </div>
+        </Container>
       </section>
 
-      {/* Trust Strip */}
-      <section className="bg-white py-12 border-b border-brand-navy/5">
-        <div className="container mx-auto px-6">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-8">
-            <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
-              <div className="flex -space-x-2">
-                {[1, 2, 3, 4].map(i => (
-                  <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-brand-navy/10 overflow-hidden">
-                    <img src={`https://picsum.photos/seed/user${i}/100/100`} alt="User" referrerPolicy="no-referrer" />
-                  </div>
-                ))}
+      {/* ── Trust strip ────────────────────────────────────────────────────── */}
+      <Section as="div" surface="white" spacing="compact" className="border-b border-brand-navy/5">
+        <Container>
+          <div className="flex flex-wrap items-center justify-center sm:justify-between gap-x-10 gap-y-6 text-center sm:text-left">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1 text-brand-gold">
+                {[1, 2, 3, 4, 5].map((i) => <Star key={i} size={14} className="fill-brand-gold" />)}
               </div>
-              <div>
-                <div className="flex items-center justify-center sm:justify-start gap-1 text-brand-gold mb-0.5">
-                  {[1, 2, 3, 4, 5].map(i => <Star key={i} size={12} className="fill-brand-gold" />)}
-                </div>
-                <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy whitespace-nowrap">4.9/5 Hyderabad Rating</p>
-              </div>
+              <p className="text-[11px] uppercase tracking-widest font-bold text-brand-navy">4.9/5 across Hyderabad</p>
             </div>
-            
-            <div className="flex gap-8 sm:gap-12 items-center flex-wrap justify-center">
-              <div className="text-center">
-                <p className="text-xl sm:text-2xl font-serif text-brand-navy">20+</p>
-                <p className="text-[9px] uppercase tracking-widest font-bold text-brand-gold">Hyderabad Zones</p>
+            {[
+              { value: "20+", label: "Zones Covered" },
+              { value: "500+", label: "Certified Technicians" },
+              { value: "4 hr", label: "Emergency Response" },
+            ].map((stat) => (
+              <div key={stat.label} className="text-center">
+                <p className="text-xl sm:text-2xl font-serif text-brand-navy">{stat.value}</p>
+                <p className="text-[9px] uppercase tracking-widest font-bold text-brand-gold-deep">{stat.label}</p>
               </div>
-              <div className="text-center">
-                <p className="text-xl sm:text-2xl font-serif text-brand-navy">500+</p>
-                <p className="text-[9px] uppercase tracking-widest font-bold text-brand-gold">Certified Technicians</p>
-              </div>
-              <div className="hidden sm:flex gap-4 sm:gap-8 opacity-30 grayscale items-center">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Daikin_logo.svg/1200px-Daikin_logo.svg.png" alt="Daikin" className="h-3 sm:h-4 object-contain" referrerPolicy="no-referrer" />
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Mitsubishi_Electric_logo.svg/1200px-Mitsubishi_Electric_logo.svg.png" alt="Mitsubishi" className="h-3 sm:h-4 object-contain" referrerPolicy="no-referrer" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Service Categories */}
-      <section className="py-24">
-        <div className="container mx-auto px-6">
-          <div className="text-center mb-20">
-            <span className="text-brand-gold text-[10px] uppercase tracking-[0.4em] font-bold mb-4 block">Our Expertise</span>
-            <h2 className="text-5xl font-serif text-brand-navy">Professional Climate Solutions</h2>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-            {displayCategories.map((service, i) => (
-              <motion.div 
-                key={i}
-                {...fadeIn}
-                transition={{ delay: i * 0.1 }}
-                className="bg-white p-8 rounded-xl border border-brand-navy/5 hover:border-brand-gold/30 transition-all duration-500 group flex flex-col h-full"
-              >
-                <div className="text-brand-gold mb-6 group-hover:scale-110 transition-transform duration-500">{service.icon}</div>
-                <h3 className="text-xl font-serif text-brand-navy mb-3">{service.title}</h3>
-                <p className="text-brand-navy/50 text-sm leading-relaxed mb-8 flex-grow">{service.desc}</p>
-                <div className="flex flex-col gap-3">
-                  <Link to="/services" className="text-[10px] uppercase tracking-widest font-bold text-brand-navy hover:text-brand-gold transition-colors flex items-center gap-2">
-                    Learn More <ArrowRight size={12} />
-                  </Link>
-                  <Link
-                    to={bookingPath}
-                    state={service.categoryId ? { serviceCategoryId: service.categoryId, serviceCategoryName: service.title } : undefined}
-                    className="bg-brand-navy text-white text-center py-3 rounded-lg text-[9px] uppercase tracking-widest font-bold hover:bg-brand-gold transition-all"
-                  >
-                    Book Now
-                  </Link>
-                </div>
-              </motion.div>
             ))}
           </div>
-        </div>
-      </section>
+        </Container>
+      </Section>
 
-      {/* Hyderabad Coverage Section */}
-      <section className="py-24 bg-brand-navy/5">
-        <div className="container mx-auto px-6">
-          <div className="grid lg:grid-cols-2 gap-20 items-center">
-            <div className="relative">
+      {/* ── Services ───────────────────────────────────────────────────────── */}
+      <Section spacing="default">
+        <Container>
+          <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12">
+            <span className="text-brand-gold-deep text-[10px] uppercase tracking-[0.4em] font-bold mb-3 block">What we do</span>
+            <h2 className="font-serif text-brand-navy mb-4">Every AC need, one trusted team</h2>
+            <p className="text-brand-navy/50 text-sm md:text-base leading-relaxed">
+              Pick a service and book a slot — or let our technician diagnose on-site. No hidden charges.
+            </p>
+          </div>
+
+          {loadingCats ? (
+            <div className="flex flex-col items-center justify-center py-16 gap-3">
+              <Loader2 className="animate-spin text-brand-gold" size={32} />
+              <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">Loading services…</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 lg:gap-8">
+              {displayCategories.map((service, i) => (
+                <motion.div
+                  key={service.categoryId ?? i}
+                  {...fadeIn}
+                  transition={{ duration: 0.4, delay: i * 0.05 }}
+                  className="bg-white p-4 sm:p-6 rounded-xl border border-brand-navy/5 hover:border-brand-gold/30 hover:shadow-xl transition-all duration-300 flex flex-col h-full shadow-sm"
+                >
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-brand-gold/10 text-brand-gold flex items-center justify-center mb-3 sm:mb-5">
+                    {categoryIcon(service.title)}
+                  </div>
+                  <h3 className="text-base sm:text-lg font-serif text-brand-navy mb-1.5 sm:mb-2">{service.title}</h3>
+                  <p className="text-xs sm:text-sm text-brand-navy/50 leading-relaxed mb-3 sm:mb-5 flex-grow line-clamp-2 sm:line-clamp-none">{service.desc}</p>
+                  <p className="font-serif text-brand-navy text-lg sm:text-xl mb-3 sm:mb-4">
+                    {service.fromPrice != null ? (
+                      <>
+                        <span className="text-brand-navy/40 text-[10px] uppercase tracking-widest font-bold align-middle mr-1.5">From</span>
+                        ₹{service.fromPrice.toLocaleString("en-IN")}
+                      </>
+                    ) : (
+                      <span className="text-brand-navy/50 text-xs sm:text-sm font-sans">On inspection</span>
+                    )}
+                  </p>
+                  <div className="flex flex-col gap-2">
+                    <Link
+                      to={bookingPath}
+                      state={service.categoryId ? { serviceCategoryId: service.categoryId, serviceCategoryName: service.title } : undefined}
+                      className="bg-brand-navy text-white text-center py-2.5 sm:py-3 rounded-lg text-[10px] uppercase tracking-widest font-bold hover:bg-brand-gold hover:text-brand-navy transition-all min-h-[44px] flex items-center justify-center"
+                    >
+                      Book Now
+                    </Link>
+                    <Link
+                      to="/services"
+                      className="hidden sm:flex text-[10px] uppercase tracking-widest font-bold text-brand-navy/50 hover:text-brand-gold-deep transition-colors items-center justify-center gap-1.5 min-h-[36px]"
+                    >
+                      View details <ArrowRight size={12} />
+                    </Link>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </Container>
+      </Section>
+
+      {/* ── Hyderabad coverage ─────────────────────────────────────────────── */}
+      <Section surface="cream" spacing="default" className="bg-brand-navy/5">
+        <Container>
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            <div className="relative order-2 lg:order-1">
               <div className="absolute inset-0 bg-brand-gold/10 blur-3xl rounded-full" />
-              <img 
-                src="https://images.unsplash.com/photo-1524230572899-a752b3835840?q=80&w=2070&auto=format&fit=crop" 
-                alt="Hyderabad City" 
-                className="rounded-sm shadow-2xl relative z-10 grayscale hover:grayscale-0 transition-all duration-1000"
-                referrerPolicy="no-referrer"
+              <SnapshotImage
+                slotKey="home.coverage"
+                fallbackSrc="https://images.unsplash.com/photo-1524230572899-a752b3835840?q=80&w=2070&auto=format&fit=crop"
+                alt="Hyderabad service coverage"
+                className="rounded-xl shadow-2xl relative z-10 w-full aspect-[4/3] object-cover"
+                loading="lazy"
               />
             </div>
-            <div>
-              <span className="text-brand-gold text-[10px] uppercase tracking-[0.4em] font-bold mb-4 block">Service Coverage</span>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif text-brand-navy mb-8">Serving Across Hyderabad.</h2>
-              <p className="text-brand-navy/60 text-lg mb-12 leading-relaxed font-light">
-                From the bustling streets of Gachibowli to the serene lanes of Jubilee Hills, our technicians are ready to serve you. We cover all major zones with a 4-hour response promise.
+            <div className="order-1 lg:order-2">
+              <span className="text-brand-gold-deep text-[10px] uppercase tracking-[0.4em] font-bold mb-3 block">Service coverage</span>
+              <h2 className="font-serif text-brand-navy mb-6">Serving across Hyderabad</h2>
+              <p className="text-brand-navy/60 text-base mb-8 leading-relaxed font-light">
+                From Gachibowli to Secunderabad, our technicians reach all major zones — with a 4-hour
+                response promise for emergencies.
               </p>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 {["Banjara Hills", "Jubilee Hills", "Gachibowli", "Madhapur", "Kukatpally", "Kondapur", "Secunderabad", "Hitech City"].map((zone) => (
-                  <div key={zone} className="flex items-center gap-3 text-brand-navy/40">
-                    <CheckCircle2 size={16} className="text-brand-gold" />
+                  <div key={zone} className="flex items-center gap-2.5 text-brand-navy/50">
+                    <CheckCircle2 size={15} className="text-brand-gold shrink-0" />
                     <span className="text-[10px] uppercase tracking-widest font-bold">{zone}</span>
                   </div>
                 ))}
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </Container>
+      </Section>
 
-      {/* How It Works */}
-      <section className="py-24 bg-brand-navy text-white overflow-hidden">
-        <div className="container mx-auto px-6">
-          <div className="grid lg:grid-cols-2 gap-20 items-center">
+      {/* ── How it works ───────────────────────────────────────────────────── */}
+      <Section surface="navy" spacing="default">
+        <Container>
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
             <div>
-              <span className="text-brand-gold text-[10px] uppercase tracking-[0.4em] font-bold mb-4 block">The Process</span>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif mb-12">Seamless Experience.</h2>
-              
-              <div className="space-y-12">
-                {[
-                  { step: "01", title: "Smart Booking", desc: "Select your service and preferred window through our modern digital portal." },
-                  { step: "02", stepTitle: "Technician Assignment", desc: "We match your system with a specialist certified for your specific brand." },
-                  { step: "03", stepTitle: "Real-Time Tracking", desc: "Monitor your technician's arrival with professional precision." },
-                  { step: "04", stepTitle: "Comfort Restored", desc: "Enjoy perfect air with a detailed digital health report of your system." }
-                ].map((item, i) => (
-                  <motion.div 
-                    key={i}
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.2 }}
-                    className="flex gap-8 group"
-                  >
-                    <span className="text-3xl font-serif text-brand-gold/30 group-hover:text-brand-gold transition-colors">{item.step}</span>
-                    <div>
-                      <h4 className="text-xl font-serif mb-2">{item.stepTitle || item.title}</h4>
-                      <p className="text-white/40 text-sm leading-relaxed max-w-sm">{item.desc}</p>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
+              <span className="text-brand-gold text-[10px] uppercase tracking-[0.4em] font-bold mb-3 block">How it works</span>
+              <h2 className="font-serif mb-3">Four simple steps</h2>
+              <p className="text-white/50 text-sm md:text-base leading-relaxed max-w-md">
+                From booking to a comfortable room — handled by certified professionals.
+              </p>
             </div>
-            <div className="relative">
-              <div className="absolute inset-0 bg-brand-gold/10 blur-3xl rounded-full" />
-              <img 
-                src="https://images.unsplash.com/photo-1558389186-438424b00a32?q=80&w=2070&auto=format&fit=crop" 
-                alt="Service Experience" 
-                className="rounded-sm shadow-2xl relative z-10 grayscale hover:grayscale-0 transition-all duration-1000"
-                referrerPolicy="no-referrer"
-              />
+            <div className="space-y-8">
+              {[
+                { step: "01", title: "Book online", desc: "Pick your service and a time window in under a minute." },
+                { step: "02", title: "Technician assigned", desc: "We match a specialist certified for your AC type." },
+                { step: "03", title: "Track arrival", desc: "Get real-time updates as your technician heads over." },
+                { step: "04", title: "Comfort restored", desc: "Enjoy cool air plus a digital report of the work done." },
+              ].map((item, i) => (
+                <motion.div
+                  key={item.step}
+                  initial={{ opacity: 0, x: -16 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                  className="flex gap-6 group"
+                >
+                  <span className="text-2xl font-serif text-brand-gold/40 group-hover:text-brand-gold transition-colors shrink-0">{item.step}</span>
+                  <div>
+                    <h4 className="text-lg font-serif mb-1">{item.title}</h4>
+                    <p className="text-white/40 text-sm leading-relaxed max-w-sm">{item.desc}</p>
+                  </div>
+                </motion.div>
+              ))}
             </div>
           </div>
-        </div>
-      </section>
+        </Container>
+      </Section>
 
-      {/* AMC Highlight */}
-      <section className="py-24">
-        <div className="container mx-auto px-6">
-          <div className="bg-brand-black p-12 md:p-20 rounded-xl relative overflow-hidden">
+      {/* ── Final CTA ──────────────────────────────────────────────────────── */}
+      <Section spacing="default">
+        <Container>
+          <div className="bg-brand-navy rounded-2xl px-8 py-14 md:px-16 md:py-20 text-center relative overflow-hidden">
             <div className="absolute top-0 right-0 w-1/2 h-full bg-brand-gold/5 skew-x-12 translate-x-1/4" />
-            <div className="relative z-10 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-              <div>
-                <span className="text-brand-gold text-[10px] uppercase tracking-[0.4em] font-bold mb-6 block">Total Protection</span>
-                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif text-white mb-8">The Smart Care Advantage.</h2>
-                <p className="text-white/50 text-lg mb-10 leading-relaxed font-light">
-                  Join our circle of smart property owners. Zero downtime, priority response, and comprehensive health monitoring for your entire cooling infrastructure.
-                </p>
-                <div className="flex items-center gap-8 mb-12">
-                  <div>
-                    <p className="text-white text-2xl font-serif">Unlimited</p>
-                    <p className="text-brand-gold text-[9px] uppercase tracking-widest font-bold">Service Calls</p>
-                  </div>
-                  <div className="w-px h-10 bg-white/10" />
-                  <div>
-                    <p className="text-white text-2xl font-serif">60 Min</p>
-                    <p className="text-brand-gold text-[9px] uppercase tracking-widest font-bold">Emergency Response</p>
-                  </div>
-                </div>
-                <Link to="/amc" className="bg-brand-gold text-brand-navy px-10 py-5 rounded-lg text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-white transition-all inline-block">
-                  Enroll in AMC
-                </Link>
+            <div className="relative z-10 max-w-2xl mx-auto">
+              <div className="inline-flex items-center gap-2 text-brand-gold mb-5">
+                <Clock size={16} /> <ShieldCheck size={16} />
               </div>
-              <div className="hidden lg:block">
-                <img 
-                  src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop" 
-                  alt="Modern Home" 
-                  className="rounded-sm shadow-2xl"
-                  referrerPolicy="no-referrer"
-                />
-              </div>
+              <h2 className="font-serif text-white mb-4">Ready for reliable cooling?</h2>
+              <p className="text-white/60 text-base mb-9 leading-relaxed font-light">
+                Book a certified technician now — on-time arrival and a clean-work guarantee on every visit.
+              </p>
+              <Link
+                to={bookingPath}
+                className="inline-flex items-center justify-center gap-2 bg-brand-gold text-brand-navy px-10 py-4 rounded-lg text-xs uppercase tracking-[0.15em] font-bold hover:bg-white transition-all min-h-[44px]"
+              >
+                Book a Service <ChevronRight size={16} />
+              </Link>
             </div>
           </div>
-        </div>
-      </section>
+        </Container>
+      </Section>
     </div>
   );
 }

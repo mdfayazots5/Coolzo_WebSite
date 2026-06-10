@@ -139,6 +139,33 @@ function maskMobile(mobile: string): string {
   return `${m.slice(0, 2)}XXX XX${m.slice(-3)}`;
 }
 
+// ─── Local calendar date (avoids UTC off-by-one from toISOString) ───────────────
+// new Date().toISOString() converts to UTC, which shifts the date back a day for
+// IST users in the early hours. We always want the user's LOCAL calendar date.
+function toLocalDateStr(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+// ─── Map a booking API error to an actionable message ───────────────────────────
+// apiClient rejects with { status, message, fieldErrors, raw }. Surface the real
+// reason so the user can act (e.g. slot just filled) instead of blind retries.
+function describeBookingError(err: unknown): string {
+  const e = err as { status?: number; message?: string } | undefined;
+  if (e?.status === 409) {
+    return "That time slot was just taken. Please pick another time window or date.";
+  }
+  if (e?.status === 400 && e.message) {
+    return e.message;
+  }
+  if (e?.message) {
+    return e.message;
+  }
+  return "Something went wrong while booking. Please try again.";
+}
+
 // ─── Shared field styles ──────────────────────────────────────────────────────
 
 const inputBase =
@@ -307,6 +334,20 @@ export default function BookingWizard() {
   // ── Booking submit ──────────────────────────────────────────────────────────
   const handleConfirm = async () => {
     if (isSubmittingRef.current) return;
+
+    // Resolve a real Service id — NEVER send a ServiceCategory id as serviceId.
+    // Normal categories require a sub-type (enforced in Step 1). AMC/Other skip the
+    // sub-type row, so fall back to the category's first service. If the category has
+    // no bookable service, stop with a clear message rather than submitting an invalid id.
+    const categoryServices = data.serviceTypeId
+      ? (lookups.servicesByCategory[data.serviceTypeId] ?? [])
+      : [];
+    const resolvedServiceId = data.serviceSubTypeId ?? categoryServices[0]?.serviceId ?? null;
+    if (resolvedServiceId == null) {
+      setSubmitError("This service isn’t available to book online yet. Please WhatsApp us and we’ll arrange it for you.");
+      return;
+    }
+
     isSubmittingRef.current = true;
     setIsSubmitting(true);
     setSubmitError("");
@@ -318,7 +359,7 @@ export default function BookingWizard() {
       ].filter(Boolean);
 
       const basePayload: CustomerBookingCreateRequest = {
-        serviceId: data.serviceSubTypeId ?? data.serviceTypeId!,
+        serviceId: resolvedServiceId,
         acTypeId:  data.acTypeId ?? undefined,
         // Emergency bookings have no pre-selected slot; backend dispatches within SLA.
         slotAvailabilityId: data.slotAvailabilityId ?? undefined,
@@ -348,8 +389,8 @@ export default function BookingWizard() {
           } as GuestBookingCreateRequest, idempotencyKey);
 
       navigate(isLoggedIn ? "/portal/booking-confirmation" : "/booking-confirmation", { state: { booking: result } });
-    } catch {
-      setSubmitError("Something went wrong. Please try again.");
+    } catch (err) {
+      setSubmitError(describeBookingError(err));
       isSubmittingRef.current = false;
     } finally {
       setIsSubmitting(false);
@@ -1289,7 +1330,7 @@ function buildCalendarDays() {
     const d = new Date(today);
     d.setDate(today.getDate() + i);
     return {
-      full:    d.toISOString().split("T")[0],
+      full:    toLocalDateStr(d),
       day:     d.toLocaleDateString("en-US", { weekday: "short" }),
       date:    d.getDate(),
       month:   d.toLocaleDateString("en-US", { month: "short" }),
@@ -1311,7 +1352,7 @@ function Step3({ data, onUpdate }: Step3Props) {
     if (!data.slotDate) {
       const d = new Date();
       if (!todayAvailable) d.setDate(d.getDate() + 1);
-      onUpdate({ slotDate: d.toISOString().split("T")[0], slotAvailabilityId: null, slotWindow: null, isEmergency: false, emergencySurcharge: 0 });
+      onUpdate({ slotDate: toLocalDateStr(d), slotAvailabilityId: null, slotWindow: null, isEmergency: false, emergencySurcharge: 0 });
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

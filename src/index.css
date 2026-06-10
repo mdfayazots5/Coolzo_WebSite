@@ -7,6 +7,10 @@
   
   --color-brand-navy: #0A192F;
   --color-brand-gold: #D4AF37;
+  /* Accessible gold for small text on LIGHT (cream/white) surfaces — the bright
+     gold #D4AF37 is only ~2:1 on cream (fails WCAG AA). #8A6D1A is 4.8:1 on cream
+     / 4.9:1 on white. Use on light-surface eyebrows/labels; keep #D4AF37 on navy. */
+  --color-brand-gold-deep: #8A6D1A;
   --color-brand-cream: #FDFCFB;
   --color-brand-black: #050505;
 }

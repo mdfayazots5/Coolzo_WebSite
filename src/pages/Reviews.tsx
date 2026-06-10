@@ -1,38 +1,20 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Star, Play, Quote, ShieldCheck, Loader2 } from "lucide-react";
+import { Star, Quote, ShieldCheck, Loader2 } from "lucide-react";
 import { ReviewService } from "../services/reviewService";
 import type { ReviewResponse } from "../services/reviewService";
+import Container from "../components/Container";
+import Grid from "../components/Grid";
 
 function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("en-IN", {
-    day: "numeric", month: "short", year: "numeric",
-  });
+  return new Date(dateStr).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 }
-
-function deriveAvgRating(reviews: ReviewResponse[]): number {
-  if (!reviews.length) return 4.8;
-  return Math.round((reviews.reduce((s, r) => s + r.rating, 0) / reviews.length) * 10) / 10;
-}
-
-function starDistribution(reviews: ReviewResponse[]): Record<number, string> {
-  if (!reviews.length) return { 5: "85%", 4: "10%", 3: "3%", 2: "1%", 1: "1%" };
-  const counts: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-  reviews.forEach((r) => { counts[r.rating] = (counts[r.rating] ?? 0) + 1; });
-  const total = reviews.length;
-  return Object.fromEntries(
-    Object.entries(counts).map(([k, v]) => [k, `${Math.round((v / total) * 100)}%`]),
-  );
-}
-
-const FILTERS = ["all", "repair", "cleaning", "amc", "installation"];
 
 export default function Reviews() {
   const [reviews, setReviews] = useState<ReviewResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasNext, setHasNext] = useState(false);
-  const [activeFilter, setActiveFilter] = useState("all");
 
   useEffect(() => {
     setLoading(true);
@@ -45,178 +27,124 @@ export default function Reviews() {
       .finally(() => setLoading(false));
   }, [page]);
 
-  const filteredReviews = reviews.filter((r) => {
-    if (activeFilter === "all") return true;
-    return (r.serviceName ?? "").toLowerCase().includes(activeFilter);
-  });
-
-  const avgRating = deriveAvgRating(reviews);
-  const dist = starDistribution(reviews);
+  const avgRating = reviews.length
+    ? Math.round((reviews.reduce((s, r) => s + r.rating, 0) / reviews.length) * 10) / 10
+    : null;
+  const dist: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  reviews.forEach((r) => { dist[r.rating] = (dist[r.rating] ?? 0) + 1; });
 
   return (
-    <div className="pt-32 pb-24 bg-brand-cream min-h-screen">
-      <div className="container mx-auto px-6">
-        {/* Header & Stats */}
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center mb-16 lg:mb-24">
+    <div className="pt-28 pb-20 bg-brand-cream min-h-screen">
+      <Container>
+        {/* Header + stats */}
+        <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center mb-14">
           <div>
-            <span className="text-brand-gold text-[10px] uppercase tracking-[0.4em] font-bold mb-4 block">The Registry</span>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif text-brand-navy mb-8 leading-tight">
-              Voices of <br />Trust.
-            </h1>
-            <p className="text-brand-navy/50 text-xl font-light leading-relaxed mb-12">
-              Our reputation is built on the satisfaction of Hyderabad's modern property owners.
+            <span className="text-brand-gold-deep text-[10px] uppercase tracking-[0.4em] font-bold mb-3 block">Customer reviews</span>
+            <h1 className="font-serif text-brand-navy mb-4">Trusted across Hyderabad</h1>
+            <p className="text-brand-navy/50 text-base md:text-lg font-light leading-relaxed">
+              Real feedback from verified Coolzo service visits — every review comes from a completed job.
             </p>
           </div>
-          <div className="bg-white p-8 sm:p-12 rounded-xl border border-brand-navy/5 shadow-xl text-center">
-            <div className="mb-8">
-              <p className="text-7xl font-serif text-brand-navy mb-2">{avgRating.toFixed(1)}</p>
-              <div className="flex justify-center gap-1 text-brand-gold mb-4">
-                {[1, 2, 3, 4, 5].map((i) => <Star key={i} size={20} className="fill-brand-gold" />)}
+          <div className="bg-white p-8 rounded-2xl border border-brand-navy/5 shadow-xl text-center">
+            {avgRating != null ? (
+              <>
+                <p className="text-6xl font-serif text-brand-navy mb-2">{avgRating.toFixed(1)}</p>
+                <div className="flex justify-center gap-1 text-brand-gold mb-3">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <Star key={i} size={18} className={i <= Math.round(avgRating) ? "fill-brand-gold" : "text-brand-navy/15"} />
+                  ))}
+                </div>
+                <p className="text-brand-navy/40 text-[10px] uppercase tracking-widest font-bold mb-6">
+                  Based on {reviews.length} verified review{reviews.length === 1 ? "" : "s"}
+                </p>
+                <div className="space-y-2.5 max-w-xs mx-auto">
+                  {[5, 4, 3, 2, 1].map((star) => {
+                    const pct = reviews.length ? Math.round((dist[star] / reviews.length) * 100) : 0;
+                    return (
+                      <div key={star} className="flex items-center gap-3">
+                        <span className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 w-3">{star}</span>
+                        <div className="flex-grow h-1.5 bg-brand-navy/5 rounded-full overflow-hidden">
+                          <div className="h-full bg-brand-gold" style={{ width: `${pct}%` }} />
+                        </div>
+                        <span className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 w-8">{pct}%</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            ) : (
+              <div className="py-6">
+                <ShieldCheck size={40} className="text-brand-gold mx-auto mb-4" />
+                <p className="text-brand-navy/50 text-sm">Reviews from completed services will appear here.</p>
               </div>
-              <p className="text-brand-navy/40 text-[10px] uppercase tracking-widest font-bold">
-                Based on {reviews.length > 0 ? `${reviews.length}+ ` : "2,400+ "}Verified Reviews
-              </p>
-            </div>
-            <div className="space-y-3 max-w-xs mx-auto">
-              {[5, 4, 3, 2, 1].map((star) => (
-                <div key={star} className="flex items-center gap-4">
-                  <span className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 w-4">{star}</span>
-                  <div className="flex-grow h-1.5 bg-brand-navy/5 rounded-full overflow-hidden">
-                    <div className="h-full bg-brand-gold" style={{ width: dist[star] ?? "0%" }} />
-                  </div>
-                  <span className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 w-8">
-                    {dist[star] ?? "0%"}
-                  </span>
-                </div>
-              ))}
-            </div>
+            )}
           </div>
         </div>
 
-        {/* Video Testimonials Placeholder */}
-        <div className="mb-32">
-          <div className="flex justify-between items-end mb-12">
-            <h3 className="text-3xl font-serif text-brand-navy">Cinematic Stories</h3>
-            <span className="text-brand-gold text-[10px] uppercase tracking-widest font-bold">Coming Soon</span>
-          </div>
-          <div className="grid md:grid-cols-2 gap-8">
-            {[1, 2].map((i) => (
-              <div key={i} className="aspect-video bg-brand-navy relative rounded-xl overflow-hidden group" aria-label="Video testimonial — coming soon" role="img">
-                <img
-                  src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop"
-                  alt="Video Thumbnail"
-                  className="w-full h-full object-cover opacity-40 grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000"
-                  referrerPolicy="no-referrer"
-                />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-20 h-20 rounded-full border border-white/30 flex items-center justify-center text-white group-hover:bg-brand-gold group-hover:text-brand-navy group-hover:border-brand-gold transition-all duration-500">
-                    <Play size={32} className="ml-1" />
-                  </div>
-                </div>
-                <div className="absolute bottom-8 left-8 text-white">
-                  <p className="text-xl font-serif mb-1">Home Management at Scale</p>
-                  <p className="text-[10px] uppercase tracking-widest opacity-60">Featuring Julian Vane</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Filter Bar */}
-        <div className="flex flex-wrap gap-4 mb-12 border-b border-brand-navy/5 pb-8">
-          {FILTERS.map((filter) => (
-            <button
-              key={filter}
-              onClick={() => setActiveFilter(filter)}
-              className={`px-6 py-2 rounded-lg text-[10px] uppercase tracking-widest font-bold transition-all ${
-                activeFilter === filter
-                  ? "bg-brand-navy text-white"
-                  : "bg-white text-brand-navy/40 hover:text-brand-navy border border-brand-navy/5"
-              }`}
-            >
-              {filter === "all" ? "All Reviews" : filter.toUpperCase()}
-            </button>
-          ))}
-        </div>
-
-        {/* Review Grid */}
+        {/* Review grid */}
         {loading && page === 1 ? (
-          <div className="py-32 flex justify-center">
-            <Loader2 className="animate-spin text-brand-gold" size={40} />
+          <div className="py-20 flex justify-center"><Loader2 className="animate-spin text-brand-gold" size={36} /></div>
+        ) : reviews.length === 0 ? (
+          <div className="py-16 text-center">
+            <Quote size={40} className="text-brand-navy/15 mx-auto mb-4" />
+            <p className="text-brand-navy/40 text-sm">No reviews yet — be the first after your service.</p>
           </div>
         ) : (
           <>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+            <Grid cols={3}>
               <AnimatePresence mode="popLayout">
-                {filteredReviews.map((review, i) => (
+                {reviews.map((review, i) => (
                   <motion.div
                     key={review.reviewId}
                     layout
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ delay: i * 0.05 }}
-                    className="bg-white p-10 rounded-xl border border-brand-navy/5 hover:border-brand-gold/30 transition-all duration-500 shadow-sm hover:shadow-xl"
+                    exit={{ opacity: 0, scale: 0.96 }}
+                    transition={{ delay: Math.min(i * 0.04, 0.3) }}
+                    className="bg-white p-7 rounded-xl border border-brand-navy/5 hover:border-brand-gold/30 transition-all duration-300 shadow-sm hover:shadow-xl flex flex-col"
                   >
-                    <div className="flex justify-between items-start mb-6">
+                    <div className="flex justify-between items-start mb-4">
                       <div className="flex gap-1 text-brand-gold">
-                        {[...Array(review.rating)].map((_, j) => (
-                          <Star key={j} size={14} className="fill-brand-gold" />
+                        {Array.from({ length: 5 }).map((_, j) => (
+                          <Star key={j} size={14} className={j < review.rating ? "fill-brand-gold" : "text-brand-navy/15"} />
                         ))}
                       </div>
-                      <span className="text-[9px] uppercase tracking-widest font-bold text-brand-navy/30">
-                        {formatDate(review.dateCreated)}
-                      </span>
+                      <span className="text-[9px] uppercase tracking-widest font-bold text-brand-navy/30">{formatDate(review.dateCreated)}</span>
                     </div>
-                    <Quote className="text-brand-gold/10 mb-4" size={32} />
-                    <p className="text-brand-navy/70 text-lg italic font-serif leading-relaxed mb-8">
-                      "{review.comment}"
-                    </p>
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-brand-navy/5 rounded-full flex items-center justify-center text-brand-navy font-serif italic">
-                        {review.customerName[0]}
+                    <Quote className="text-brand-gold/15 mb-3" size={28} />
+                    <p className="text-brand-navy/70 text-base italic font-serif leading-relaxed mb-6 flex-grow">"{review.comment}"</p>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-brand-navy/5 rounded-full flex items-center justify-center text-brand-navy font-serif italic shrink-0">
+                        {review.customerName?.[0] ?? "C"}
                       </div>
                       <div>
                         <p className="text-sm font-bold text-brand-navy">{review.customerName}</p>
                         {review.serviceName && (
-                          <p className="text-[9px] uppercase tracking-widest font-bold text-brand-gold">
-                            {review.serviceName}
-                          </p>
+                          <p className="text-[9px] uppercase tracking-widest font-bold text-brand-gold">{review.serviceName}</p>
                         )}
                       </div>
                     </div>
                   </motion.div>
                 ))}
               </AnimatePresence>
-            </div>
+            </Grid>
 
             {hasNext && (
-              <div className="text-center mb-24">
+              <div className="text-center mt-10">
                 <button
+                  type="button"
                   onClick={() => setPage((p) => p + 1)}
                   disabled={loading}
-                  className="px-12 py-5 border border-brand-navy/10 rounded-lg text-[10px] uppercase tracking-widest font-bold text-brand-navy hover:bg-brand-navy hover:text-white transition-all disabled:opacity-50 flex items-center justify-center gap-3 mx-auto"
+                  className="px-10 py-4 border border-brand-navy/10 rounded-lg text-[10px] uppercase tracking-widest font-bold text-brand-navy hover:bg-brand-navy hover:text-white transition-all disabled:opacity-50 flex items-center justify-center gap-3 mx-auto min-h-[44px]"
                 >
                   {loading ? <Loader2 size={14} className="animate-spin" /> : null}
-                  Load More Reviews
+                  Load more reviews
                 </button>
               </div>
             )}
           </>
         )}
-
-        {/* Platform Trust */}
-        <div className="text-center py-24 border-t border-brand-navy/5">
-          <div className="max-w-2xl mx-auto">
-            <ShieldCheck size={48} className="text-brand-gold mx-auto mb-8" />
-            <h3 className="text-3xl font-serif text-brand-navy mb-6">Verified Quality.</h3>
-            <p className="text-brand-navy/40 text-sm leading-relaxed">
-              Every review on this platform is verified through our service delivery system. We only publish
-              feedback from confirmed Coolzo service completions to ensure absolute integrity.
-            </p>
-          </div>
-        </div>
-      </div>
+      </Container>
     </div>
   );
 }

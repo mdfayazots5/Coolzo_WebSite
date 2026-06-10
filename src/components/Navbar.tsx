@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, LayoutDashboard, Plus } from "lucide-react";
+import { Menu, X, LayoutDashboard, Plus, LogIn } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "../contexts/AuthContext";
@@ -24,10 +24,8 @@ export default function Navbar() {
   const navLinks = [
     { name: "Services", path: "/services" },
     { name: "AMC Plans", path: "/amc" },
-    { name: "Why Coolzo", path: "/why-coolzo" },
+    { name: "Pricing", path: "/pricing" },
     { name: "Reviews", path: "/reviews" },
-    { name: "Blog", path: "/blog" },
-    { name: "About", path: "/about" },
     { name: "Contact", path: "/contact" },
   ];
 
@@ -58,10 +56,12 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-2 sm:gap-4">
-          {/* Book Service — always visible; destination is auth-aware once resolved */}
+          {/* Book Service — desktop only (lg+). On mobile/tablet the persistent
+              booking action lives in the sticky MobileActionBar to avoid two
+              fixed "Book" CTAs on screen at once. Destination is auth-aware. */}
           <Link
             to={!loading && user ? "/portal/book" : "/book"}
-            className={`flex items-center gap-1.5 px-3 py-2 md:px-5 rounded-lg text-[10px] uppercase tracking-widest font-bold transition-all duration-500 ${darkBg ? "bg-brand-gold text-brand-navy hover:bg-brand-gold/80" : "bg-brand-gold text-brand-navy hover:bg-white"}`}
+            className={`hidden lg:flex items-center gap-1.5 px-3 py-2 md:px-5 rounded-lg text-[10px] uppercase tracking-widest font-bold transition-all duration-500 ${darkBg ? "bg-brand-gold text-brand-navy hover:bg-brand-gold/80" : "bg-brand-gold text-brand-navy hover:bg-white"}`}
           >
             <Plus size={13} strokeWidth={2.5} />
             Book Service
@@ -73,11 +73,13 @@ export default function Navbar() {
               to={user ? "/portal" : "/login"}
               className={`hidden md:flex items-center gap-2 px-6 py-2 rounded-lg text-[10px] uppercase tracking-widest font-bold transition-all duration-500 ${darkBg ? "bg-brand-navy text-white hover:bg-brand-navy/90" : "bg-white text-brand-navy hover:bg-brand-gold hover:text-white"}`}
             >
-              {user ? <><LayoutDashboard size={14} /> Portal</> : "Login"}
+              {user ? <><LayoutDashboard size={14} /> Portal</> : <><LogIn size={14} /> Login</>}
             </Link>
           )}
 
           <button
+            type="button"
+            aria-label={isOpen ? "Close menu" : "Open menu"}
             className="lg:hidden p-2 ml-1"
             onClick={() => setIsOpen(!isOpen)}
           >
@@ -118,7 +120,7 @@ export default function Navbar() {
                 to={user ? "/portal" : "/login"}
                 className="bg-brand-navy text-white px-6 py-4 rounded-lg text-xs uppercase tracking-widest font-bold flex items-center justify-center gap-2"
               >
-                {user ? <><LayoutDashboard size={14} /> My Portal</> : "Sign In"}
+                {user ? <><LayoutDashboard size={14} /> My Portal</> : <><LogIn size={14} /> Login</>}
               </Link>
             )}
           </motion.div>

@@ -56,7 +56,7 @@ export default function Blog() {
       <div className="container mx-auto px-6">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 lg:mb-24">
-          <span className="text-brand-gold text-[10px] uppercase tracking-[0.4em] font-bold mb-4 block">Knowledge Center</span>
+          <span className="text-brand-gold-deep text-[10px] uppercase tracking-[0.4em] font-bold mb-4 block">Knowledge Center</span>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif text-brand-navy mb-8">Professional Insights.</h1>
           <p className="text-brand-navy/50 text-xl font-light leading-relaxed">
             Guides, perspectives, and expert advice on the art of climate care.
@@ -153,7 +153,7 @@ export default function Blog() {
                           />
                         </div>
                         {postCategory(post) && (
-                          <span className="text-brand-gold text-[9px] uppercase tracking-widest font-bold mb-4 block">
+                          <span className="text-brand-gold-deep text-[9px] uppercase tracking-widest font-bold mb-4 block">
                             {postCategory(post)}
                           </span>
                         )}

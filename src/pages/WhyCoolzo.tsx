@@ -8,7 +8,7 @@ export default function WhyCoolzo() {
       <div className="container mx-auto px-6">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 lg:mb-24">
-          <span className="text-brand-gold text-[10px] uppercase tracking-[0.4em] font-bold mb-4 block">The Differentiation</span>
+          <span className="text-brand-gold-deep text-[10px] uppercase tracking-[0.4em] font-bold mb-4 block">The Differentiation</span>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif text-brand-navy mb-8">Why Coolzo?</h1>
           <p className="text-brand-navy/50 text-xl font-light leading-relaxed">
             In a market of generic services, we offer professional climate care. Here is how we redefine the standard of reliability.

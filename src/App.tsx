@@ -4,17 +4,17 @@
  */
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { MotionConfig } from "motion/react";
 import ScrollToTop from "./components/ScrollToTop";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
 import Services from "./pages/Services";
 import ServiceDetail from "./pages/ServiceDetail";
+import Pricing from "./pages/Pricing";
 import AMC from "./pages/AMC";
 import About from "./pages/About";
 import WhyCoolzo from "./pages/WhyCoolzo";
 import Reviews from "./pages/Reviews";
-import Blog from "./pages/Blog";
-import BlogDetail from "./pages/BlogDetail";
 import Contact from "./pages/Contact";
 import BookingWizard from "./pages/BookingWizard";
 import BookingConfirmation from "./pages/BookingConfirmation";
@@ -55,6 +55,10 @@ export default function App() {
     <ErrorBoundary>
       <ContentProvider>
       <AuthProvider>
+        {/* reducedMotion="user" — when the visitor prefers reduced motion, motion
+            renders final states immediately instead of animating, so whileInView
+            sections never get stuck at opacity:0. */}
+        <MotionConfig reducedMotion="user">
         <BrowserRouter>
           <ScrollToTop />
           <Routes>
@@ -62,12 +66,11 @@ export default function App() {
           <Route index element={<Home />} />
           <Route path="services" element={<Services />} />
           <Route path="services/:id" element={<ServiceDetail />} />
+          <Route path="pricing" element={<Pricing />} />
           <Route path="amc" element={<AMC />} />
           <Route path="about" element={<About />} />
           <Route path="why-coolzo" element={<WhyCoolzo />} />
           <Route path="reviews" element={<Reviews />} />
-          <Route path="blog" element={<Blog />} />
-          <Route path="blog/:id" element={<BlogDetail />} />
           <Route path="contact" element={<Contact />} />
           <Route path="book" element={<BookingWizard />} />
           <Route path="booking-confirmation" element={<BookingConfirmation />} />
@@ -114,6 +117,7 @@ export default function App() {
         <Route path="*" element={<NotFound />} />
       </Routes>
       </BrowserRouter>
+        </MotionConfig>
       </AuthProvider>
       </ContentProvider>
     </ErrorBoundary>

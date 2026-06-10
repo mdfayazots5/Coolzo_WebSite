@@ -66,7 +66,7 @@ export default function BlogDetail() {
             {/* Header */}
             <div className="max-w-4xl mx-auto mb-12 lg:mb-16">
               {meta(post, "category") && (
-                <span className="text-brand-gold text-[10px] uppercase tracking-[0.4em] font-bold mb-6 block">
+                <span className="text-brand-gold-deep text-[10px] uppercase tracking-[0.4em] font-bold mb-6 block">
                   {meta(post, "category")}
                 </span>
               )}

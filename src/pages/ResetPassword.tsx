@@ -159,7 +159,7 @@ export default function ResetPassword() {
                 </p>
                 <Link
                   to="/login"
-                  className="text-brand-gold text-[10px] uppercase tracking-widest font-bold hover:text-brand-navy transition-colors"
+                  className="text-brand-gold-deep text-[10px] uppercase tracking-widest font-bold hover:text-brand-navy transition-colors"
                 >
                   Go to Login Now
                 </Link>

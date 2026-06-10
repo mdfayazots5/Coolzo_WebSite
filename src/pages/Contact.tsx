@@ -1,63 +1,97 @@
 import { motion } from "motion/react";
-import { Phone, Mail, MapPin, MessageCircle, Clock, ChevronRight, ShieldCheck } from "lucide-react";
+import { Phone, Mail, MapPin, MessageCircle, Clock, ShieldCheck, Loader2 } from "lucide-react";
 import React, { useState } from "react";
+import Container from "../components/Container";
+import { useContent } from "../contexts/ContentContext";
+import { ContactService } from "../services/contactService";
+
+const SUBJECTS = ["General Inquiry", "Emergency Repair", "AMC Enrollment", "Installation Consultation"];
 
 export default function Contact() {
-  const [submitted, setSubmitted] = useState(false);
+  const { getBlock } = useContent();
+  const block = (key: string, fallback: string) => getBlock(key)?.content?.trim() || fallback;
+  const phone = block("contact.phone", "7075949956");
+  const whatsapp = block("contact.whatsapp", "7075949956");
+  const email = block("contact.email", "mdfayazots5@gmail.com");
+  const telDigits = phone.replace(/\D/g, "");
+  const waDigits = (() => { const d = whatsapp.replace(/\D/g, ""); return d.length === 10 ? `91${d}` : d; })();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [form, setForm] = useState({ name: "", mobile: "", email: "", subject: SUBJECTS[0], message: "" });
+  const [status, setStatus] = useState<"idle" | "submitting" | "done" | "error">("idle");
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
+  const mobileValid = /^[2-9]\d{9}$/.test(form.mobile.replace(/\D/g, ""));
+  const canSubmit = form.name.trim().length >= 2 && mobileValid && status !== "submitting";
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    if (!canSubmit) return;
+    setStatus("submitting");
+    setErrorMsg("");
+    try {
+      await ContactService.submitLead({
+        customerName: form.name.trim(),
+        mobileNumber: form.mobile.replace(/\D/g, ""),
+        emailAddress: form.email.trim() || undefined,
+        sourceChannel: "web",
+        inquiryNotes: `[${form.subject}] ${form.message}`.trim(),
+      });
+      setStatus("done");
+    } catch (err) {
+      const e2 = err as { message?: string } | undefined;
+      setErrorMsg(e2?.message || "Couldn't send your inquiry. Please call or WhatsApp us instead.");
+      setStatus("error");
+    }
   };
 
+  const inputClass =
+    "w-full bg-white/5 border border-white/10 rounded-lg px-5 py-3.5 text-white text-sm focus:outline-none focus:border-brand-gold focus-visible:ring-2 focus-visible:ring-brand-gold/60 transition-colors";
+  const labelClass = "text-[10px] uppercase tracking-widest font-bold text-white/40";
+
   return (
-    <div className="pt-32 pb-24 bg-brand-cream min-h-screen">
-      <div className="container mx-auto px-6">
-        {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16 lg:mb-24">
-          <span className="text-brand-gold text-[10px] uppercase tracking-[0.4em] font-bold mb-4 block">Professional Support</span>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif text-brand-navy mb-8">At Your Service.</h1>
-          <p className="text-brand-navy/50 text-xl font-light leading-relaxed">
-            Whether you require an emergency repair or a consultation for a new home, our professional team is ready to assist.
+    <div className="pt-28 pb-20 bg-brand-cream min-h-screen">
+      <Container>
+        <div className="text-center max-w-3xl mx-auto mb-14">
+          <span className="text-brand-gold-deep text-[10px] uppercase tracking-[0.4em] font-bold mb-3 block">Get in touch</span>
+          <h1 className="font-serif text-brand-navy mb-4">We're here to help</h1>
+          <p className="text-brand-navy/50 text-base md:text-lg font-light leading-relaxed">
+            Emergency repair, a quote, or a question — reach us by phone, WhatsApp, or the form. We respond fast.
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-20">
-          {/* Contact Info */}
+        <div className="grid lg:grid-cols-2 gap-10 lg:gap-16">
+          {/* Contact info */}
           <div>
-            <div className="grid sm:grid-cols-2 gap-8 mb-16">
-              <a href="tel:+919876543210" className="bg-white p-8 rounded-xl border border-brand-navy/5 hover:border-brand-gold/30 transition-all group">
-                <Phone className="text-brand-gold mb-6 group-hover:scale-110 transition-transform" size={24} />
-                <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 mb-2">Call Support</p>
-                <p className="text-lg font-serif text-brand-navy">+91 98765 43210</p>
+            <div className="grid sm:grid-cols-2 gap-5 mb-10">
+              <a href={`tel:+91${telDigits}`} className="bg-white p-6 rounded-xl border border-brand-navy/5 hover:border-brand-gold/30 transition-all group">
+                <Phone className="text-brand-gold mb-4 group-hover:scale-110 transition-transform" size={22} />
+                <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 mb-1">Call us</p>
+                <p className="text-base font-serif text-brand-navy">+91 {phone}</p>
               </a>
-              <a href="https://wa.me/919876543210" className="bg-white p-8 rounded-xl border border-brand-navy/5 hover:border-brand-gold/30 transition-all group">
-                <MessageCircle className="text-brand-gold mb-6 group-hover:scale-110 transition-transform" size={24} />
-                <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 mb-2">WhatsApp Direct</p>
-                <p className="text-lg font-serif text-brand-navy">Chat with us</p>
+              <a href={`https://wa.me/${waDigits}`} target="_blank" rel="noopener noreferrer" className="bg-white p-6 rounded-xl border border-brand-navy/5 hover:border-brand-gold/30 transition-all group">
+                <MessageCircle className="text-brand-gold mb-4 group-hover:scale-110 transition-transform" size={22} />
+                <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 mb-1">WhatsApp</p>
+                <p className="text-base font-serif text-brand-navy">Chat with us</p>
               </a>
-              <a href="mailto:support@coolzo.com" className="bg-white p-8 rounded-xl border border-brand-navy/5 hover:border-brand-gold/30 transition-all group">
-                <Mail className="text-brand-gold mb-6 group-hover:scale-110 transition-transform" size={24} />
-                <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 mb-2">Email Inquiry</p>
-                <p className="text-lg font-serif text-brand-navy">support@coolzo.com</p>
+              <a href={`mailto:${email}`} className="bg-white p-6 rounded-xl border border-brand-navy/5 hover:border-brand-gold/30 transition-all group">
+                <Mail className="text-brand-gold mb-4 group-hover:scale-110 transition-transform" size={22} />
+                <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 mb-1">Email</p>
+                <p className="text-sm font-serif text-brand-navy break-all">{email}</p>
               </a>
-              <div className="bg-white p-8 rounded-xl border border-brand-navy/5 group">
-                <Clock className="text-brand-gold mb-6" size={24} />
-                <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 mb-2">Business Hours</p>
-                <div className="flex items-center gap-2">
-                  <p className="text-lg font-serif text-brand-navy">08:00 — 22:00</p>
-                  <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[8px] uppercase tracking-widest font-bold rounded-full">Open Now</span>
-                </div>
+              <div className="bg-white p-6 rounded-xl border border-brand-navy/5">
+                <Clock className="text-brand-gold mb-4" size={22} />
+                <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40 mb-1">Hours</p>
+                <p className="text-base font-serif text-brand-navy">08:00 — 22:00</p>
               </div>
             </div>
 
-            <div className="border-t border-brand-navy/5 pt-12">
-              <h3 className="text-2xl font-serif text-brand-navy mb-8">Service Coverage Across Hyderabad</h3>
-              <div className="grid grid-cols-2 gap-4">
-                {['Banjara Hills', 'Jubilee Hills', 'Gachibowli', 'Hitech City', 'Madhapur', 'Kondapur'].map(city => (
-                  <div key={city} className="flex items-center gap-3 text-brand-navy/50 text-sm">
-                    <MapPin size={14} className="text-brand-gold" />
-                    {city}
+            <div className="border-t border-brand-navy/5 pt-8">
+              <h2 className="text-xl font-serif text-brand-navy mb-5">Serving across Hyderabad</h2>
+              <div className="grid grid-cols-2 gap-3">
+                {["Banjara Hills", "Jubilee Hills", "Gachibowli", "Hitech City", "Madhapur", "Kondapur"].map((c) => (
+                  <div key={c} className="flex items-center gap-2.5 text-brand-navy/50 text-sm">
+                    <MapPin size={14} className="text-brand-gold shrink-0" /> {c}
                   </div>
                 ))}
               </div>
@@ -65,70 +99,68 @@ export default function Contact() {
           </div>
 
           {/* Form */}
-          <div className="bg-brand-navy p-12 md:p-16 rounded-xl relative overflow-hidden">
+          <div className="bg-brand-navy p-8 md:p-12 rounded-2xl relative overflow-hidden">
             <div className="absolute top-0 right-0 w-full h-full bg-brand-gold/5 skew-x-12 translate-x-1/2" />
             <div className="relative z-10">
-              {submitted ? (
-                <motion.div 
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="text-center py-20"
-                >
-                  <div className="w-20 h-20 bg-brand-gold/20 rounded-full flex items-center justify-center mx-auto mb-8">
-                    <ShieldCheck size={40} className="text-brand-gold" />
+              {status === "done" ? (
+                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-16">
+                  <div className="w-20 h-20 bg-brand-gold/20 rounded-full flex items-center justify-center mx-auto mb-7">
+                    <ShieldCheck size={38} className="text-brand-gold" />
                   </div>
-                  <h3 className="text-3xl font-serif text-white mb-4">Inquiry Received.</h3>
-                  <p className="text-white/40 text-sm leading-relaxed mb-12">
-                    Our professional team will review your request and contact you within the next 60 minutes.
+                  <h2 className="text-2xl font-serif text-white mb-3">Inquiry received</h2>
+                  <p className="text-white/50 text-sm leading-relaxed mb-9 max-w-sm mx-auto">
+                    Thanks, {form.name.split(" ")[0] || "there"} — our team will reach out shortly. For urgent help, call or WhatsApp us.
                   </p>
-                  <button 
-                    onClick={() => setSubmitted(false)}
-                    className="text-brand-gold text-[10px] uppercase tracking-widest font-bold hover:text-white transition-colors"
+                  <button
+                    type="button"
+                    onClick={() => { setStatus("idle"); setForm({ name: "", mobile: "", email: "", subject: SUBJECTS[0], message: "" }); }}
+                    className="text-brand-gold text-[10px] uppercase tracking-widest font-bold hover:text-white transition-colors min-h-[44px]"
                   >
                     Send another message
                   </button>
                 </motion.div>
               ) : (
                 <>
-                  <h3 className="text-3xl font-serif text-white mb-12">Send an Inquiry</h3>
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid sm:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <label htmlFor="contact-name" className="text-[10px] uppercase tracking-widest font-bold text-white/40">Full Name</label>
-                        <input id="contact-name" required type="text" className="w-full bg-white/5 border border-white/10 rounded-lg px-6 py-4 text-white text-sm focus:outline-none focus:border-brand-gold focus-visible:ring-2 focus-visible:ring-brand-gold/60 transition-colors" />
+                  <h2 className="text-2xl font-serif text-white mb-8">Send an inquiry</h2>
+                  <form onSubmit={handleSubmit} className="space-y-5">
+                    <div className="grid sm:grid-cols-2 gap-5">
+                      <div className="space-y-1.5">
+                        <label htmlFor="c-name" className={labelClass}>Full Name *</label>
+                        <input id="c-name" required type="text" value={form.name} onChange={(e) => set("name", e.target.value)} className={inputClass} />
                       </div>
-                      <div className="space-y-2">
-                        <label htmlFor="contact-phone" className="text-[10px] uppercase tracking-widest font-bold text-white/40">Phone Number</label>
-                        <input id="contact-phone" required type="tel" className="w-full bg-white/5 border border-white/10 rounded-lg px-6 py-4 text-white text-sm focus:outline-none focus:border-brand-gold focus-visible:ring-2 focus-visible:ring-brand-gold/60 transition-colors" />
+                      <div className="space-y-1.5">
+                        <label htmlFor="c-phone" className={labelClass}>Phone *</label>
+                        <input id="c-phone" required type="tel" inputMode="numeric" maxLength={10} value={form.mobile}
+                          onChange={(e) => set("mobile", e.target.value.replace(/\D/g, "").slice(0, 10))} className={inputClass} />
                       </div>
                     </div>
-                    <div className="space-y-2">
-                      <label htmlFor="contact-email" className="text-[10px] uppercase tracking-widest font-bold text-white/40">Email Address</label>
-                      <input id="contact-email" required type="email" className="w-full bg-white/5 border border-white/10 rounded-lg px-6 py-4 text-white text-sm focus:outline-none focus:border-brand-gold focus-visible:ring-2 focus-visible:ring-brand-gold/60 transition-colors" />
+                    <div className="space-y-1.5">
+                      <label htmlFor="c-email" className={labelClass}>Email</label>
+                      <input id="c-email" type="email" value={form.email} onChange={(e) => set("email", e.target.value)} className={inputClass} />
                     </div>
-                    <div className="space-y-2">
-                      <label htmlFor="contact-subject" className="text-[10px] uppercase tracking-widest font-bold text-white/40">Subject</label>
-                      <select id="contact-subject" className="w-full bg-white/5 border border-white/10 rounded-lg px-6 py-4 text-white text-sm focus:outline-none focus:border-brand-gold focus-visible:ring-2 focus-visible:ring-brand-gold/60 transition-colors appearance-none">
-                        <option className="bg-brand-navy">General Inquiry</option>
-                        <option className="bg-brand-navy">Emergency Repair</option>
-                        <option className="bg-brand-navy">AMC Enrollment</option>
-                        <option className="bg-brand-navy">Installation Consultation</option>
+                    <div className="space-y-1.5">
+                      <label htmlFor="c-subject" className={labelClass}>Subject</label>
+                      <select id="c-subject" value={form.subject} onChange={(e) => set("subject", e.target.value)} className={`${inputClass} appearance-none`}>
+                        {SUBJECTS.map((s) => <option key={s} className="bg-brand-navy">{s}</option>)}
                       </select>
                     </div>
-                    <div className="space-y-2">
-                      <label htmlFor="contact-message" className="text-[10px] uppercase tracking-widest font-bold text-white/40">Message</label>
-                      <textarea id="contact-message" required rows={4} className="w-full bg-white/5 border border-white/10 rounded-lg px-6 py-4 text-white text-sm focus:outline-none focus:border-brand-gold focus-visible:ring-2 focus-visible:ring-brand-gold/60 transition-colors resize-none"></textarea>
+                    <div className="space-y-1.5">
+                      <label htmlFor="c-message" className={labelClass}>Message</label>
+                      <textarea id="c-message" rows={4} value={form.message} onChange={(e) => set("message", e.target.value)} className={`${inputClass} resize-none`} />
                     </div>
-                    <button type="submit" className="w-full bg-brand-gold text-brand-navy py-5 rounded-lg text-xs uppercase tracking-widest font-bold hover:bg-white transition-all shadow-xl">
-                      Submit Inquiry
+                    {status === "error" && <p className="text-sm text-red-300">{errorMsg}</p>}
+                    <button type="submit" disabled={!canSubmit}
+                      className="w-full bg-brand-gold text-brand-navy py-4 rounded-lg text-xs uppercase tracking-widest font-bold hover:bg-white transition-all shadow-xl min-h-[44px] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                      {status === "submitting" ? <><Loader2 size={15} className="animate-spin" /> Sending…</> : "Submit Inquiry"}
                     </button>
+                    <p className="text-[11px] text-white/30 text-center">We'll only use your details to respond to this inquiry.</p>
                   </form>
                 </>
               )}
             </div>
           </div>
         </div>
-      </div>
+      </Container>
     </div>
   );
 }

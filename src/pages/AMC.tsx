@@ -1,189 +1,166 @@
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import { Check, Star, ShieldCheck, Clock, ArrowRight, Loader2 } from "lucide-react";
+import { Check, ShieldCheck, Clock, Loader2, Star } from "lucide-react";
 import { Link } from "react-router-dom";
-import { AmcService } from "../services/amcService";
-import type { AmcPlanResponse } from "../types/amc";
-import SnapshotImage from "../components/SnapshotImage";
+import { CatalogService } from "../services/catalogService";
+import type { ServiceLookupResponse } from "../types/catalog";
+import { useAuth } from "../contexts/AuthContext";
+import Container from "../components/Container";
+import Section from "../components/Section";
+import Grid from "../components/Grid";
 
-function formatPrice(plan: AmcPlanResponse): string {
-  if (!plan.price) return "Custom";
-  return `₹${plan.price.toLocaleString()}`;
-}
-
-function formatPeriod(plan: AmcPlanResponse): string {
-  if (!plan.price) return "";
-  return plan.durationMonths === 12 ? "/year" : `/${plan.durationMonths} mo`;
-}
+// Generic AMC benefits (explanatory marketing content, not data).
+const AMC_BENEFITS = [
+  "Scheduled preventive maintenance visits",
+  "Priority response during peak season",
+  "Discounted parts and repairs",
+  "Health check + digital report each visit",
+];
 
 export default function AMC() {
-  const [plans, setPlans] = useState<AmcPlanResponse[]>([]);
+  const { user } = useAuth();
+  const bookingPath = user ? "/portal/book" : "/book";
+  const [plans, setPlans] = useState<ServiceLookupResponse[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    AmcService.getPlans()
-      .then((data) => setPlans(data ?? []))
-      .catch(() => setPlans([]))
-      .finally(() => setLoading(false));
+    (async () => {
+      try {
+        const cats = await CatalogService.getServiceCategories();
+        const amcCat = cats.find((c) => /amc|maint/i.test(c.categoryName));
+        const services = await CatalogService.getServices(amcCat?.serviceCategoryId);
+        // If the category filter returned nothing, fall back to name-matching across all services.
+        const amcServices = services.length > 0 && amcCat
+          ? services
+          : (await CatalogService.getServices()).filter((s) => /amc|maint/i.test(s.serviceName));
+        setPlans(amcServices);
+      } catch {
+        setPlans([]);
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
-  // Mark the middle plan (index 1 or named "Standard") as popular
-  const popularIndex = plans.findIndex((p) =>
-    p.planName.toLowerCase().includes("standard"),
-  );
-  const effectivePopularIndex = popularIndex >= 0 ? popularIndex : Math.floor(plans.length / 2);
+  const popularIndex = plans.length > 1 ? plans.length - 1 : 0; // comprehensive (last) = most popular
 
   return (
-    <div className="pt-32 pb-24 bg-brand-cream min-h-screen">
-      <div className="container mx-auto px-6">
+    <div className="pt-28 pb-20 bg-brand-cream min-h-screen">
+      <Container>
         {/* Hero */}
-        <div className="text-center max-w-3xl mx-auto mb-16 lg:mb-24">
-          <span className="text-brand-gold text-[10px] uppercase tracking-[0.4em] font-bold mb-4 block">Professional Protection</span>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif text-brand-navy mb-8">The Smart Care Advantage.</h1>
-          <p className="text-brand-navy/50 text-xl font-light leading-relaxed mb-12">
-            Join a circle of smart property owners who demand zero downtime.
-            Proactive care, priority response, and comprehensive health monitoring for your home.
+        <div className="text-center max-w-3xl mx-auto mb-12">
+          <span className="text-brand-gold-deep text-[10px] uppercase tracking-[0.4em] font-bold mb-3 block">Annual Maintenance</span>
+          <h1 className="font-serif text-brand-navy mb-4">Keep your AC running all year</h1>
+          <p className="text-brand-navy/50 text-base md:text-lg font-light leading-relaxed">
+            An AMC plan means scheduled servicing, priority support, and fewer breakdowns — for a fixed yearly price.
           </p>
-          <div className="inline-flex items-center gap-2 bg-brand-gold/10 text-brand-gold px-6 py-2 rounded-lg text-[10px] uppercase tracking-widest font-bold">
-            <Star size={14} className="fill-brand-gold" />
-            Limited Seasonal Offer: 15% Off All Annual Plans
-          </div>
         </div>
+      </Container>
 
-        {/* Comparison Grid */}
-        {loading ? (
-          <div className="py-32 flex justify-center">
-            <Loader2 className="animate-spin text-brand-gold" size={40} />
-          </div>
-        ) : plans.length === 0 ? (
-          <div className="py-32 text-center">
-            <ShieldCheck size={48} className="text-brand-navy/20 mx-auto mb-6" />
-            <h3 className="text-2xl font-serif text-brand-navy mb-4">Plans Coming Soon</h3>
-            <p className="text-brand-navy/40 text-sm max-w-sm mx-auto">
-              Our AMC plans are being updated. Please check back shortly or contact us for a personalised quote.
-            </p>
-          </div>
-        ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 mb-20 lg:mb-32">
-            {plans.map((plan, i) => {
-              const isPopular = i === effectivePopularIndex;
-              return (
-                <motion.div
-                  key={plan.planId}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.1 }}
-                  className={`relative bg-white p-6 sm:p-10 rounded-xl border transition-all duration-500 flex flex-col h-full ${
-                    isPopular
-                      ? "border-brand-gold shadow-2xl scale-100 lg:scale-105 z-10"
-                      : "border-brand-navy/5 shadow-sm hover:shadow-xl"
-                  }`}
-                >
-                  {isPopular && (
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-brand-gold text-brand-navy px-4 py-1 rounded-lg text-[9px] uppercase tracking-widest font-bold">
-                      Most Popular
-                    </div>
-                  )}
-                  <div className="mb-8">
-                    <h3 className="text-2xl font-serif text-brand-navy mb-2">{plan.planName}</h3>
-                    <div className="flex items-baseline gap-1 mb-4">
-                      <span className="text-4xl font-serif text-brand-navy">{formatPrice(plan)}</span>
-                      <span className="text-brand-navy/40 text-xs uppercase tracking-widest font-bold">
-                        {formatPeriod(plan)}
-                      </span>
-                    </div>
-                    <p className="text-brand-navy/50 text-sm leading-relaxed font-light">
-                      {plan.description ?? `${plan.numberOfVisits} preventive maintenance visits per year.`}
-                    </p>
-                  </div>
-
-                  <div className="space-y-6 mb-12 flex-grow">
-                    {/* Always show visits count as a feature */}
-                    <div className="flex items-start gap-3">
-                      <Check size={16} className="text-brand-gold shrink-0 mt-0.5" />
-                      <span className="text-sm text-brand-navy/70">
-                        {plan.numberOfVisits} Preventive Maintenance Visit{plan.numberOfVisits !== 1 ? "s" : ""}
-                      </span>
-                    </div>
-                    {(plan.features ?? []).map((feature, j) => (
-                      <div key={j} className="flex items-start gap-3">
-                        <Check size={16} className="text-brand-gold shrink-0 mt-0.5" />
-                        <span className="text-sm text-brand-navy/70">{feature}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <Link
-                    to="/book"
-                    state={{ amcPlanId: plan.planId, amcPlanName: plan.planName }}
-                    className={`w-full py-4 rounded-lg text-[10px] uppercase tracking-widest font-bold transition-all text-center block ${
-                      isPopular
-                        ? "bg-brand-gold text-brand-navy hover:bg-brand-navy hover:text-white"
-                        : "bg-brand-navy text-white hover:bg-brand-gold hover:text-brand-navy"
+      {/* Plans */}
+      <Section spacing="compact">
+        <Container>
+          {loading ? (
+            <div className="py-16 flex justify-center"><Loader2 className="animate-spin text-brand-gold" size={36} /></div>
+          ) : plans.length === 0 ? (
+            <div className="py-16 text-center">
+              <ShieldCheck size={44} className="text-brand-navy/20 mx-auto mb-5" />
+              <h2 className="text-2xl font-serif text-brand-navy mb-3">Plans coming soon</h2>
+              <p className="text-brand-navy/40 text-sm max-w-sm mx-auto">
+                Our AMC plans are being finalised. Please WhatsApp us for a personalised quote in the meantime.
+              </p>
+            </div>
+          ) : (
+            <Grid cols={plans.length >= 3 ? 3 : 2}>
+              {plans.map((plan, i) => {
+                const isPopular = i === popularIndex && plans.length > 1;
+                return (
+                  <motion.div
+                    key={plan.serviceId}
+                    initial={{ opacity: 0, y: 16 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.08 }}
+                    className={`relative bg-white p-8 rounded-xl border flex flex-col h-full transition-all duration-300 ${
+                      isPopular ? "border-brand-gold shadow-2xl" : "border-brand-navy/5 shadow-sm hover:shadow-xl"
                     }`}
                   >
-                    Enroll in {plan.planName}
-                  </Link>
-                </motion.div>
-              );
-            })}
-          </div>
-        )}
+                    {isPopular && (
+                      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-brand-gold text-brand-navy px-4 py-1 rounded-lg text-[9px] uppercase tracking-widest font-bold">
+                        Most Popular
+                      </div>
+                    )}
+                    <h2 className="text-xl font-serif text-brand-navy mb-2">{plan.serviceName}</h2>
+                    <div className="flex items-baseline gap-1 mb-4">
+                      <span className="text-3xl font-serif text-brand-navy">
+                        {plan.basePrice != null ? `₹${plan.basePrice.toLocaleString()}` : "Custom"}
+                      </span>
+                      {plan.basePrice != null && <span className="text-brand-navy/40 text-xs uppercase tracking-widest font-bold">/year</span>}
+                    </div>
+                    <p className="text-brand-navy/50 text-sm leading-relaxed mb-6">
+                      {plan.summary ?? "Comprehensive annual maintenance for your AC."}
+                    </p>
+                    <div className="space-y-3 mb-8 flex-grow">
+                      {AMC_BENEFITS.map((b) => (
+                        <div key={b} className="flex items-start gap-3">
+                          <Check size={16} className="text-brand-gold shrink-0 mt-0.5" />
+                          <span className="text-sm text-brand-navy/70">{b}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <Link
+                      to={bookingPath}
+                      state={{ serviceId: plan.serviceId }}
+                      className={`w-full py-3.5 rounded-lg text-[10px] uppercase tracking-widest font-bold transition-all text-center min-h-[44px] flex items-center justify-center ${
+                        isPopular ? "bg-brand-gold text-brand-navy hover:bg-brand-navy hover:text-white" : "bg-brand-navy text-white hover:bg-brand-gold hover:text-brand-navy"
+                      }`}
+                    >
+                      Enroll now
+                    </Link>
+                  </motion.div>
+                );
+              })}
+            </Grid>
+          )}
+        </Container>
+      </Section>
 
-        {/* What is AMC? */}
-        <div className="grid lg:grid-cols-2 gap-20 items-center mb-32">
-          <div className="relative">
-            <div className="absolute inset-0 bg-brand-gold/10 blur-3xl rounded-full" />
-            <SnapshotImage
-              slotKey="amc.banner"
-              fallbackSrc="https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=2069&auto=format&fit=crop"
-              alt="Professional Maintenance"
-              className="rounded-sm shadow-2xl relative z-10 grayscale hover:grayscale-0 transition-all duration-1000"
-            />
-          </div>
-          <div>
-            <span className="text-brand-gold text-[10px] uppercase tracking-[0.4em] font-bold mb-4 block">The Concept</span>
-            <h2 className="text-5xl font-serif text-brand-navy mb-8">What is AMC?</h2>
-            <p className="text-brand-navy/50 text-lg mb-8 leading-relaxed font-light">
-              Annual Maintenance Contract (AMC) is our professional subscription service designed for those who value
-              continuity and peace of mind. Instead of reactive repairs, we provide proactive care for your home's climate.
-            </p>
-            <div className="grid grid-cols-2 gap-8">
-              <div>
-                <ShieldCheck className="text-brand-gold mb-4" size={24} />
-                <h4 className="text-lg font-serif text-brand-navy mb-2">Zero Downtime</h4>
-                <p className="text-brand-navy/40 text-xs leading-relaxed">We fix issues before they even manifest as problems.</p>
-              </div>
-              <div>
-                <Clock className="text-brand-gold mb-4" size={24} />
-                <h4 className="text-lg font-serif text-brand-navy mb-2">Priority Access</h4>
-                <p className="text-brand-navy/40 text-xs leading-relaxed">AMC members skip the queue, even during peak summer months.</p>
+      {/* What is AMC + benefits */}
+      <Section surface="cream" spacing="default" className="bg-brand-navy/5">
+        <Container>
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+            <div>
+              <span className="text-brand-gold-deep text-[10px] uppercase tracking-[0.4em] font-bold mb-3 block">Why AMC</span>
+              <h2 className="font-serif text-brand-navy mb-5">Proactive care, not reactive repairs</h2>
+              <p className="text-brand-navy/55 text-base leading-relaxed font-light mb-8">
+                An Annual Maintenance Contract keeps your AC serviced on schedule so small issues are caught early —
+                meaning cooler air, lower bills, and fewer emergency breakdowns when you need it most.
+              </p>
+              <div className="grid sm:grid-cols-2 gap-6">
+                <div>
+                  <ShieldCheck className="text-brand-gold mb-3" size={22} />
+                  <h3 className="text-base font-serif text-brand-navy mb-1">Fewer breakdowns</h3>
+                  <p className="text-brand-navy/45 text-xs leading-relaxed">Issues fixed before they become failures.</p>
+                </div>
+                <div>
+                  <Clock className="text-brand-gold mb-3" size={22} />
+                  <h3 className="text-base font-serif text-brand-navy mb-1">Priority access</h3>
+                  <p className="text-brand-navy/45 text-xs leading-relaxed">Members skip the queue, even in peak summer.</p>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* Testimonials */}
-        <div className="bg-brand-navy p-12 md:p-20 rounded-xl text-center">
-          <span className="text-brand-gold text-[10px] uppercase tracking-[0.5em] font-bold mb-8 block">Member Testimonials</span>
-          <div className="max-w-4xl mx-auto">
-            <p className="text-white/80 text-3xl font-serif italic leading-relaxed mb-12">
-              "Coolzo's AMC is the single best investment I've made for my property. I haven't thought about my AC in
-              three years—it just works perfectly, always."
-            </p>
-            <div className="flex items-center justify-center gap-4">
-              <div className="w-12 h-12 bg-brand-gold rounded-full flex items-center justify-center text-brand-navy font-serif italic font-bold">
-                S
+            <div className="bg-brand-navy rounded-2xl p-10 text-center">
+              <div className="flex justify-center gap-1 text-brand-gold mb-5">
+                {[1, 2, 3, 4, 5].map((i) => <Star key={i} size={18} className="fill-brand-gold" />)}
               </div>
-              <div className="text-left">
-                <p className="text-white font-bold text-sm">Sebastian Croft</p>
-                <p className="text-brand-gold text-[9px] uppercase tracking-widest">Trusted Member since 2023</p>
-              </div>
+              <p className="text-white/80 text-xl font-serif italic leading-relaxed mb-5">
+                "Regular servicing under AMC keeps an AC efficient and extends its life — the simplest way to avoid summer breakdowns."
+              </p>
+              <p className="text-brand-gold text-[10px] uppercase tracking-widest font-bold">Coolzo Service Promise</p>
             </div>
           </div>
-        </div>
-      </div>
+        </Container>
+      </Section>
     </div>
   );
 }

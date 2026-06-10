@@ -12,7 +12,7 @@ export default function About() {
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
           >
-            <span className="text-brand-gold text-[10px] uppercase tracking-[0.4em] font-bold mb-4 block">Our Heritage</span>
+            <span className="text-brand-gold-deep text-[10px] uppercase tracking-[0.4em] font-bold mb-4 block">Our Heritage</span>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif text-brand-navy mb-8 leading-tight">Crafting the <br />Perfect Atmosphere.</h1>
             <p className="text-brand-navy/60 text-lg font-light leading-relaxed mb-8">
               Founded in 2018, Coolzo was born from a simple observation: while air conditioning is a necessity in modern living, the service industry surrounding it remained stuck in the past.
@@ -23,15 +23,15 @@ export default function About() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 border-t border-brand-navy/5 pt-12">
               <div>
                 <p className="text-3xl font-serif text-brand-navy">8+</p>
-                <p className="text-[9px] uppercase tracking-widest font-bold text-brand-gold">Years in Service</p>
+                <p className="text-[9px] uppercase tracking-widest font-bold text-brand-gold-deep">Years in Service</p>
               </div>
               <div>
                 <p className="text-3xl font-serif text-brand-navy">20+</p>
-                <p className="text-[9px] uppercase tracking-widest font-bold text-brand-gold">Hyderabad Zones</p>
+                <p className="text-[9px] uppercase tracking-widest font-bold text-brand-gold-deep">Hyderabad Zones</p>
               </div>
               <div>
                 <p className="text-3xl font-serif text-brand-navy">25k+</p>
-                <p className="text-[9px] uppercase tracking-widest font-bold text-brand-gold">Services Done</p>
+                <p className="text-[9px] uppercase tracking-widest font-bold text-brand-gold-deep">Services Done</p>
               </div>
             </div>
           </motion.div>
@@ -49,7 +49,7 @@ export default function About() {
         {/* Credentials */}
         <div className="mb-32">
           <div className="text-center mb-20">
-            <span className="text-brand-gold text-[10px] uppercase tracking-[0.4em] font-bold mb-4 block">Our Credentials</span>
+            <span className="text-brand-gold-deep text-[10px] uppercase tracking-[0.4em] font-bold mb-4 block">Our Credentials</span>
             <h2 className="text-4xl font-serif text-brand-navy">Authorized Quality.</h2>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 text-center">
@@ -84,7 +84,7 @@ export default function About() {
         {/* Team */}
         <div>
           <div className="text-center mb-20">
-            <span className="text-brand-gold text-[10px] uppercase tracking-[0.4em] font-bold mb-4 block">Leadership</span>
+            <span className="text-brand-gold-deep text-[10px] uppercase tracking-[0.4em] font-bold mb-4 block">Leadership</span>
             <h2 className="text-4xl font-serif text-brand-navy">The Visionaries.</h2>
           </div>
           <div className="grid md:grid-cols-3 gap-12">
@@ -105,7 +105,7 @@ export default function About() {
                   <img src={person.img} alt={person.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" referrerPolicy="no-referrer" />
                 </div>
                 <h4 className="text-xl font-serif text-brand-navy mb-1">{person.name}</h4>
-                <p className="text-brand-gold text-[10px] uppercase tracking-widest font-bold">{person.role}</p>
+                <p className="text-brand-gold-deep text-[10px] uppercase tracking-widest font-bold">{person.role}</p>
               </motion.div>
             ))}
           </div>

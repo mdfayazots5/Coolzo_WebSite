@@ -120,7 +120,7 @@ export default function ForgotPassword() {
                 </p>
                 <Link
                   to="/login"
-                  className="text-brand-gold text-[10px] uppercase tracking-widest font-bold hover:text-brand-navy transition-colors"
+                  className="text-brand-gold-deep text-[10px] uppercase tracking-widest font-bold hover:text-brand-navy transition-colors"
                 >
                   Return to Login
                 </Link>

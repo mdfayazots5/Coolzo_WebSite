@@ -1,14 +1,30 @@
 import { Link } from "react-router-dom";
-import { Instagram, Twitter, Facebook, Mail, Phone, MapPin, ShieldCheck, Clock, Gem } from "lucide-react";
+import { Instagram, Twitter, Facebook, Mail, Phone, MapPin, MessageCircle } from "lucide-react";
+import { useContent } from "../contexts/ContentContext";
 
 export default function Footer() {
+  const { getBlock } = useContent();
+
+  // Contact details are admin-editable via CMS content blocks (published snapshot).
+  // Keys: contact.phone / contact.whatsapp / contact.email / contact.city.
+  // Real values below are the fallback shown until an admin publishes those blocks.
+  const block = (key: string, fallback: string) => getBlock(key)?.content?.trim() || fallback;
+  const phone = block("contact.phone", "7075949956");
+  const whatsapp = block("contact.whatsapp", "7075949956");
+  const email = block("contact.email", "mdfayazots5@gmail.com");
+  const city = block("contact.city", "Hyderabad, India");
+
+  const digits = (s: string) => s.replace(/\D/g, "");
+  const telDigits = digits(phone);
+  const waDigits = digits(whatsapp).length === 10 ? `91${digits(whatsapp)}` : digits(whatsapp);
+
   return (
-    <footer className="bg-brand-black text-white pt-24 pb-12">
+    <footer className="bg-brand-black text-white pt-16 md:pt-24 pb-28 lg:pb-12">
       <div className="container mx-auto px-6">
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-20">
-          <div className="col-span-1 lg:col-span-1">
-            <Link to="/" className="text-3xl font-serif font-bold tracking-tighter mb-8 block">Coolzo</Link>
-            <p className="text-white/40 text-sm leading-relaxed mb-8 max-w-xs font-light">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10 md:gap-12 mb-12 md:mb-20">
+          <div className="col-span-2 lg:col-span-1">
+            <Link to="/" className="text-3xl font-serif font-bold tracking-tighter mb-5 block">Coolzo</Link>
+            <p className="text-white/40 text-sm leading-relaxed mb-6 max-w-xs font-light">
               The trusted destination for professional air conditioning services and modern climate solutions. Reliable service for modern homes.
             </p>
             <div className="flex gap-4">
@@ -18,9 +34,9 @@ export default function Footer() {
             </div>
           </div>
 
-          <div>
-            <h4 className="text-brand-gold text-[10px] uppercase tracking-[0.3em] font-bold mb-8">Expertise</h4>
-            <ul className="space-y-4 text-sm text-white/60 font-light">
+          <div className="col-span-1">
+            <h4 className="text-brand-gold text-[10px] uppercase tracking-[0.3em] font-bold mb-5 md:mb-8">Expertise</h4>
+            <ul className="space-y-3 md:space-y-4 text-sm text-white/60 font-light">
               <li><Link to="/services?cat=repair" className="hover:text-white transition-colors">System Installation</Link></li>
               <li><Link to="/services?cat=maintenance" className="hover:text-white transition-colors">Precision Repair</Link></li>
               <li><Link to="/services?cat=gas" className="hover:text-white transition-colors">Gas Refilling</Link></li>
@@ -28,28 +44,42 @@ export default function Footer() {
             </ul>
           </div>
 
-          <div>
-            <h4 className="text-brand-gold text-[10px] uppercase tracking-[0.3em] font-bold mb-8">Company</h4>
-            <ul className="space-y-4 text-sm text-white/60 font-light">
-              <li><Link to="/about" className="hover:text-white transition-colors">About Our Brand</Link></li>
-              <li><Link to="/amc" className="hover:text-white transition-colors">Total Care AMC Plans</Link></li>
-              <li><Link to="/why-coolzo" className="hover:text-white transition-colors">Technician Certification</Link></li>
-              <li><Link to="/contact" className="hover:text-white transition-colors">Contact Support</Link></li>
+          <div className="col-span-1">
+            <h4 className="text-brand-gold text-[10px] uppercase tracking-[0.3em] font-bold mb-5 md:mb-8">Quick Links</h4>
+            <ul className="space-y-3 md:space-y-4 text-sm text-white/60 font-light">
+              <li><Link to="/services" className="hover:text-white transition-colors">All Services</Link></li>
+              <li><Link to="/book" className="hover:text-white transition-colors">Book a Service</Link></li>
+              <li><Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
+              <li><Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
             </ul>
           </div>
 
-          <div>
-            <h4 className="text-brand-gold text-[10px] uppercase tracking-[0.3em] font-bold mb-8">Service Standards</h4>
-            <ul className="space-y-4 text-sm text-white/60 font-light">
-              <li className="flex items-center gap-3"><Clock size={14} className="text-brand-gold" /> 90-Minute Window</li>
-              <li className="flex items-center gap-3"><ShieldCheck size={14} className="text-brand-gold" /> Clean Work Guarantee</li>
-              <li className="flex items-center gap-3"><Gem size={14} className="text-brand-gold" /> SLA Guarantee</li>
-              <li className="flex items-center gap-3"><ShieldCheck size={14} className="text-brand-gold" /> Privacy Protocol</li>
+          <div className="col-span-2 lg:col-span-1">
+            <h4 className="text-brand-gold text-[10px] uppercase tracking-[0.3em] font-bold mb-5 md:mb-8">Get in Touch</h4>
+            <ul className="space-y-3 md:space-y-4 text-sm text-white/60 font-light">
+              <li>
+                <a href={`tel:+91${telDigits}`} className="flex items-center gap-3 hover:text-white transition-colors">
+                  <Phone size={14} className="text-brand-gold shrink-0" /> +91 {phone}
+                </a>
+              </li>
+              <li>
+                <a href={`https://wa.me/${waDigits}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 hover:text-white transition-colors">
+                  <MessageCircle size={14} className="text-brand-gold shrink-0" /> WhatsApp {whatsapp}
+                </a>
+              </li>
+              <li>
+                <a href={`mailto:${email}`} className="flex items-center gap-3 hover:text-white transition-colors break-all">
+                  <Mail size={14} className="text-brand-gold shrink-0" /> {email}
+                </a>
+              </li>
+              <li className="flex items-center gap-3">
+                <MapPin size={14} className="text-brand-gold shrink-0" /> {city}
+              </li>
             </ul>
           </div>
         </div>
 
-        <div className="border-t border-white/10 pt-12 flex flex-col md:flex-row justify-between items-center gap-6">
+        <div className="border-t border-white/10 pt-8 md:pt-12 flex flex-col md:flex-row justify-between items-center gap-6">
           <p className="text-white/30 text-[10px] uppercase tracking-[0.2em] font-medium">
             © 2026 Coolzo Professional AC Services. All Rights Reserved.
           </p>
