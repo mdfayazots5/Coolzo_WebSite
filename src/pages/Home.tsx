@@ -17,6 +17,7 @@ import { Link } from "react-router-dom";
 import { CatalogService } from "../services/catalogService";
 import type { ServiceCategoryLookupResponse, ServiceLookupResponse } from "../types/catalog";
 import { useAuth } from "../contexts/AuthContext";
+import { useContent } from "../contexts/ContentContext";
 import Section from "../components/Section";
 import Container from "../components/Container";
 import SnapshotImage from "../components/SnapshotImage";
@@ -49,7 +50,14 @@ const STATIC_CATEGORIES: { title: string; desc: string }[] = [
 
 export default function Home() {
   const { user } = useAuth();
+  const { getBlock } = useContent();
   const bookingPath = user ? "/portal/book" : "/book";
+
+  // Admin-editable CMS content blocks (published snapshot). Each block carries a `title`
+  // (heading) + `content` (body); fallbacks below are the built-in copy shown until an
+  // admin publishes that block. Keys must match Admin KNOWN_BLOCK_KEYS and the snapshot.
+  const heroBlock = getBlock("home.hero");
+  const aboutBlock = getBlock("home.about");
   const [categories, setCategories] = useState<ServiceCategoryLookupResponse[]>([]);
   const [services, setServices] = useState<ServiceLookupResponse[]>([]);
   const [loadingCats, setLoadingCats] = useState(true);
@@ -112,12 +120,18 @@ export default function Home() {
               AC Repair · Service · Installation · Gas Refill
             </span>
             <h1 className="font-serif text-white leading-[1.05] mb-6">
-              Cool, clean air —<br />
-              <span className="italic">booked in 60 seconds.</span>
+              {heroBlock?.title?.trim() ? (
+                heroBlock.title
+              ) : (
+                <>
+                  Cool, clean air —<br />
+                  <span className="italic">booked in 60 seconds.</span>
+                </>
+              )}
             </h1>
             <p className="text-white/70 text-base sm:text-lg mb-9 max-w-xl leading-relaxed font-light">
-              Certified AC technicians across Hyderabad. Transparent pricing, on-time arrival,
-              and a digital service report after every visit.
+              {heroBlock?.content?.trim() ||
+                "Certified AC technicians across Hyderabad. Transparent pricing, on-time arrival, and a digital service report after every visit."}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <Link
@@ -291,6 +305,24 @@ export default function Home() {
                 </motion.div>
               ))}
             </div>
+          </div>
+        </Container>
+      </Section>
+
+      {/* ── About (CMS: home.about) ────────────────────────────────────────── */}
+      <Section surface="white" spacing="default">
+        <Container>
+          <div className="max-w-3xl mx-auto text-center">
+            <span className="text-brand-gold-deep text-[10px] uppercase tracking-[0.4em] font-bold mb-3 block">
+              About Coolzo
+            </span>
+            <h2 className="font-serif text-brand-navy mb-5">
+              {aboutBlock?.title?.trim() || "Why customers choose Coolzo"}
+            </h2>
+            <p className="text-brand-navy/60 text-base md:text-lg leading-relaxed font-light">
+              {aboutBlock?.content?.trim() ||
+                "Certified technicians, transparent pricing, and a digital service report after every visit — dependable AC care across Hyderabad."}
+            </p>
           </div>
         </Container>
       </Section>

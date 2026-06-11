@@ -5,8 +5,10 @@ import { Link } from "react-router-dom";
 import { CatalogService } from "../services/catalogService";
 import type { ServiceLookupResponse, ServiceCategoryLookupResponse } from "../types/catalog";
 import { useAuth } from "../contexts/AuthContext";
+import { useContent } from "../contexts/ContentContext";
 import Container from "../components/Container";
 import Grid from "../components/Grid";
+import SnapshotImage from "../components/SnapshotImage";
 
 const STATIC_CATEGORY_ALL: { serviceCategoryId: number; categoryName: string } = {
   serviceCategoryId: 0,
@@ -26,6 +28,8 @@ function serviceIcon(categoryName: string | undefined) {
 
 export default function Services() {
   const { user } = useAuth();
+  const { getBlock } = useContent();
+  const serviceIntro = getBlock("service-content.general-service");
   const bookingPath = user ? "/portal/book" : "/book";
   const [activeCategory, setActiveCategory] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
@@ -61,16 +65,28 @@ export default function Services() {
   }, [activeCategory, searchQuery, services]);
 
   return (
-    <div className="pt-28 pb-20 bg-brand-cream min-h-screen">
-      <Container>
-        {/* Header */}
-        <div className="max-w-2xl mb-10">
-          <span className="text-brand-gold-deep text-[10px] uppercase tracking-[0.4em] font-bold mb-3 block">Service Catalog</span>
-          <h1 className="font-serif text-brand-navy mb-4">AC services, done right</h1>
-          <p className="text-brand-navy/50 text-base md:text-lg font-light leading-relaxed">
-            Repairs, cleaning, gas refills and installations — certified technicians, transparent pricing, on-time arrival.
+    <div className="pb-20 bg-brand-cream min-h-screen">
+      {/* Banner (CMS image: services.banner) */}
+      <section className="relative h-[34vh] min-h-[260px] overflow-hidden bg-brand-navy">
+        <SnapshotImage
+          slotKey="services.banner"
+          fallbackSrc="https://images.unsplash.com/photo-1581094794329-c8112a89af12?q=80&w=2070&auto=format&fit=crop"
+          alt="Coolzo services"
+          className="absolute inset-0 w-full h-full object-cover opacity-30"
+          loading="eager"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-brand-navy via-brand-navy/85 to-brand-navy/40" />
+        <Container className="relative z-10 h-full flex flex-col justify-end pb-8">
+          <span className="text-brand-gold text-[10px] uppercase tracking-[0.4em] font-bold mb-3 block">Service Catalog</span>
+          <h1 className="font-serif text-white mb-3">{serviceIntro?.title?.trim() || "AC services, done right"}</h1>
+          <p className="text-white/70 text-base md:text-lg font-light leading-relaxed max-w-2xl">
+            {serviceIntro?.content?.trim() ||
+              "Repairs, cleaning, gas refills and installations — certified technicians, transparent pricing, on-time arrival."}
           </p>
-        </div>
+        </Container>
+      </section>
+
+      <Container className="pt-10">
 
         {loading ? (
           <div className="py-24 flex flex-col items-center justify-center gap-4">
