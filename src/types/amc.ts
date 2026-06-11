@@ -1,13 +1,16 @@
-/** AMC plan listing — GET /api/amc/plans */
+/**
+ * AMC plan listing — GET /api/amc/plans (and snapshot.masters.amcPlans).
+ * Field names mirror the backend Coolzo.Contracts.Responses.Amc.AmcPlanResponse exactly.
+ */
 export interface AmcPlanResponse {
-  planId: number;
+  amcPlanId: number;
   planName: string;
-  description?: string;
-  durationMonths: number;
-  numberOfVisits: number;
-  price: number;
-  features?: string[];
+  planDescription: string;
+  durationInMonths: number;
+  visitCount: number;
+  priceAmount: number;
   isActive: boolean;
+  termsAndConditions: string;
 }
 
 /** Customer's active AMC subscription */

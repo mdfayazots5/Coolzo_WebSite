@@ -4,6 +4,24 @@
  */
 
 import { apiConfig } from '../config/apiConfig';
+import type {
+  ServiceCategoryLookupResponse,
+  ServiceLookupResponse,
+  AcTypeLookupResponse,
+  TonnageLookupResponse,
+  BrandLookupResponse,
+} from '../types/catalog';
+import type { AmcPlanResponse } from '../types/amc';
+
+/** Public catalog masters bundled into the snapshot (mirrors backend SnapshotMastersDto). */
+export interface SnapshotMasters {
+  serviceCategories?: ServiceCategoryLookupResponse[];
+  services?: ServiceLookupResponse[];
+  acTypes?: AcTypeLookupResponse[];
+  tonnages?: TonnageLookupResponse[];
+  brands?: BrandLookupResponse[];
+  amcPlans?: AmcPlanResponse[];
+}
 
 export interface SnapshotImage {
   url: string;
@@ -25,7 +43,7 @@ export interface ContentSnapshot {
   publishedAtUtc: string;
   checksum: string;
   theme: Record<string, string>;
-  masters: { brands: Array<{ code: string; name: string }> };
+  masters: SnapshotMasters;
   content: { blocks: SnapshotBlock[]; banners: unknown[]; faqs: unknown[] };
   images: Record<string, SnapshotImage>;
 }
@@ -110,4 +128,24 @@ export async function fetchSnapshot(): Promise<ContentSnapshot | null> {
   }
 
   return snapshot;
+}
+
+/**
+ * Returns the bundled public catalog masters from the snapshot, or null when the active snapshot
+ * predates masters (i.e. was published before masters were added — serviceCategories absent) so the
+ * caller falls back to the live booking-lookup API. Reads the cached snapshot synchronously first,
+ * then revalidates against the published file.
+ */
+export async function getSnapshotMasters(): Promise<SnapshotMasters | null> {
+  const cached = readCachedSnapshot();
+  if (cached?.masters && Array.isArray(cached.masters.serviceCategories)) {
+    return cached.masters;
+  }
+
+  const fresh = await fetchSnapshot();
+  if (fresh?.masters && Array.isArray(fresh.masters.serviceCategories)) {
+    return fresh.masters;
+  }
+
+  return null;
 }
