@@ -49,6 +49,21 @@ const STATIC_CATEGORIES: { title: string; desc: string }[] = [
   { title: "Installation", desc: "Safe, correct fitting for new units." },
 ];
 
+// Shown only if the live zones API can't be reached.
+const FALLBACK_ZONES = [
+  "Banjara Hills", "Jubilee Hills", "Gachibowli", "Madhapur",
+  "Kukatpally", "Kondapur", "Secunderabad", "Hitech City",
+];
+
+// Count-aware column class so the card row never leaves an awkward orphan
+// (e.g. 5 cards => 3+2 on desktop, not 4+1). Mobile stays 2-up for tap targets.
+function serviceGridCols(count: number): string {
+  if (count <= 2) return "grid-cols-1 sm:grid-cols-2";
+  if (count === 3) return "grid-cols-2 sm:grid-cols-3";
+  if (count === 4) return "grid-cols-2 lg:grid-cols-4";
+  return "grid-cols-2 sm:grid-cols-3"; // 5–6 cards → 3-up desktop, balanced rows
+}
+
 // Admin-published promo banner (snapshot content.banners, displayArea="Home"). The brand-navy
 // gradient is always the base, so a missing/404 image degrades to a styled banner — never a
 // broken image. redirectUrl may be an internal route or an external URL.
@@ -58,33 +73,37 @@ function PromoBanner({ banner }: { banner: SnapshotBanner }) {
   const isExternal = /^https?:\/\//i.test(banner.redirectUrl);
 
   const card = (
-    <div className="relative overflow-hidden rounded-2xl bg-brand-navy min-h-[160px] sm:min-h-[200px] flex items-center shadow-lg group">
+    <div className="relative overflow-hidden rounded-2xl bg-brand-navy shadow-lg group">
+      {/* Admin image (when set) sits behind a left-weighted scrim for legible text. */}
       {hasImage && (
         <img
           src={banner.imageUrl}
           alt=""
           aria-hidden="true"
           onError={() => setImageFailed(true)}
-          className="absolute inset-0 w-full h-full object-cover opacity-30 group-hover:opacity-40 transition-opacity duration-500"
+          className="absolute inset-0 w-full h-full object-cover opacity-35 group-hover:opacity-45 transition-opacity duration-500"
           loading="lazy"
         />
       )}
-      <div className="absolute inset-0 bg-gradient-to-r from-brand-navy via-brand-navy/85 to-brand-navy/40" />
-      <Container className="relative z-10 py-8 sm:py-10">
+      <div className="absolute inset-0 bg-gradient-to-r from-brand-navy via-brand-navy/90 to-brand-navy/50" />
+      {/* Decorative gold accent keeps the banner intentional even with no image. */}
+      <div className="absolute top-0 right-0 w-1/2 h-full bg-brand-gold/5 skew-x-12 translate-x-1/3" />
+
+      <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5 px-6 sm:px-10 py-8 sm:py-9">
         <div className="max-w-2xl">
-          {banner.bannerSubtitle?.trim() && (
-            <span className="text-brand-gold text-[10px] uppercase tracking-[0.3em] font-bold mb-2 block">
-              {banner.bannerSubtitle}
+          {banner.subtitle?.trim() && (
+            <span className="text-brand-gold text-[10px] uppercase tracking-[0.3em] font-bold mb-2.5 block">
+              {banner.subtitle}
             </span>
           )}
-          <h2 className="font-serif text-white text-2xl sm:text-3xl leading-tight mb-3">{banner.bannerTitle}</h2>
-          {banner.redirectUrl?.trim() && (
-            <span className="inline-flex items-center gap-2 text-brand-gold text-xs uppercase tracking-[0.15em] font-bold group-hover:gap-3 transition-all">
-              Learn more <ArrowRight size={15} />
-            </span>
-          )}
+          <h2 className="font-serif text-white text-2xl sm:text-3xl leading-tight">{banner.title}</h2>
         </div>
-      </Container>
+        {banner.redirectUrl?.trim() && (
+          <span className="inline-flex items-center justify-center gap-2 shrink-0 self-start sm:self-auto bg-brand-gold text-brand-navy px-7 py-3.5 rounded-lg text-[11px] uppercase tracking-[0.15em] font-bold group-hover:bg-white transition-all min-h-[44px]">
+            Learn more <ArrowRight size={15} />
+          </span>
+        )}
+      </div>
     </div>
   );
 
@@ -108,6 +127,19 @@ export default function Home() {
   const bookingPath = user ? "/portal/book" : "/book";
   const homeBanners = getBanners("Home");
 
+  // Trust-strip figures are admin-editable CMS blocks (title = value, body = label); the literals
+  // here are the fallback until an admin publishes that block.
+  const stat = (key: string, value: string, label: string) => {
+    const block = getBlock(key);
+    return { value: block?.title?.trim() || value, label: block?.content?.trim() || label };
+  };
+  const ratingStat = stat("home.stat.rating", "4.9/5", "across Hyderabad");
+  const trustStats = [
+    stat("home.stat.zones", "20+", "Zones Covered"),
+    stat("home.stat.technicians", "500+", "Certified Technicians"),
+    stat("home.stat.response", "4 hr", "Emergency Response"),
+  ];
+
   // Admin-editable CMS content blocks (published snapshot). Each block carries a `title`
   // (heading) + `content` (body); fallbacks below are the built-in copy shown until an
   // admin publishes that block. Keys must match Admin KNOWN_BLOCK_KEYS and the snapshot.
@@ -115,17 +147,27 @@ export default function Home() {
   const aboutBlock = getBlock("home.about");
   const [categories, setCategories] = useState<ServiceCategoryLookupResponse[]>([]);
   const [services, setServices] = useState<ServiceLookupResponse[]>([]);
+  const [zones, setZones] = useState<string[]>([]);
   const [loadingCats, setLoadingCats] = useState(true);
 
   useEffect(() => {
-    Promise.allSettled([CatalogService.getServiceCategories(), CatalogService.getServices()])
-      .then(([cat, svc]) => {
+    Promise.allSettled([
+      CatalogService.getServiceCategories(),
+      CatalogService.getServices(),
+      CatalogService.getZones(),
+    ])
+      .then(([cat, svc, zone]) => {
         if (cat.status === "fulfilled" && cat.value?.length) setCategories(cat.value);
         if (svc.status === "fulfilled" && svc.value?.length) setServices(svc.value);
+        if (zone.status === "fulfilled" && zone.value?.length) {
+          setZones(zone.value.filter((z) => z.isActive).map((z) => z.zoneName));
+        }
       })
-      .catch(() => {/* graceful: fall back to static list */})
+      .catch(() => {/* graceful: fall back to static lists */})
       .finally(() => setLoadingCats(false));
   }, []);
+
+  const displayZones = zones.length > 0 ? zones.slice(0, 8) : FALLBACK_ZONES;
 
   // Lowest base price per category → "From ₹X" on each card. Categories with no
   // priced service simply omit the price (we never invent one).
@@ -209,23 +251,23 @@ export default function Home() {
       {/* ── Trust strip ────────────────────────────────────────────────────── */}
       <Section as="div" surface="white" spacing="compact" className="border-b border-brand-navy/5">
         <Container>
-          <div className="flex flex-wrap items-center justify-center sm:justify-between gap-x-10 gap-y-6 text-center sm:text-left">
-            <div className="flex items-center gap-3">
+          {/* Mobile-first: rating centered on top, then 3 equal stat columns under a divider.
+              From sm: rating on the left, stats spread to the right on one row. */}
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between sm:gap-10">
+            <div className="flex items-center justify-center gap-3 sm:justify-start">
               <div className="flex items-center gap-1 text-brand-gold">
                 {[1, 2, 3, 4, 5].map((i) => <Star key={i} size={14} className="fill-brand-gold" />)}
               </div>
-              <p className="text-[11px] uppercase tracking-widest font-bold text-brand-navy">4.9/5 across Hyderabad</p>
+              <p className="text-[11px] uppercase tracking-widest font-bold text-brand-navy">{ratingStat.value} {ratingStat.label}</p>
             </div>
-            {[
-              { value: "20+", label: "Zones Covered" },
-              { value: "500+", label: "Certified Technicians" },
-              { value: "4 hr", label: "Emergency Response" },
-            ].map((stat) => (
-              <div key={stat.label} className="text-center">
-                <p className="text-xl sm:text-2xl font-serif text-brand-navy">{stat.value}</p>
-                <p className="text-[9px] uppercase tracking-widest font-bold text-brand-gold-deep">{stat.label}</p>
-              </div>
-            ))}
+            <div className="grid grid-cols-3 gap-3 border-t border-brand-navy/5 pt-5 sm:flex sm:gap-12 sm:border-t-0 sm:pt-0">
+              {trustStats.map((item) => (
+                <div key={item.label} className="text-center">
+                  <p className="text-lg sm:text-2xl font-serif text-brand-navy">{item.value}</p>
+                  <p className="text-[8px] sm:text-[9px] uppercase tracking-widest font-bold text-brand-gold-deep leading-tight mt-0.5">{item.label}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </Container>
       </Section>
@@ -237,7 +279,7 @@ export default function Home() {
           <Container>
             <div className="flex flex-col gap-4">
               {homeBanners.map((banner, i) => (
-                <PromoBanner key={`${banner.bannerTitle}-${i}`} banner={banner} />
+                <PromoBanner key={`${banner.title}-${i}`} banner={banner} />
               ))}
             </div>
           </Container>
@@ -261,7 +303,7 @@ export default function Home() {
               <p className="text-[10px] uppercase tracking-widest font-bold text-brand-navy/40">Loading services…</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 lg:gap-8">
+            <div className={`grid ${serviceGridCols(displayCategories.length)} gap-3 sm:gap-6 lg:gap-8`}>
               {displayCategories.map((service, i) => (
                 <motion.div
                   key={service.categoryId ?? i}
@@ -328,7 +370,7 @@ export default function Home() {
                 response promise for emergencies.
               </p>
               <div className="grid grid-cols-2 gap-3">
-                {["Banjara Hills", "Jubilee Hills", "Gachibowli", "Madhapur", "Kukatpally", "Kondapur", "Secunderabad", "Hitech City"].map((zone) => (
+                {displayZones.map((zone) => (
                   <div key={zone} className="flex items-center gap-2.5 text-brand-navy/50">
                     <CheckCircle2 size={15} className="text-brand-gold shrink-0" />
                     <span className="text-[10px] uppercase tracking-widest font-bold">{zone}</span>

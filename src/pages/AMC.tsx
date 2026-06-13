@@ -8,6 +8,7 @@ import { useAuth } from "../contexts/AuthContext";
 import Container from "../components/Container";
 import Section from "../components/Section";
 import Grid from "../components/Grid";
+import SnapshotImage from "../components/SnapshotImage";
 
 // Generic AMC benefits (explanatory marketing content, not data).
 const AMC_BENEFITS = [
@@ -54,6 +55,17 @@ export default function AMC() {
           <p className="text-brand-navy/50 text-base md:text-lg font-light leading-relaxed">
             An AMC plan means scheduled servicing, priority support, and fewer breakdowns — for a fixed yearly price.
           </p>
+        </div>
+
+        {/* AMC banner (CMS: amc.banner) — admin-published; falls back gracefully when unset. */}
+        <div className="relative max-w-5xl mx-auto mb-4 overflow-hidden rounded-2xl shadow-lg">
+          <SnapshotImage
+            slotKey="amc.banner"
+            fallbackSrc="https://images.unsplash.com/photo-1581094794329-c8112a89af12?q=80&w=2070&auto=format&fit=crop"
+            alt="Annual maintenance care for your air conditioner"
+            className="w-full aspect-[16/5] object-cover"
+            loading="eager"
+          />
         </div>
       </Container>
 

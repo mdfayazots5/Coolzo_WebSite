@@ -40,8 +40,8 @@ export interface SnapshotBlock {
 
 /** Promotional banner bundled into the snapshot (mirrors backend SnapshotBannerDto). */
 export interface SnapshotBanner {
-  bannerTitle: string;
-  bannerSubtitle: string;
+  title: string;
+  subtitle: string;
   imageUrl: string;
   redirectUrl: string;
   displayArea: string;

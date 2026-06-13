@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { MotionConfig } from "motion/react";
 import ScrollToTop from "./components/ScrollToTop";
 import Layout from "./components/Layout";
@@ -73,6 +73,8 @@ export default function App() {
           <Route path="reviews" element={<Reviews />} />
           <Route path="contact" element={<Contact />} />
           <Route path="book" element={<BookingWizard />} />
+          {/* Alias: CMS banners / older links may point at /booking — keep them out of 404. */}
+          <Route path="booking" element={<Navigate to="/book" replace />} />
           <Route path="booking-confirmation" element={<BookingConfirmation />} />
           <Route path="terms" element={<Terms />} />
           <Route path="privacy" element={<Privacy />} />
