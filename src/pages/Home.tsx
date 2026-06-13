@@ -21,6 +21,7 @@ import { useContent } from "../contexts/ContentContext";
 import Section from "../components/Section";
 import Container from "../components/Container";
 import SnapshotImage from "../components/SnapshotImage";
+import type { SnapshotBanner } from "../services/snapshotService";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -48,10 +49,64 @@ const STATIC_CATEGORIES: { title: string; desc: string }[] = [
   { title: "Installation", desc: "Safe, correct fitting for new units." },
 ];
 
+// Admin-published promo banner (snapshot content.banners, displayArea="Home"). The brand-navy
+// gradient is always the base, so a missing/404 image degrades to a styled banner — never a
+// broken image. redirectUrl may be an internal route or an external URL.
+function PromoBanner({ banner }: { banner: SnapshotBanner }) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const hasImage = Boolean(banner.imageUrl) && !imageFailed;
+  const isExternal = /^https?:\/\//i.test(banner.redirectUrl);
+
+  const card = (
+    <div className="relative overflow-hidden rounded-2xl bg-brand-navy min-h-[160px] sm:min-h-[200px] flex items-center shadow-lg group">
+      {hasImage && (
+        <img
+          src={banner.imageUrl}
+          alt=""
+          aria-hidden="true"
+          onError={() => setImageFailed(true)}
+          className="absolute inset-0 w-full h-full object-cover opacity-30 group-hover:opacity-40 transition-opacity duration-500"
+          loading="lazy"
+        />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-r from-brand-navy via-brand-navy/85 to-brand-navy/40" />
+      <Container className="relative z-10 py-8 sm:py-10">
+        <div className="max-w-2xl">
+          {banner.bannerSubtitle?.trim() && (
+            <span className="text-brand-gold text-[10px] uppercase tracking-[0.3em] font-bold mb-2 block">
+              {banner.bannerSubtitle}
+            </span>
+          )}
+          <h2 className="font-serif text-white text-2xl sm:text-3xl leading-tight mb-3">{banner.bannerTitle}</h2>
+          {banner.redirectUrl?.trim() && (
+            <span className="inline-flex items-center gap-2 text-brand-gold text-xs uppercase tracking-[0.15em] font-bold group-hover:gap-3 transition-all">
+              Learn more <ArrowRight size={15} />
+            </span>
+          )}
+        </div>
+      </Container>
+    </div>
+  );
+
+  if (!banner.redirectUrl?.trim()) {
+    return card;
+  }
+  return isExternal ? (
+    <a href={banner.redirectUrl} target="_blank" rel="noopener noreferrer" className="block">
+      {card}
+    </a>
+  ) : (
+    <Link to={banner.redirectUrl} className="block">
+      {card}
+    </Link>
+  );
+}
+
 export default function Home() {
   const { user } = useAuth();
-  const { getBlock } = useContent();
+  const { getBlock, getBanners } = useContent();
   const bookingPath = user ? "/portal/book" : "/book";
+  const homeBanners = getBanners("Home");
 
   // Admin-editable CMS content blocks (published snapshot). Each block carries a `title`
   // (heading) + `content` (body); fallbacks below are the built-in copy shown until an
@@ -174,6 +229,20 @@ export default function Home() {
           </div>
         </Container>
       </Section>
+
+      {/* ── Promo banners (admin-published CMS, displayArea="Home") ────────────
+          Renders only when banners are published; absent otherwise (graceful empty). */}
+      {homeBanners.length > 0 && (
+        <Section surface="white" spacing="compact">
+          <Container>
+            <div className="flex flex-col gap-4">
+              {homeBanners.map((banner, i) => (
+                <PromoBanner key={`${banner.bannerTitle}-${i}`} banner={banner} />
+              ))}
+            </div>
+          </Container>
+        </Section>
+      )}
 
       {/* ── Services ───────────────────────────────────────────────────────── */}
       <Section spacing="default">

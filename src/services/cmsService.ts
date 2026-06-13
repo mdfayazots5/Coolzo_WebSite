@@ -11,16 +11,6 @@ export interface CMSBlockResponse {
   metadata?: Record<string, unknown>;
 }
 
-export interface CMSBannerResponse {
-  bannerId: number;
-  title: string;
-  subtitle?: string;
-  imageUrl?: string;
-  linkUrl?: string;
-  isActive: boolean;
-  sortOrder: number;
-}
-
 export interface CMSFaqResponse {
   faqId: number;
   question: string;
@@ -29,22 +19,7 @@ export interface CMSFaqResponse {
   sortOrder: number;
 }
 
-export interface CMSHomeResponse {
-  banners?: CMSBannerResponse[];
-  featuredServices?: CMSBlockResponse[];
-  testimonials?: CMSBlockResponse[];
-  [key: string]: unknown;
-}
-
 export const CMSService = {
-  async getHomeContent(): Promise<CMSHomeResponse> {
-    return apiClient.get('/api/cms/public/home');
-  },
-
-  async getBanners(): Promise<CMSBannerResponse[]> {
-    return apiClient.get('/api/cms/public/banners').catch(() => []);
-  },
-
   async getBlogs(): Promise<CMSBlockResponse[]> {
     return apiClient.get('/api/cms/public/blogs').catch(() => []);
   },

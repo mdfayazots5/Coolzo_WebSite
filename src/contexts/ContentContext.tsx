@@ -6,6 +6,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
   ContentSnapshot,
+  SnapshotBanner,
   SnapshotBlock,
   SnapshotImage,
   fetchSnapshot,
@@ -20,6 +21,11 @@ interface ContentContextValue {
   getImage: (key: string) => SnapshotImage | null;
   /** Returns a content block by its stable key, or null. */
   getBlock: (key: string) => SnapshotBlock | null;
+  /**
+   * Returns published promotional banners (imageUrl resolved to absolute), sorted by sortOrder.
+   * Pass `area` to filter by displayArea (e.g. "Home"). Empty array when none are published.
+   */
+  getBanners: (area?: string) => SnapshotBanner[];
 }
 
 const ContentContext = createContext<ContentContextValue | undefined>(undefined);
@@ -81,6 +87,7 @@ export function ContentProvider({ children }: { children: ReactNode }) {
   const value = useMemo<ContentContextValue>(() => {
     const imageIndex = snapshot?.images ?? {};
     const blockIndex = new Map((snapshot?.content.blocks ?? []).map((block) => [block.key, block]));
+    const banners = snapshot?.content.banners ?? [];
 
     return {
       snapshot,
@@ -97,6 +104,12 @@ export function ContentProvider({ children }: { children: ReactNode }) {
         return { url: resolveAssetUrl(image.url), alt: image.alt, variants };
       },
       getBlock: (key) => blockIndex.get(key) ?? null,
+      getBanners: (area) =>
+        banners
+          .filter((banner) => !area || banner.displayArea === area)
+          .slice()
+          .sort((a, b) => a.sortOrder - b.sortOrder)
+          .map((banner) => ({ ...banner, imageUrl: resolveAssetUrl(banner.imageUrl) })),
     };
   }, [snapshot, isLoaded]);
 

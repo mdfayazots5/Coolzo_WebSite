@@ -38,13 +38,23 @@ export interface SnapshotBlock {
   sortOrder: number;
 }
 
+/** Promotional banner bundled into the snapshot (mirrors backend SnapshotBannerDto). */
+export interface SnapshotBanner {
+  bannerTitle: string;
+  bannerSubtitle: string;
+  imageUrl: string;
+  redirectUrl: string;
+  displayArea: string;
+  sortOrder: number;
+}
+
 export interface ContentSnapshot {
   version: number;
   publishedAtUtc: string;
   checksum: string;
   theme: Record<string, string>;
   masters: SnapshotMasters;
-  content: { blocks: SnapshotBlock[]; banners: unknown[]; faqs: unknown[] };
+  content: { blocks: SnapshotBlock[]; banners: SnapshotBanner[]; faqs: unknown[] };
   images: Record<string, SnapshotImage>;
 }
 
