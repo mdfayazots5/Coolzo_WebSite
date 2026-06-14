@@ -16,6 +16,15 @@ export default function Contact() {
   const telDigits = phone.replace(/\D/g, "");
   const waDigits = (() => { const d = whatsapp.replace(/\D/g, ""); return d.length === 10 ? `91${d}` : d; })();
 
+  // Service-area block is admin-editable via CMS (published snapshot).
+  // Keys: contact.areas.title (heading) / contact.areas (comma-separated area names).
+  // Values below are the fallback shown until an admin publishes those blocks.
+  const areasTitle = block("contact.areas.title", "Serving across Hyderabad");
+  const areas = block("contact.areas", "Banjara Hills, Jubilee Hills, Gachibowli, Hitech City, Madhapur, Kondapur")
+    .split(",")
+    .map((a) => a.trim())
+    .filter(Boolean);
+
   const [form, setForm] = useState({ name: "", mobile: "", email: "", subject: SUBJECTS[0], message: "" });
   const [status, setStatus] = useState<"idle" | "submitting" | "done" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -86,16 +95,18 @@ export default function Contact() {
               </div>
             </div>
 
-            <div className="border-t border-brand-navy/5 pt-8">
-              <h2 className="text-xl font-serif text-brand-navy mb-5">Serving across Hyderabad</h2>
-              <div className="grid grid-cols-2 gap-3">
-                {["Banjara Hills", "Jubilee Hills", "Gachibowli", "Hitech City", "Madhapur", "Kondapur"].map((c) => (
-                  <div key={c} className="flex items-center gap-2.5 text-brand-navy/50 text-sm">
-                    <MapPin size={14} className="text-brand-gold shrink-0" /> {c}
-                  </div>
-                ))}
+            {areas.length > 0 && (
+              <div className="border-t border-brand-navy/5 pt-8">
+                <h2 className="text-xl font-serif text-brand-navy mb-5">{areasTitle}</h2>
+                <div className="grid grid-cols-2 gap-3">
+                  {areas.map((c) => (
+                    <div key={c} className="flex items-center gap-2.5 text-brand-navy/50 text-sm">
+                      <MapPin size={14} className="text-brand-gold shrink-0" /> {c}
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Form */}

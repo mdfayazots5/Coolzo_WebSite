@@ -1,8 +1,13 @@
-import { motion } from "motion/react";
 import { ShieldCheck, ChevronLeft } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useContent } from "../contexts/ContentContext";
 
 export default function Terms() {
+  // Body is admin-editable via the CMS content block "legal.terms" (published snapshot).
+  // When unpublished, the original static copy below is shown so the page is never blank.
+  const { getBlock } = useContent();
+  const cmsBody = getBlock("legal.terms")?.content?.trim() || "";
+
   return (
     <div className="max-w-4xl mx-auto py-24 px-6">
       <Link to="/" className="inline-flex items-center gap-2 text-brand-navy/40 hover:text-brand-navy text-[10px] uppercase tracking-widest font-bold transition-colors mb-12">
@@ -15,42 +20,49 @@ export default function Terms() {
         <p className="text-brand-navy/40 text-[10px] uppercase tracking-[0.3em] font-bold">Last Updated: April 2026</p>
       </div>
 
-      <div className="prose prose-brand max-w-none space-y-12 text-brand-navy/70 leading-relaxed">
-        <section>
-          <h2 className="text-2xl font-serif text-brand-navy mb-6">1. Acceptance of Terms</h2>
-          <p>
-            By accessing and using the Coolzo website and services, you agree to be bound by these Terms and Conditions. Our services are provided exclusively to individuals who can form legally binding contracts under applicable law.
-          </p>
-        </section>
+      {cmsBody ? (
+        <div
+          className="prose prose-brand max-w-none space-y-12 text-brand-navy/70 leading-relaxed"
+          dangerouslySetInnerHTML={{ __html: cmsBody }}
+        />
+      ) : (
+        <div className="prose prose-brand max-w-none space-y-12 text-brand-navy/70 leading-relaxed">
+          <section>
+            <h2 className="text-2xl font-serif text-brand-navy mb-6">1. Acceptance of Terms</h2>
+            <p>
+              By accessing and using the Coolzo website and services, you agree to be bound by these Terms and Conditions. Our services are provided exclusively to individuals who can form legally binding contracts under applicable law.
+            </p>
+          </section>
 
-        <section>
-          <h2 className="text-2xl font-serif text-brand-navy mb-6">2. Service Guarantee</h2>
-          <p>
-            Coolzo provides a 30-day workmanship guarantee on all precision repairs. This guarantee covers the specific issue addressed during the service. It does not cover new issues or damage caused by external factors after the service is completed.
-          </p>
-        </section>
+          <section>
+            <h2 className="text-2xl font-serif text-brand-navy mb-6">2. Service Guarantee</h2>
+            <p>
+              Coolzo provides a 30-day workmanship guarantee on all precision repairs. This guarantee covers the specific issue addressed during the service. It does not cover new issues or damage caused by external factors after the service is completed.
+            </p>
+          </section>
 
-        <section>
-          <h2 className="text-2xl font-serif text-brand-navy mb-6">3. Booking & Cancellations</h2>
-          <p>
-            Bookings can be rescheduled or cancelled up to 4 hours before the scheduled time slot without any penalty. Cancellations made within 4 hours of the appointment may incur a convenience fee of ₹299.
-          </p>
-        </section>
+          <section>
+            <h2 className="text-2xl font-serif text-brand-navy mb-6">3. Booking & Cancellations</h2>
+            <p>
+              Bookings can be rescheduled or cancelled up to 4 hours before the scheduled time slot without any penalty. Cancellations made within 4 hours of the appointment may incur a convenience fee of ₹299.
+            </p>
+          </section>
 
-        <section>
-          <h2 className="text-2xl font-serif text-brand-navy mb-6">4. Payments & Invoicing</h2>
-          <p>
-            All payments are due upon completion of the service unless otherwise specified in an AMC contract. Digital invoices are generated immediately and must be settled within 7 days to avoid late payment surcharges.
-          </p>
-        </section>
+          <section>
+            <h2 className="text-2xl font-serif text-brand-navy mb-6">4. Payments & Invoicing</h2>
+            <p>
+              All payments are due upon completion of the service unless otherwise specified in an AMC contract. Digital invoices are generated immediately and must be settled within 7 days to avoid late payment surcharges.
+            </p>
+          </section>
 
-        <section>
-          <h2 className="text-2xl font-serif text-brand-navy mb-6">5. Limitation of Liability</h2>
-          <p>
-            Coolzo is not liable for any indirect, incidental, or consequential damages arising from the use of our services. Our total liability for any claim shall not exceed the amount paid for the specific service in question.
-          </p>
-        </section>
-      </div>
+          <section>
+            <h2 className="text-2xl font-serif text-brand-navy mb-6">5. Limitation of Liability</h2>
+            <p>
+              Coolzo is not liable for any indirect, incidental, or consequential damages arising from the use of our services. Our total liability for any claim shall not exceed the amount paid for the specific service in question.
+            </p>
+          </section>
+        </div>
+      )}
 
       <div className="mt-16 lg:mt-24 p-8 sm:p-12 bg-brand-navy text-white rounded-xl text-center">
         <h3 className="text-2xl font-serif mb-6">Questions about our terms?</h3>

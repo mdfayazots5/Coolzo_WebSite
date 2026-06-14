@@ -61,11 +61,24 @@ export default function Pricing() {
                 <div className="bg-white rounded-xl border border-brand-navy/5 shadow-sm divide-y divide-brand-navy/5">
                   {items.map((s) => (
                     <div key={s.serviceId} className="flex items-center justify-between gap-4 p-5">
-                      <div className="min-w-0">
-                        <Link to={`/services/${s.serviceId}`} className="text-base font-semibold text-brand-navy hover:text-brand-gold transition-colors">
-                          {s.serviceName}
-                        </Link>
-                        {s.summary && <p className="text-brand-navy/50 text-sm mt-0.5 line-clamp-1">{s.summary}</p>}
+                      <div className="flex items-center gap-4 min-w-0">
+                        {/* Per-service thumbnail (item 13) — helps the user connect the price to the service.
+                            Omitted gracefully when the service has no published image. */}
+                        {s.imageUrl?.trim() && (
+                          <img
+                            src={s.imageUrl}
+                            alt={s.serviceName}
+                            className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg object-cover shrink-0 border border-brand-navy/5"
+                            loading="lazy"
+                            referrerPolicy="no-referrer"
+                          />
+                        )}
+                        <div className="min-w-0">
+                          <Link to={`/services/${s.serviceId}`} className="text-base font-semibold text-brand-navy hover:text-brand-gold transition-colors">
+                            {s.serviceName}
+                          </Link>
+                          {s.summary && <p className="text-brand-navy/50 text-sm mt-0.5 line-clamp-1">{s.summary}</p>}
+                        </div>
                       </div>
                       <div className="flex items-center gap-4 shrink-0">
                         <div className="text-right">

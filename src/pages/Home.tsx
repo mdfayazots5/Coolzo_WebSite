@@ -181,6 +181,18 @@ export default function Home() {
     return map;
   }, [services]);
 
+  // Category cards carry no image in the catalog contract — only individual services do. We derive a
+  // representative image per category from the first of its services that has one; cards with no
+  // priced/imaged service fall back to the icon (we never invent an image).
+  const imageByCategory = useMemo(() => {
+    const map: Record<number, string> = {};
+    for (const s of services) {
+      if (!s.imageUrl?.trim()) continue;
+      if (map[s.serviceCategoryId] == null) map[s.serviceCategoryId] = s.imageUrl;
+    }
+    return map;
+  }, [services]);
+
   const displayCategories =
     categories.length > 0
       ? categories.slice(0, 6).map((cat) => ({
@@ -188,8 +200,9 @@ export default function Home() {
           title: cat.categoryName ?? "Service",
           desc: cat.description ?? "Professional AC service by certified technicians.",
           fromPrice: fromPriceByCategory[cat.serviceCategoryId] ?? null,
+          imageUrl: imageByCategory[cat.serviceCategoryId] ?? null,
         }))
-      : STATIC_CATEGORIES.map((c) => ({ categoryId: undefined as number | undefined, fromPrice: null as number | null, ...c }));
+      : STATIC_CATEGORIES.map((c) => ({ categoryId: undefined as number | undefined, fromPrice: null as number | null, imageUrl: null as string | null, ...c }));
 
   return (
     <div className="bg-brand-cream">
@@ -311,9 +324,19 @@ export default function Home() {
                   transition={{ duration: 0.4, delay: i * 0.05 }}
                   className="bg-white p-4 sm:p-6 rounded-xl border border-brand-navy/5 hover:border-brand-gold/30 hover:shadow-xl transition-all duration-300 flex flex-col h-full shadow-sm"
                 >
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-brand-gold/10 text-brand-gold flex items-center justify-center mb-3 sm:mb-5">
-                    {categoryIcon(service.title)}
-                  </div>
+                  {service.imageUrl ? (
+                    <img
+                      src={service.imageUrl}
+                      alt={service.title}
+                      className="w-full aspect-[16/9] object-cover rounded-lg mb-3 sm:mb-5"
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-brand-gold/10 text-brand-gold flex items-center justify-center mb-3 sm:mb-5">
+                      {categoryIcon(service.title)}
+                    </div>
+                  )}
                   <h3 className="text-base sm:text-lg font-serif text-brand-navy mb-1.5 sm:mb-2">{service.title}</h3>
                   <p className="text-xs sm:text-sm text-brand-navy/50 leading-relaxed mb-3 sm:mb-5 flex-grow line-clamp-2 sm:line-clamp-none">{service.desc}</p>
                   <p className="font-serif text-brand-navy text-lg sm:text-xl mb-3 sm:mb-4">
@@ -335,7 +358,7 @@ export default function Home() {
                       Book Now
                     </Link>
                     <Link
-                      to="/services"
+                      to={service.categoryId ? `/services?cat=${service.categoryId}` : "/services"}
                       className="hidden sm:flex text-[10px] uppercase tracking-widest font-bold text-brand-navy/50 hover:text-brand-gold-deep transition-colors items-center justify-center gap-1.5 min-h-[36px]"
                     >
                       View details <ArrowRight size={12} />

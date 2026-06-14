@@ -17,6 +17,8 @@ import {
 interface ContentContextValue {
   snapshot: ContentSnapshot | null;
   isLoaded: boolean;
+  /** Admin-published brand logo (theme.logoUrl), resolved to an absolute URL, or null when unset. */
+  logoUrl: string | null;
   /** Returns a screen image (URLs resolved to absolute) by "page.slot" key, or null. */
   getImage: (key: string) => SnapshotImage | null;
   /** Returns a content block by its stable key, or null. */
@@ -89,9 +91,12 @@ export function ContentProvider({ children }: { children: ReactNode }) {
     const blockIndex = new Map((snapshot?.content.blocks ?? []).map((block) => [block.key, block]));
     const banners = snapshot?.content.banners ?? [];
 
+    const rawLogoUrl = snapshot?.theme?.['theme.logoUrl']?.trim();
+
     return {
       snapshot,
       isLoaded,
+      logoUrl: rawLogoUrl ? resolveAssetUrl(rawLogoUrl) : null,
       getImage: (key) => {
         const image = imageIndex[key];
         if (!image) {

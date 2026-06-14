@@ -6,6 +6,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { MotionConfig } from "motion/react";
 import ScrollToTop from "./components/ScrollToTop";
+import RouteTitle from "./components/RouteTitle";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
 import Services from "./pages/Services";
@@ -61,6 +62,7 @@ export default function App() {
         <MotionConfig reducedMotion="user">
         <BrowserRouter>
           <ScrollToTop />
+          <RouteTitle />
           <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />

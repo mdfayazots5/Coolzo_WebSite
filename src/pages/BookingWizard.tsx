@@ -1861,16 +1861,17 @@ function Step5({ data, isLoggedIn, myMobile, onUpdate, onEdit, isSubmitting, sub
         </div>
       )}
 
-      {/* Trust strip */}
-      <div className="flex items-center justify-center gap-6 pt-2 flex-wrap">
+      {/* Trust strip — stacks cleanly on phones (one badge per row), inline from sm+ so the long
+          "Digital report…" label never wraps into an uneven grid on narrow screens (item 6). */}
+      <div className="flex flex-col items-center gap-2 pt-2 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-6 sm:gap-y-2">
         {[
           { icon: <ShieldCheck size={13} />, label: "Verified technicians" },
           { icon: <CheckCircle2 size={13} />, label: "SSL secured" },
           { icon: <Star size={13} />, label: "Digital report after every visit" },
         ].map(({ icon, label }) => (
-          <div key={label} className="flex items-center gap-1.5 text-brand-navy/30">
-            <span className="text-brand-gold">{icon}</span>
-            <span className="text-[11px] font-semibold">{label}</span>
+          <div key={label} className="flex items-center gap-1.5 text-brand-navy/40">
+            <span className="text-brand-gold shrink-0">{icon}</span>
+            <span className="text-[11px] font-semibold whitespace-nowrap">{label}</span>
           </div>
         ))}
       </div>

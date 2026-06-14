@@ -1,9 +1,39 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Instagram, Twitter, Facebook, Mail, Phone, MapPin, MessageCircle } from "lucide-react";
 import { useContent } from "../contexts/ContentContext";
+import { CatalogService } from "../services/catalogService";
+
+// Fallback shown only if the live catalog can't be loaded — links resolve to All Services so a
+// click is never broken.
+const FALLBACK_EXPERTISE = [
+  { label: "System Installation", to: "/services" },
+  { label: "Precision Repair", to: "/services" },
+  { label: "Gas Refilling", to: "/services" },
+  { label: "Deep Jet Wash", to: "/services" },
+];
 
 export default function Footer() {
   const { getBlock } = useContent();
+
+  // Expertise links are real service catalogs, deep-linked to the filtered Services view by id.
+  const [expertise, setExpertise] = useState<{ label: string; to: string }[]>(FALLBACK_EXPERTISE);
+  useEffect(() => {
+    let active = true;
+    CatalogService.getServiceCategories()
+      .then((cats) => {
+        if (active && cats?.length) {
+          setExpertise(
+            cats.slice(0, 4).map((c) => ({
+              label: c.categoryName,
+              to: `/services?cat=${c.serviceCategoryId}`,
+            })),
+          );
+        }
+      })
+      .catch(() => {/* keep fallback */});
+    return () => { active = false; };
+  }, []);
 
   // Contact details are admin-editable via CMS content blocks (published snapshot).
   // Keys: contact.phone / contact.whatsapp / contact.email / contact.city.
@@ -18,6 +48,16 @@ export default function Footer() {
   const telDigits = digits(phone);
   const waDigits = digits(whatsapp).length === 10 ? `91${digits(whatsapp)}` : digits(whatsapp);
 
+  // Social URLs are admin-editable via CMS content blocks (published snapshot).
+  // Keys: social.instagram / social.twitter / social.facebook.
+  // No fallback: an icon is rendered ONLY when its URL is published — absent = hidden.
+  const socialUrl = (key: string) => getBlock(key)?.content?.trim() || "";
+  const socials = [
+    { key: "social.instagram", label: "Instagram", url: socialUrl("social.instagram"), Icon: Instagram },
+    { key: "social.twitter", label: "Twitter", url: socialUrl("social.twitter"), Icon: Twitter },
+    { key: "social.facebook", label: "Facebook", url: socialUrl("social.facebook"), Icon: Facebook },
+  ].filter((s) => s.url.length > 0);
+
   return (
     <footer className="bg-brand-black text-white pt-16 md:pt-24 pb-28 lg:pb-12">
       <div className="container mx-auto px-6">
@@ -27,20 +67,32 @@ export default function Footer() {
             <p className="text-white/40 text-sm leading-relaxed mb-6 max-w-xs font-light">
               The trusted destination for professional air conditioning services and modern climate solutions. Reliable service for modern homes.
             </p>
-            <div className="flex gap-4">
-              <a href="#" aria-label="Follow us on Instagram" className="w-11 h-11 flex items-center justify-center border border-white/10 rounded-lg hover:border-brand-gold transition-colors"><Instagram size={18} aria-hidden="true" /></a>
-              <a href="#" aria-label="Follow us on Twitter" className="w-11 h-11 flex items-center justify-center border border-white/10 rounded-lg hover:border-brand-gold transition-colors"><Twitter size={18} aria-hidden="true" /></a>
-              <a href="#" aria-label="Follow us on Facebook" className="w-11 h-11 flex items-center justify-center border border-white/10 rounded-lg hover:border-brand-gold transition-colors"><Facebook size={18} aria-hidden="true" /></a>
-            </div>
+            {socials.length > 0 && (
+              <div className="flex gap-4">
+                {socials.map(({ key, label, url, Icon }) => (
+                  <a
+                    key={key}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`Follow us on ${label}`}
+                    className="w-11 h-11 flex items-center justify-center border border-white/10 rounded-lg hover:border-brand-gold transition-colors"
+                  >
+                    <Icon size={18} aria-hidden="true" />
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="col-span-1">
             <h4 className="text-brand-gold text-[10px] uppercase tracking-[0.3em] font-bold mb-5 md:mb-8">Expertise</h4>
             <ul className="space-y-3 md:space-y-4 text-sm text-white/60 font-light">
-              <li><Link to="/services?cat=repair" className="hover:text-white transition-colors">System Installation</Link></li>
-              <li><Link to="/services?cat=maintenance" className="hover:text-white transition-colors">Precision Repair</Link></li>
-              <li><Link to="/services?cat=gas" className="hover:text-white transition-colors">Gas Refilling</Link></li>
-              <li><Link to="/services?cat=cleaning" className="hover:text-white transition-colors">Deep Jet Wash</Link></li>
+              {expertise.map((item, i) => (
+                <li key={`${item.label}-${i}`}>
+                  <Link to={item.to} className="hover:text-white transition-colors">{item.label}</Link>
+                </li>
+              ))}
             </ul>
           </div>
 

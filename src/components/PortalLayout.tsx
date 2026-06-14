@@ -8,12 +8,16 @@ import {
   Plus,
   FileText,
 } from "lucide-react";
+import { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
+import { useContent } from "../contexts/ContentContext";
 import { getDashboardRoute } from "../utils/roleRoutes";
 
 export default function PortalLayout() {
   const location = useLocation();
   const { user } = useAuth();
+  const { logoUrl } = useContent();
+  const [logoFailed, setLogoFailed] = useState(false);
 
   const navItems = [
     { name: "Home",       path: "/portal",           icon: Home       },
@@ -43,12 +47,22 @@ export default function PortalLayout() {
         {/* ── Primary row ─────────────────────────────────────────────────────── */}
         <div className="px-4 sm:px-8 h-14 flex items-center gap-3">
 
-          {/* Logo — role-aware: sends each user to their correct dashboard */}
+          {/* Logo — admin-published image (theme.logoUrl) when available, else the wordmark.
+              Role-aware: sends each user to their correct dashboard. */}
           <Link
             to={getDashboardRoute(user)}
-            className="text-lg font-serif font-bold text-brand-navy tracking-tight shrink-0 hover:text-brand-gold transition-colors"
+            className="flex items-center shrink-0 hover:opacity-80 transition-opacity"
           >
-            Coolzo
+            {logoUrl && !logoFailed ? (
+              <img
+                src={logoUrl}
+                alt="Coolzo"
+                onError={() => setLogoFailed(true)}
+                className="h-8 w-auto object-contain"
+              />
+            ) : (
+              <span className="text-lg font-serif font-bold text-brand-navy tracking-tight">Coolzo</span>
+            )}
           </Link>
 
           {/* Desktop primary nav — laptop+ only; mobile uses the bottom tab bar.

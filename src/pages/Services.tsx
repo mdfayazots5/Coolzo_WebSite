@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Search, ArrowRight, X, Loader2, Wrench, Wind, Zap, Droplets, ShieldCheck } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { CatalogService } from "../services/catalogService";
 import type { ServiceLookupResponse, ServiceCategoryLookupResponse } from "../types/catalog";
 import { useAuth } from "../contexts/AuthContext";
@@ -31,6 +31,10 @@ export default function Services() {
   const { getBlock } = useContent();
   const serviceIntro = getBlock("service-content.general-service");
   const bookingPath = user ? "/portal/book" : "/book";
+  const [searchParams] = useSearchParams();
+  // Deep-link filter: ?cat=<id> (e.g. from a Home catalog card) or ?cat=<name slug> (e.g. footer
+  // Expertise links). Resolved to a real category id once the catalog loads.
+  const catParam = searchParams.get("cat");
   const [activeCategory, setActiveCategory] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [services, setServices] = useState<ServiceLookupResponse[]>([]);
@@ -46,6 +50,22 @@ export default function Services() {
       if (catResult.status === "fulfilled") setCategories(catResult.value ?? []);
     }).finally(() => setLoading(false));
   }, []);
+
+  // Apply the ?cat= deep link once categories are available. Numeric → match by id; otherwise treat
+  // it as a name slug and match the first category whose name contains it (case-insensitive).
+  useEffect(() => {
+    if (!catParam || categories.length === 0) return;
+    const numeric = Number(catParam);
+    let resolvedId: number | undefined;
+    if (Number.isFinite(numeric) && numeric > 0) {
+      resolvedId = categories.find((c) => c.serviceCategoryId === numeric)?.serviceCategoryId;
+    }
+    if (resolvedId == null) {
+      const slug = catParam.toLowerCase();
+      resolvedId = categories.find((c) => (c.categoryName ?? "").toLowerCase().includes(slug))?.serviceCategoryId;
+    }
+    if (resolvedId != null) setActiveCategory(resolvedId);
+  }, [catParam, categories]);
 
   const categoryNameById = useMemo(() => {
     const map = new Map<number, string>();
